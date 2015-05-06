@@ -5,6 +5,8 @@
 #		The gluon-mesh-batman-adv-* package must come first because of the dependency resolution
 
 GLUON_SITE_PACKAGES := \
+	gluon-setup-mode \
+	gluon-config-mode-core \
 	gluon-mesh-batman-adv-14 \
 	gluon-alfred \
 	gluon-announced \
