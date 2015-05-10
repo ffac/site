@@ -5,12 +5,11 @@
 #		The gluon-mesh-batman-adv-* package must come first because of the dependency resolution
 
 GLUON_SITE_PACKAGES := \
-	gluon-setup-mode \
-	gluon-config-mode-core \
 	gluon-mesh-batman-adv-14 \
 	gluon-alfred \
 	gluon-announced \
 	gluon-autoupdater \
+	gluon-config-mode-core \
 	gluon-config-mode-hostname \
 	gluon-config-mode-autoupdater \
 	gluon-config-mode-mesh-vpn \
@@ -26,6 +25,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
+	gluon-setup-mode \
 	gluon-status-page \
 	iwinfo \
 	iptables \
