@@ -53,3 +53,6 @@ GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
 # Default priority for updates.
 GLUON_PRIORITY ?= 0
+
+# Languages to include
+ GLUON_LANGS ?= en de
