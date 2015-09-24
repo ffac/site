@@ -28,7 +28,6 @@ GLUON_SITE_PACKAGES := \
 	gluon-radvd \
 	gluon-setup-mode \
 	gluon-status-page \
-	gluon-offline-ssid \
 	kmod-usb-core \
 	kmod-usb2 \
 	kmod-usb-hid \
