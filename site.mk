@@ -28,6 +28,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-radvd \
 	gluon-setup-mode \
 	gluon-status-page \
+	gluon-offline-ssid \
 	iwinfo \
 	iptables \
 	haveged
