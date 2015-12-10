@@ -33,6 +33,7 @@ GLUON_SITE_PACKAGES := \
 	kmod-usb-hid \
 	kmod-usb-net \
 	kmod-usb-net-asix \
+	kmod-sky2 \
 	iwinfo \
 	iptables \
 	haveged
