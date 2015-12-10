@@ -34,6 +34,7 @@ GLUON_SITE_PACKAGES := \
 	kmod-usb-net \
 	kmod-usb-net-asix \
 	kmod-sky2 \
+	kmod-r8169 \
 	iwinfo \
 	iptables \
 	haveged
