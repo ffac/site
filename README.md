@@ -6,5 +6,5 @@ so any inspiration or reuse for your own firmware site.conf should not be
 a problem.
 
 
-[CC0]: (https://creativecommons.org/publicdomain/zero/1.0/deed.en)
+[CC0]: https://creativecommons.org/publicdomain/zero/1.0/deed.en
 
