@@ -27,19 +27,26 @@ GLUON_SITE_PACKAGES := \
 	gluon-mesh-vpn-fastd \
 	gluon-setup-mode \
 	gluon-status-page \
-	kmod-usb-core \
-	kmod-usb2 \
-	kmod-usb-hid \
-	kmod-usb-net \
-	kmod-usb-net-asix \
-	kmod-sky2 \
-	kmod-r8169 \
-	kmod-forcedeth \
-	kmod-8139too \
 	iwinfo \
 	iptables \
 	haveged
 
+# add addition network drivers and usb stuff only to targes where disk space does not matter.
+
+ifeq ($(GLUON_TARGET),x86-generic)
+GLUON_SITE_PACKAGES += \
+        kmod-usb-core \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+	kmod-usb-net-dm9601-ether \
+        kmod-sky2 \
+        kmod-r8169 \
+        kmod-forcedeth \
+        kmod-8139too
+endif
+	
 ##	DEFAULT_GLUON_RELEASE
 #		version string to use for images
 #		gluon relies on
