@@ -46,6 +46,20 @@ endif
 ifeq ($(GLUON_TARGET),mpc85xx-generic)
 GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
+
+# add addition network drivers and usb stuff only to targes where disk space does not matter.
+ifeq ($(GLUON_TARGET),x86-generic)
+GLUON_SITE_PACKAGES += \
+        kmod-usb-core \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+        kmod-usb-net-dm9601-ether \
+        kmod-sky2 \
+        kmod-r8169 \
+        kmod-forcedeth \
+        kmod-8139too
 endif
 
 ##	DEFAULT_GLUON_RELEASE
@@ -71,4 +85,4 @@ GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 GLUON_PRIORITY ?= 0
 
 # Languages to include
- GLUON_LANGS ?= en de
+GLUON_LANGS ?= en de
