@@ -28,10 +28,25 @@ GLUON_SITE_PACKAGES := \
 	gluon-radvd \
 	gluon-setup-mode \
 	gluon-status-page \
-	gluon-ssid-changer \
 	iwinfo \
 	iptables \
 	haveged
+
+# add offline ssid only if the target has wifi device
+ifeq ($(GLUON_TARGET),ar71xx-generic)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),ar71xx-nand)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),mpc85xx-generic)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
 
 ##	DEFAULT_GLUON_RELEASE
 #		version string to use for images
