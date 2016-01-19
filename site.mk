@@ -25,6 +25,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-next-node \
 	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
+	gluon-radvd \
 	gluon-setup-mode \
 	gluon-status-page \
 	iwinfo \
