@@ -60,7 +60,9 @@ GLUON_SITE_PACKAGES += \
         kmod-sky2 \
         kmod-r8169 \
         kmod-forcedeth \
-        kmod-8139too
+        kmod-8139too \
+	kmod-atl2 \
+	kmod-igb
 endif
 
 ifeq ($(GLUON_TARGET),x86-64)
@@ -74,7 +76,9 @@ GLUON_SITE_PACKAGES += \
         kmod-sky2 \
         kmod-r8169 \
         kmod-forcedeth \
-        kmod-8139too
+        kmod-8139too \
+	kmod-atl2 \
+	kmod-igb
 endif
 
 # Add offline ssid, network drivers and usb stuff to raspberry pi images
