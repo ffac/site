@@ -52,6 +52,7 @@ endif
 ifeq ($(GLUON_TARGET),x86-generic)
 GLUON_SITE_PACKAGES += \
         kmod-usb-core \
+        kmod-usb-ohci-pci \
         kmod-usb2 \
         kmod-usb-hid \
         kmod-usb-net \
@@ -68,6 +69,7 @@ endif
 ifeq ($(GLUON_TARGET),x86-64)
 GLUON_SITE_PACKAGES += \
         kmod-usb-core \
+        kmod-usb-ohci-pci \
         kmod-usb2 \
         kmod-usb-hid \
         kmod-usb-net \
