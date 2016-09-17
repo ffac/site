@@ -20,7 +20,7 @@ msgstr ""
 "<p>Please remember to move the network cable form the yellow lan to the blue wan port.</p>"
 "<p>This is your Freifunk node's public key, you do not need to do anything with it.</p>"
 "<p>It is possible to use this key to place your node in the right network segment form its first connection, here are additional information:</p>"
-"<p>The node's name (<em><%=hostname%></em>) and MAC (<em><%=sysconfig.primary_mac%></em>).</p>"
+"<p>The node's name (<em><%=escape(hostname)%></em>) and MAC (<em><%=sysconfig.primary_mac%></em>).</p>"
 "<p>Your public Key: <em><%=pubkey%></em></p>"
 
 
