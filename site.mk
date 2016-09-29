@@ -38,6 +38,11 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
 ifeq ($(GLUON_TARGET),ar71xx-nand)
 GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
@@ -48,10 +53,16 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ramips-rt305x)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
 # add addition network drivers and usb stuff only to targes where disk space does not matter.
 ifeq ($(GLUON_TARGET),x86-generic)
 GLUON_SITE_PACKAGES += \
         kmod-usb-core \
+        kmod-usb-ohci-pci \
         kmod-usb2 \
         kmod-usb-hid \
         kmod-usb-net \
@@ -68,6 +79,7 @@ endif
 ifeq ($(GLUON_TARGET),x86-64)
 GLUON_SITE_PACKAGES += \
         kmod-usb-core \
+        kmod-usb-ohci-pci \
         kmod-usb2 \
         kmod-usb-hid \
         kmod-usb-net \
@@ -81,7 +93,7 @@ GLUON_SITE_PACKAGES += \
 	kmod-igb
 endif
 
-# Add offline ssid, network drivers and usb stuff to raspberry pi images
+# Add offline ssid, network drivers and usb stuff to raspberry and banana pi images
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2708)
 GLUON_SITE_PACKAGES += \
@@ -115,6 +127,23 @@ GLUON_SITE_PACKAGES += \
         kmod-atl2
 endif
 
+ifeq ($(GLUON_TARGET),sunxi)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer \
+        kmod-usb-core \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+        kmod-usb-net-dm9601-ether \
+        kmod-sky2 \
+        kmod-r8169 \
+        kmod-forcedeth \
+        kmod-8139too \
+        kmod-atl2
+endif
+
+
 ##	DEFAULT_GLUON_RELEASE
 #		version string to use for images
 #		gluon relies on
@@ -136,6 +165,9 @@ GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
 # Default priority for updates.
 GLUON_PRIORITY ?= 0
+
+# Region code required for some images; supported values: us eu
+GLUON_REGION ?= eu
 
 # Languages to include
 GLUON_LANGS ?= en de
