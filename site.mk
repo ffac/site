@@ -86,7 +86,7 @@ GLUON_SITE_PACKAGES += \
 	kmod-igb
 endif
 
-# Add offline ssid, network drivers and usb stuff to raspberry and banana pi images
+# Add offline ssid, network drivers and usb stuff to raspberry pi images
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2708)
 GLUON_SITE_PACKAGES += \
@@ -119,23 +119,6 @@ GLUON_SITE_PACKAGES += \
         kmod-8139too \
         kmod-atl2
 endif
-
-ifeq ($(GLUON_TARGET),sunxi)
-GLUON_SITE_PACKAGES += \
-        gluon-ssid-changer \
-        kmod-usb-core \
-        kmod-usb2 \
-        kmod-usb-hid \
-        kmod-usb-net \
-        kmod-usb-net-asix \
-        kmod-usb-net-dm9601-ether \
-        kmod-sky2 \
-        kmod-r8169 \
-        kmod-forcedeth \
-        kmod-8139too \
-        kmod-atl2
-endif
-
 
 ##	DEFAULT_GLUON_RELEASE
 #		version string to use for images
