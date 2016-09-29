@@ -38,6 +38,11 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
 ifeq ($(GLUON_TARGET),ar71xx-nand)
 GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
