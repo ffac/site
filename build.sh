@@ -171,7 +171,7 @@ echo -e "OpenWRT release branch: \033[32m${NEW_OPENWRT_RELEASE}\033[0m"
 for target in ${NEW_TARGETS}
 do
     echo -e "Starting to build target \033[32m${target}\033[0m ..."
-    make GLUON_TARGET=${target} -j4 $VERBOSE
+    make GLUON_TARGET=${target} -j20 $VERBOSE
 done
 
 # finalize
