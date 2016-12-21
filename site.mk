@@ -6,6 +6,7 @@
 
 GLUON_SITE_PACKAGES := \
 	gluon-mesh-batman-adv-14 \
+	gluon-mesh-vpn-batman-adv-14 \
 	gluon-respondd \
 	gluon-autoupdater \
 	gluon-config-mode-core \
@@ -21,7 +22,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-luci-portconfig \
 	gluon-luci-private-wifi \
 	gluon-luci-wifi-config \
-	gluon-next-node \
+	gluon-client-bridge \
 	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
