@@ -6,7 +6,6 @@
 
 GLUON_SITE_PACKAGES := \
 	gluon-mesh-batman-adv-14 \
-	gluon-mesh-vpn-batman-adv-14 \
 	gluon-respondd \
 	gluon-autoupdater \
 	gluon-config-mode-core \
@@ -151,9 +150,9 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2016.2.1-1-exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2016.2.2-1-exp$(shell date '+%Y%m%d')
 
-DEFAULT_GLUON_CHECKOUT := v2016.2.1
+DEFAULT_GLUON_CHECKOUT := v2016.2.2
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
@@ -164,6 +163,7 @@ DEFAULT_GLUON_CHECKOUT := v2016.2.1
 
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
+GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
 # Default priority for updates.
 GLUON_PRIORITY ?= 0
