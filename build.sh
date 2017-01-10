@@ -84,6 +84,10 @@ export GLUON_BRANCH GLUON_PRIORITY
 # get GLUON_CHECKOUT from site dir
 pushd ${SCRIPTDIR}
 eval $(make -s -f helper.mk)
+
+# Begin Logfiles
+{
+
 echo -e "GLUON_CHECKOUT: \033[32m${GLUON_CHECKOUT}\033[0m"
 echo -e "GLUON_BRANCH: \033[32m${GLUON_BRANCH}\033[0m"
 echo -e "GLUON_RELEASE: \033[32m${GLUON_RELEASE}\033[0m"
@@ -96,10 +100,6 @@ do
 done
 sleep 1
 echo
-
-# Begin Logfiles
-{
-
 
 # goto gluon dir
 pushd ..
