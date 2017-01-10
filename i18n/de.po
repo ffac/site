@@ -20,7 +20,7 @@ msgid "gluon-config-mode:pubkey"
 msgstr ""
 "<p>Bitte stecke nun das Netzwerkkabel vom (meist gelben) LAN Port in den (meist blauen) WAN Port deines Routers.</p>"
 "<p>Dies ist der öffentliche Schlüssel deines Freifunk-Knotens. Wenn du nicht weißt, worum es sich dabei handelt, kannst du ihn ignorieren. Wer sich auskennt kann damit dafür sorgen, dass sich der neue Freifunk Knoten von Anfang an zum richtigen Segment unseres Netzes verbindet.</p>"
-"Dabei hilft auch der Knotenname: (<em><%=hostname%></em>) und die MAC-Adresse: (<em><%=sysconfig.primary_mac%></em>)"
+"Dabei hilft auch der Knotenname: (<em><%=escape(hostname)%></em>) und die MAC-Adresse: (<em><%=sysconfig.primary_mac%></em>)"
 "<p>Dein öffentlicher Schlüssel: <em><%=pubkey%></em></p>"
 
 msgid "gluon-config-mode:reboot"

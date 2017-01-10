@@ -21,7 +21,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-luci-portconfig \
 	gluon-luci-private-wifi \
 	gluon-luci-wifi-config \
-	gluon-next-node \
+	gluon-client-bridge \
 	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
@@ -103,12 +103,7 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-hid \
         kmod-usb-net \
         kmod-usb-net-asix \
-        kmod-usb-net-dm9601-ether \
-        kmod-sky2 \
-        kmod-r8169 \
-        kmod-forcedeth \
-        kmod-8139too \
-        kmod-atl2
+        kmod-usb-net-dm9601-ether
 endif
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2709)
@@ -119,12 +114,7 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-hid \
         kmod-usb-net \
         kmod-usb-net-asix \
-        kmod-usb-net-dm9601-ether \
-        kmod-sky2 \
-        kmod-r8169 \
-        kmod-forcedeth \
-        kmod-8139too \
-        kmod-atl2
+        kmod-usb-net-dm9601-ether
 endif
 
 ifeq ($(GLUON_TARGET),sunxi)
@@ -150,8 +140,9 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2016.1~0-exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2016.2.2-1-exp$(shell date '+%Y%m%d')
 
+DEFAULT_GLUON_CHECKOUT := v2016.2.2
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
@@ -162,6 +153,7 @@ DEFAULT_GLUON_RELEASE := 2016.1~0-exp$(shell date '+%Y%m%d')
 
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
+GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
 # Default priority for updates.
 GLUON_PRIORITY ?= 0
