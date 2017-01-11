@@ -55,6 +55,7 @@ done
 if [ -z "$1" ]
 then
     GLUON_BRANCH=experimental
+    BROKEN=1
     echo 'Set GLUON_BRANCH to "experimental"!'
 else
     GLUON_BRANCH=$1
@@ -64,10 +65,12 @@ case "xx$GLUON_BRANCH" in
     'xxstable')
         # one week
         GLUON_PRIORITY=7
+	BROKEN=0
         ;;
     'xxbeta')
         # three days
         GLUON_PRIORITY=3
+	BROKEN=1
         ;;
     'xxexperimental')
         # use default GLUON_PRIORITY set in site.mk
@@ -175,7 +178,7 @@ echo -e "OpenWRT release branch: \033[32m${NEW_OPENWRT_RELEASE}\033[0m"
 for target in ${NEW_TARGETS}
 do
     echo -e "Starting to build target \033[32m${target}\033[0m ..."
-    make GLUON_TARGET=${target} -j20 $VERBOSE
+    make GLUON_TARGET=${target} -j20 BROKEN=$BROKEN $VERBOSE
 done
 
 # finalize
