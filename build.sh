@@ -193,6 +193,6 @@ popd
 
 exit 0
 
-} > >(tee -a /var/log/firmware-build/$GLUON_RELEASE.log) 2> >(tee -a /var/log/firmware-build/$FFAC_GLUON.error.log | tee -a /var/log/firmware-build/$GLUON_RELEASE.log >&2)
+} > >(tee -a /var/log/firmware-build/$GLUON_RELEASE.log) 2> >(tee -a /var/log/firmware-build/$GLUON_RELEASE.error.log | tee -a /var/log/firmware-build/$GLUON_RELEASE.log >&2)
 
 # vim: set et sts=0 ts=4 sw=4 sr:
