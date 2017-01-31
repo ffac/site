@@ -66,6 +66,7 @@ then
 	GLUON_CHECKOUT=v$2
 	NUM="${3:-1}"
 	GLUON_RELEASE="${GLUON_CHECKOUT:1}-$NUM-$GLUON_BRANCH"
+	SITE_CHECKOUT="$GLUON_CHECKOUT-$NUM-${GLUON_BRANCH:0:1}"
 fi
 
 case "xx$GLUON_BRANCH" in
@@ -104,6 +105,7 @@ GLUON_RELEASE="${GLUON_RELEASE:-$DEFAULT_GLUON_RELEASE}"
 echo -e "GLUON_CHECKOUT: \033[32m${GLUON_CHECKOUT}\033[0m"
 echo -e "GLUON_BRANCH: \033[32m${GLUON_BRANCH}\033[0m"
 echo -e "GLUON_RELEASE: \033[32m${GLUON_RELEASE}\033[0m"
+echo -e "SITE_CHECKOUT: \033[32m${SITE_CHECKOUT}\033[0m"
 
 # wait to give user time to read the things above
 for i in $(seq 3)
@@ -116,6 +118,12 @@ echo
 
 # goto gluon dir
 pushd ..
+
+cd site
+git checkout master
+git pull
+git checkout ${SITE_CHECKOUT}
+cd ..
 
 # ask if old images should be removed
 echo -n 'Cleanup old image directory? (y/N) '
