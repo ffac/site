@@ -6,7 +6,7 @@ set -e
 SCRIPTDIR=$(dirname $0)
 
 print_usage() {
-    echo "Usage: $0 [GLUON_BRANCH]"
+    echo "Usage: $0 [GLUON_BRANCH] [GLUON RELEASE] [subnumber]"
     echo ''
     echo 'If GLUON_BRANCH is not given, experimental is set.'
     echo ''
@@ -61,6 +61,13 @@ else
     GLUON_BRANCH=$1
 fi
 
+if [ -n "$2" ]
+then
+	GLUON_CHECKOUT=v$2
+	NUM="${3:-1}"
+	GLUON_RELEASE="${GLUON_CHECKOUT:1}-$NUM-$GLUON_BRANCH"
+fi
+
 case "xx$GLUON_BRANCH" in
     'xxstable')
         # one week
@@ -87,6 +94,9 @@ export GLUON_BRANCH GLUON_PRIORITY
 # get GLUON_CHECKOUT from site dir
 pushd ${SCRIPTDIR}
 eval $(make -s -f helper.mk)
+
+GLUON_CHECKOUT="${GLUON_CHECKOUT:-$DEFAULT_GLUON_CHECKOUT}"
+GLUON_RELEASE="${GLUON_RELEASE:-$DEFAULT_GLUON_RELEASE}"
 
 # Begin Logfiles
 {

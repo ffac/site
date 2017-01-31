@@ -1,5 +1,5 @@
 include site.mk
 .PHONY: echo
 echo:
-	$(info GLUON_CHECKOUT="$(GLUON_CHECKOUT)")
-	$(info GLUON_RELEASE="$(GLUON_RELEASE)")
+	$(info DEFAULT_GLUON_CHECKOUT="$(GLUON_CHECKOUT)")
+	$(info DEFAULT_GLUON_RELEASE="$(GLUON_RELEASE)")
