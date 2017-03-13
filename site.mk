@@ -28,6 +28,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-setup-mode \
 	ffac-status-page-api \
 	gluon-status-page \
+	respondd-module-airtime \
 	iwinfo \
 	iptables \
 	haveged
