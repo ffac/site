@@ -3,7 +3,7 @@ firmware.
 
 The master branch is compatible to: Gluon 2016.2.4
 
-Some Tags need cherry picking, see Documentiation at the [Freifunk Aachen Wiki][wki].
+Some Tags need cherry picking, see Documentiation at the [Freifunk Aachen Wiki][wiki].
 
 All information in this repository is licensed under [CC0 1.0 Universal][CC0],
 so any inspiration or reuse for your own firmware site.conf should not be
