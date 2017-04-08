@@ -142,7 +142,7 @@ endif
 
 DEFAULT_GLUON_RELEASE := 2017~1~pre$(shell date '+%Y%m%d')
 
-DEFAULT_GLUON_CHECKOUT := master
+DEFAULT_GLUON_CHECKOUT := lede
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
