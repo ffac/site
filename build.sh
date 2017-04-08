@@ -120,7 +120,7 @@ echo
 pushd ..
 
 cd site
-git checkout master
+git checkout lede
 git pull
 git checkout ${SITE_CHECKOUT}
 cd ..
