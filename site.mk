@@ -27,7 +27,6 @@ GLUON_SITE_PACKAGES := \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
 	gluon-setup-mode \
-	ffac-status-page-api \
 	gluon-status-page \
 	respondd-module-airtime \
 	iwinfo \
