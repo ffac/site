@@ -16,11 +16,12 @@ GLUON_SITE_PACKAGES := \
 	gluon-config-mode-contact-info \
 	gluon-ebtables-filter-multicast \
 	gluon-ebtables-filter-ra-dhcp \
-	gluon-luci-admin \
-	gluon-luci-autoupdater \
-	gluon-luci-portconfig \
-	gluon-luci-private-wifi \
-	gluon-luci-wifi-config \
+	gluon-web-admin \
+	gluon-web-autoupdater \
+	gluon-web-mesh-vpn-fastd \
+	gluon-web-network \
+	gluon-web-wifi-config \
+	gluon-web-private-wifi \
 	gluon-client-bridge \
 	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
@@ -35,8 +36,7 @@ GLUON_SITE_PACKAGES := \
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
-GLUON_SITE_PACKAGES += \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += 
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
