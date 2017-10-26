@@ -146,7 +146,7 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2016.2.7-1~exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2016.2.7-2~exp$(shell date '+%Y%m%d')
 
 DEFAULT_GLUON_CHECKOUT := v2016.2.7
 
