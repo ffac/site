@@ -119,6 +119,17 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-net-dm9601-ether
 endif
 
+ifeq ($(GLUON_TARGET),brcm2708-bcm2710)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer \
+        kmod-usb-core \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+        kmod-usb-net-dm9601-ether
+endif
+
 ifeq ($(GLUON_TARGET),sunxi)
 GLUON_SITE_PACKAGES += \
         gluon-ssid-changer \
