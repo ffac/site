@@ -16,27 +16,23 @@ GLUON_SITE_PACKAGES := \
 	gluon-config-mode-contact-info \
 	gluon-ebtables-filter-multicast \
 	gluon-ebtables-filter-ra-dhcp \
-	gluon-luci-admin \
-	gluon-luci-autoupdater \
-	gluon-luci-portconfig \
-	gluon-luci-private-wifi \
-	gluon-luci-wifi-config \
-	gluon-next-node \
-	gluon-neighbour-info \
+	gluon-web-admin \
+	gluon-web-autoupdater \
+	gluon-web-mesh-vpn-fastd \
+	gluon-web-network \
+	gluon-web-wifi-config \
+	gluon-web-private-wifi \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
 	gluon-setup-mode \
-	ffac-status-page-api \
 	gluon-status-page \
 	respondd-module-airtime \
 	iwinfo \
-	iptables \
 	haveged
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
-GLUON_SITE_PACKAGES += \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += 
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
@@ -49,9 +45,34 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ar71xx-tiny)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),ipq806x)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
+endif
+
 ifeq ($(GLUON_TARGET),mpc85xx-generic)
 GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),mvebu)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),ramips-mt7620)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),ramips-mt7628)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
@@ -123,6 +144,17 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-net-dm9601-ether
 endif
 
+ifeq ($(GLUON_TARGET),brcm2708-bcm2710)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer \
+        kmod-usb-core \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+        kmod-usb-net-dm9601-ether
+endif
+
 ifeq ($(GLUON_TARGET),sunxi)
 GLUON_SITE_PACKAGES += \
         gluon-ssid-changer \
@@ -146,9 +178,9 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2016.2.7-2~exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2017~1~pre$(shell date '+%Y%m%d')
 
-DEFAULT_GLUON_CHECKOUT := v2016.2.7
+DEFAULT_GLUON_CHECKOUT := lede
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
