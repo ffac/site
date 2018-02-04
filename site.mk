@@ -30,7 +30,6 @@ GLUON_SITE_PACKAGES := \
 	gluon-status-page \
 	respondd-module-airtime \
 	iwinfo \
-	iptables \
 	haveged
 
 # add offline ssid only if the target has wifi device
