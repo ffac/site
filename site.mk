@@ -23,7 +23,6 @@ GLUON_SITE_PACKAGES := \
 	gluon-web-wifi-config \
 	gluon-web-private-wifi \
 	gluon-client-bridge \
-	gluon-neighbour-info \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
 	gluon-setup-mode \
