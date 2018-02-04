@@ -120,6 +120,23 @@ GLUON_SITE_PACKAGES += \
 	kmod-igb
 endif
 
+ifeq ($(GLUON_TARGET),x86-geode)
+GLUON_SITE_PACKAGES += \
+        kmod-usb-core \
+        kmod-usb-ohci-pci \
+        kmod-usb2 \
+        kmod-usb-hid \
+        kmod-usb-net \
+        kmod-usb-net-asix \
+        kmod-usb-net-dm9601-ether \
+        kmod-sky2 \
+        kmod-r8169 \
+        kmod-forcedeth \
+        kmod-8139too \
+        kmod-atl2 \
+        kmod-igb
+endif
+
 # Add offline ssid, network drivers and usb stuff to raspberry and banana pi images
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2708)
