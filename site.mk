@@ -65,6 +65,11 @@ GLUON_SITE_PACKAGES += \
         gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ramips-mt7620)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
+endif
+
 ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
