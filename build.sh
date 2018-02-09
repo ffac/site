@@ -136,7 +136,7 @@ else
 fi
 if [ "${ANSWER}" = 'y' ]
 then
-    rm -vrf images/factory images/sysupgrade
+    rm -vrf output/images/factory output/images/sysupgrade
 fi
 
 # gather some information about current build tree before clean
