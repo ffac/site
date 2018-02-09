@@ -169,29 +169,6 @@ done
 
 make update $VERBOSE
 
-# check OpenWRT release branch
-NEW_OPENWRT_RELEASE=$(grep 'RELEASE:=' include/toplevel.mk | sed -e 's/RELEASE:=//')
-if [ "${OLD_OPENWRT_RELEASE}" != "${NEW_OPENWRT_RELEASE}" ]
-then
-    echo '----'
-    echo -e "Previous OpenWRT release checkout:\t${OLD_OPENWRT_RELEASE}"
-    echo -e "Current OpenWRT release checkout:\t${NEW_OPENWRT_RELEASE}"
-    echo -e "\033[40;93mOpenWRT releases differ. Recommended to rebuild toolchains!\033[0m"
-    echo -n 'Clean the entire tree? (y/N) '
-    if [ "${ALLYES}" = 'true' ]
-    then
-        ANSWER='y'
-        echo ${ANSWER}
-    else
-        read ANSWER
-    fi
-    if [ "${ANSWER}" = 'y' ]
-    then
-        make dirclean
-    fi
-fi
-echo -e "OpenWRT release branch: \033[32m${NEW_OPENWRT_RELEASE}\033[0m"
-
 # loop through all targets and build them
 for target in ${NEW_TARGETS}
 do
