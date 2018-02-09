@@ -32,7 +32,8 @@ GLUON_SITE_PACKAGES := \
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
-GLUON_SITE_PACKAGES += 
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer 
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
