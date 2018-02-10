@@ -181,12 +181,7 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-hid \
         kmod-usb-net \
         kmod-usb-net-asix \
-        kmod-usb-net-dm9601-ether \
-        kmod-sky2 \
-        kmod-r8169 \
-        kmod-forcedeth \
-        kmod-8139too \
-        kmod-atl2
+        kmod-usb-net-dm9601-ether
 endif
 
 
