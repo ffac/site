@@ -161,7 +161,7 @@ git checkout master
 git pull
 git checkout ${GLUON_CHECKOUT}
 
-NEW_TARGETS=$(ls targets/ | grep -xv 'targets.mk\|generic')
+NEW_TARGETS=$(make 2>/dev/null | grep '^ [*] ' | cut -d' ' -f3)
 for target in ${NEW_TARGETS}
 do
     make clean GLUON_TARGET=${target} $VERBOSE
