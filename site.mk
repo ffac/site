@@ -16,6 +16,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-config-mode-contact-info \
 	gluon-ebtables-filter-multicast \
 	gluon-ebtables-filter-ra-dhcp \
+	gluon-radv-filterd \
 	gluon-web-admin \
 	gluon-web-autoupdater \
 	gluon-web-mesh-vpn-fastd \
