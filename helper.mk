@@ -1,5 +1,0 @@
-include site.mk
-.PHONY: echo
-echo:
-	$(info DEFAULT_GLUON_CHECKOUT="$(GLUON_CHECKOUT)")
-	$(info DEFAULT_GLUON_RELEASE="$(GLUON_RELEASE)")
