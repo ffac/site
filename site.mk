@@ -205,7 +205,7 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2017.1.8-1~exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2017.1.8-1~exp$(shell date '+%Y%m%d')-11s
 
 DEFAULT_GLUON_CHECKOUT := v2017.1.8
 
@@ -231,4 +231,4 @@ GLUON_LANGS ?= en de
 
 # Select ath10k Firmware for adhoc
 
-GLUON_ATH10K_MESH ?= ibss
+GLUON_ATH10K_MESH ?= 11s
