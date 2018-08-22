@@ -24,6 +24,7 @@ GLUON_SITE_PACKAGES := \
 	gluon-web-private-wifi \
 	gluon-mesh-vpn-fastd \
 	gluon-radvd \
+	gluon-radv-filterd \
 	gluon-setup-mode \
 	gluon-status-page \
 	iwinfo \
@@ -231,4 +232,4 @@ GLUON_LANGS ?= en de
 
 # Select ath10k Firmware for adhoc
 
-GLUON_ATH10K_MESH ?= ibss
+GLUON_ATH10K_MESH ?= 11s
