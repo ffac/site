@@ -4,30 +4,33 @@
 #		specify gluon/openwrt packages to include here
 #		The gluon-mesh-batman-adv-* package must come first because of the dependency resolution
 
-GLUON_SITE_PACKAGES := \
-	gluon-mesh-batman-adv-14 \
-	gluon-respondd \
-	gluon-autoupdater \
-	gluon-config-mode-core \
-	gluon-config-mode-hostname \
-	gluon-config-mode-autoupdater \
-	gluon-config-mode-mesh-vpn \
-	gluon-config-mode-geo-location \
-	gluon-config-mode-contact-info \
-	gluon-ebtables-filter-multicast \
-	gluon-ebtables-filter-ra-dhcp \
-	gluon-web-admin \
-	gluon-web-autoupdater \
-	gluon-web-mesh-vpn-fastd \
-	gluon-web-network \
-	gluon-web-wifi-config \
-	gluon-web-private-wifi \
-	gluon-mesh-vpn-fastd \
-	gluon-radvd \
-	gluon-setup-mode \
-	gluon-status-page \
-	iwinfo \
-	haveged
+##	GLUON_FEATURES
+#		Specify Gluon features/packages to enable;
+#		Gluon will automatically enable a set of packages
+#		depending on the combination of features listed
+
+GLUON_FEATURES := \
+	autoupdater \
+	ebtables \
+	ebtables-limit-arp \
+	ebtables-filter-multicast \
+	ebtables-filter-ra-dhcp \
+	ebtables-source-filter \
+	mesh-batman-adv-14 \
+	mesh-vpn-fastd \
+	radvd \
+	radv-filterd \
+	respondd \
+	status-page \
+	config-mode-mesh-vpn \
+	web-advanced \
+	web-private-wifi \
+	web-mesh-vpn-fastd \
+	web-wizard
+
+GLUON_SITE_PACKAGES :=\
+	haveged \
+	iwinfo
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
