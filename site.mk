@@ -217,4 +217,4 @@ GLUON_LANGS ?= en de
 
 # Select ath10k Firmware for adhoc
 
-GLUON_ATH10K_MESH ?= 11s
+GLUON_WLAN_MESH = ibss
