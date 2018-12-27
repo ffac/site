@@ -1,34 +1,45 @@
 ##	gluon site.mk makefile example
 
+##	GLUON_FEATURES
+#		Specify Gluon features/packages to enable;
+#		Gluon will automatically enable a set of packages
+#		depending on the combination of features listed
+
+GLUON_FEATURES := \
+	mesh-batman-adv-14 \
+	respondd \
+	autoupdater \
+	config-mode-core \
+	config-mode-hostname \
+	config-mode-autoupdater \
+	config-mode-mesh-vpn \
+	config-mode-geo-location \
+	config-mode-contact-info \
+	ebtables-filter-multicast \
+	ebtables-filter-ra-dhcp \
+	web-admin \
+	web-autoupdater \
+	web-mesh-vpn-fastd \
+	web-network \
+	web-wifi-config \
+	web-private-wifi \
+	mesh-vpn-fastd \
+	radvd \
+	radv-filterd \
+	setup-mode \
+	status-page
+
 ##	GLUON_SITE_PACKAGES
-#		specify gluon/openwrt packages to include here
-#		The gluon-mesh-batman-adv-* package must come first because of the dependency resolution
+#		Specify additional Gluon/LEDE packages to include here;
+#		A minus sign may be prepended to remove a packages from the
+#		selection that would be enabled by default or due to the
+#		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-	gluon-mesh-batman-adv-14 \
-	gluon-respondd \
-	gluon-autoupdater \
-	gluon-config-mode-core \
-	gluon-config-mode-hostname \
-	gluon-config-mode-autoupdater \
-	gluon-config-mode-mesh-vpn \
-	gluon-config-mode-geo-location \
-	gluon-config-mode-contact-info \
-	gluon-ebtables-filter-multicast \
-	gluon-ebtables-filter-ra-dhcp \
-	gluon-web-admin \
-	gluon-web-autoupdater \
-	gluon-web-mesh-vpn-fastd \
-	gluon-web-network \
-	gluon-web-wifi-config \
-	gluon-web-private-wifi \
-	gluon-mesh-vpn-fastd \
-	gluon-radvd \
-	gluon-radv-filterd \
-	gluon-setup-mode \
-	gluon-status-page \
 	iwinfo \
 	haveged
+
+
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
