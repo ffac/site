@@ -62,6 +62,11 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),ipq40xx)
+GLUON_SITE_PACKAGES += \
+        gluon-ssid-changer
+endif
+
 ifeq ($(GLUON_TARGET),ipq806x)
 GLUON_SITE_PACKAGES += \
         gluon-ssid-changer
