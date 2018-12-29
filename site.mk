@@ -107,6 +107,11 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
+ifeq ($(GLUON_TARGET),sunxi-cortexa7)
+GLUON_SITE_PACKAGES += \
+	gluon-ssid-changer
+endif
+
 # add addition network drivers and usb stuff only to targes where disk space does not matter.
 ifeq ($(GLUON_TARGET),x86-generic)
 GLUON_SITE_PACKAGES += \
