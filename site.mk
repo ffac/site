@@ -127,7 +127,8 @@ GLUON_SITE_PACKAGES += \
         kmod-forcedeth \
         kmod-8139too \
 	kmod-atl2 \
-	kmod-igb
+	kmod-igb \
+	kmod-button-hotplug
 endif
 
 ifeq ($(GLUON_TARGET),x86-64)
@@ -144,7 +145,8 @@ GLUON_SITE_PACKAGES += \
         kmod-forcedeth \
         kmod-8139too \
 	kmod-atl2 \
-	kmod-igb
+	kmod-igb \
+	kmod-button-hotplug
 endif
 
 ifeq ($(GLUON_TARGET),x86-geode)
@@ -161,7 +163,8 @@ GLUON_SITE_PACKAGES += \
         kmod-forcedeth \
         kmod-8139too \
         kmod-atl2 \
-        kmod-igb
+        kmod-igb \
+	kmod-button-hotplug
 endif
 
 # Add offline ssid, network drivers and usb stuff to raspberry and banana pi images
