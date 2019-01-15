@@ -1,7 +1,7 @@
 This repository contains the site information for the Freifunk Aachen Gluon
 firmware.
 
-The master branch is compatible to: Gluon 2016.2.4
+This branch is compatible to: Gluon 2018.2.x
 
 Some Tags need cherry picking, see Documentiation at the [Freifunk Aachen Wiki][wiki].
 
