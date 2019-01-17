@@ -128,7 +128,6 @@ GLUON_SITE_PACKAGES += \
         kmod-8139too \
 	kmod-atl2 \
 	kmod-igb \
-	kmod-acpi-button \
 	kmod-button-hotplug
 endif
 
@@ -147,7 +146,6 @@ GLUON_SITE_PACKAGES += \
         kmod-8139too \
 	kmod-atl2 \
 	kmod-igb \
-	kmod-acpi-button \
 	kmod-button-hotplug
 endif
 
@@ -166,7 +164,6 @@ GLUON_SITE_PACKAGES += \
         kmod-8139too \
         kmod-atl2 \
         kmod-igb \
-	kmod-acpi-button \
 	kmod-button-hotplug
 endif
 
