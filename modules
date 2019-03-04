@@ -1,10 +1,9 @@
-#GLUON_SITE_FEEDS="ssidchanger ffac"
-GLUON_SITE_FEEDS="ssidchanger"
+GLUON_SITE_FEEDS="ssidchanger ffac"
 
 PACKAGES_SSIDCHANGER_REPO=https://github.com/ffac/gluon-ssid-changer.git
 PACKAGES_SSIDCHANGER_COMMIT=222b96a30259a03ca8ecdb173d9d326077a6efec
 PACKAGES_SSIDCHANGER_BRANCH=2018.1.x
 
-#PACKAGES_FFAC_REPO=https://github.com/ffac/ffac-status-page-api.git
-#PACKAGES_FFAC_COMMIT=c400dcc4daf47187ad705db8ba9eb0d3354deb61
-#PACKAGES_FFAC_BRANCH=master
+PACKAGES_FFAC_REPO=https://github.com/ffac/ffac-status-page-api.git
+PACKAGES_FFAC_COMMIT=62c19102406a12ad613cb813acbbce0f4641404f
+PACKAGES_FFAC_BRANCH=v2018.2.x
