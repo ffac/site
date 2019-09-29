@@ -24,7 +24,6 @@ GLUON_FEATURES := \
 	web-wifi-config \
 	web-private-wifi \
 	mesh-vpn-fastd \
-	radvd \
 	radv-filterd \
 	setup-mode \
 	status-page
