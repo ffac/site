@@ -1,4 +1,4 @@
-##	gluon site.mk makefile example
+##	gluon site.mk Freifunk Regio Aachen
 
 ##	GLUON_FEATURES
 #		Specify Gluon features/packages to enable;
