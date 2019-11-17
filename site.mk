@@ -51,6 +51,7 @@ endif
 
 ifeq ($(GLUON_TARGET),ar71xx-tiny)
 GLUON_SITE_PACKAGES += \
+	zram-swap \
 	respondd-module-airtime \
 	gluon-ssid-changer
 endif
