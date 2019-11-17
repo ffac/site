@@ -69,6 +69,7 @@ endif
 
 ifeq ($(GLUON_TARGET),ipq40xx)
 GLUON_SITE_PACKAGES += \
+	respondd-module-airtime \
         gluon-ssid-changer
 endif
 
@@ -84,7 +85,13 @@ GLUON_SITE_PACKAGES += \
 	gluon-ssid-changer
 endif
 
-ifeq ($(GLUON_TARGET),mvebu)
+ifeq ($(GLUON_TARGET),mpc85xx-p1020)
+GLUON_SITE_PACKAGES += \
+	respondd-module-airtime \
+	gluon-ssid-changer
+endif
+
+ifeq ($(GLUON_TARGET),mvebu-cortexa9)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
         gluon-ssid-changer
@@ -98,15 +105,17 @@ endif
 
 ifeq ($(GLUON_TARGET),ramips-mt7621)
 GLUON_SITE_PACKAGES += \
+	respondd-module-airtime \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt76x8)
 GLUON_SITE_PACKAGES += \
+	respondd-module-airtime \
 	gluon-ssid-changer
 endif
 
-ifeq ($(GLUON_TARGET),ramips-mt7628)
+ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
         gluon-ssid-changer
