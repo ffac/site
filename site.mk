@@ -9,23 +9,14 @@ GLUON_FEATURES := \
 	mesh-batman-adv-14 \
 	respondd \
 	autoupdater \
-	config-mode-core \
-	config-mode-hostname \
-	config-mode-autoupdater \
-	config-mode-mesh-vpn \
-	config-mode-geo-location \
-	config-mode-contact-info \
 	ebtables-filter-multicast \
 	ebtables-filter-ra-dhcp \
-	web-admin \
-	web-autoupdater \
+	web-wizard \
+	web-advanced \
 	web-mesh-vpn-fastd \
-	web-network \
-	web-wifi-config \
 	web-private-wifi \
 	mesh-vpn-fastd \
 	radv-filterd \
-	setup-mode \
 	status-page
 
 ##	GLUON_SITE_PACKAGES
@@ -35,12 +26,9 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-	-gluon-status-page \
 	ffac-status-page \
 	iwinfo \
 	haveged
-
-
 
 # add offline ssid only if the target has wifi device
 ifeq ($(GLUON_TARGET),ar71xx-generic)
@@ -271,6 +259,6 @@ GLUON_LANGS ?= en de
 
 # Select ath10k Firmware for adhoc
 
-GLUON_WLAN_MESH = 11s
+GLUON_WLAN_MESH ?= 11s
 
-GLUON_DEPRECATED = full
+GLUON_DEPRECATED ?= full
