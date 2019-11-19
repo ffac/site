@@ -26,7 +26,6 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-	ffac-status-page \
 	iwinfo \
 	haveged
 
