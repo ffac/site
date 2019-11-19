@@ -26,6 +26,7 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
+	gluon-weeklyreboot \
 	iwinfo \
 	haveged
 
