@@ -34,7 +34,7 @@ GLUON_SITE_PACKAGES := \
 ifeq ($(GLUON_TARGET),ar71xx-generic)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
-	gluon-ssid-changer 
+	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
