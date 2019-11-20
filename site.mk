@@ -173,5 +173,3 @@ GLUON_LANGS ?= en de
 # Select ath10k Firmware for adhoc
 
 GLUON_ATH10K_MESH ?= ibss
-
-GLUON_DEPRECATED = full
