@@ -36,18 +36,21 @@ GLUON_SITE_PACKAGES := \
 ifeq ($(GLUON_TARGET),ar71xx-generic)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-nand)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
@@ -55,72 +58,84 @@ ifeq ($(GLUON_TARGET),ar71xx-tiny)
 GLUON_SITE_PACKAGES += \
 	zram-swap \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ipq40xx)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ipq806x)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),mpc85xx-generic)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),mpc85xx-p1020)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),mvebu-cortexa9)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt7620)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt7621)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt76x8)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),sunxi-cortexa7)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
 	gluon-ssid-changer
 endif
 
@@ -184,6 +199,7 @@ endif
 ifeq ($(GLUON_TARGET),brcm2708-bcm2708)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer \
         kmod-usb-core \
         kmod-usb2 \
@@ -196,6 +212,7 @@ endif
 ifeq ($(GLUON_TARGET),brcm2708-bcm2709)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer \
         kmod-usb-core \
         kmod-usb2 \
@@ -208,6 +225,7 @@ endif
 ifeq ($(GLUON_TARGET),brcm2708-bcm2710)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer \
         kmod-usb-core \
         kmod-usb2 \
@@ -220,6 +238,7 @@ endif
 ifeq ($(GLUON_TARGET),sunxi)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
+	gluon-wificheck \
         gluon-ssid-changer \
         kmod-usb-core \
         kmod-usb2 \
