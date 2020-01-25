@@ -29,6 +29,7 @@ GLUON_SITE_PACKAGES := \
 	-gluon-status-page \
 	ffac-status-page \
 	gluon-weeklyreboot \
+	ffffm-button-bind \
 	iwinfo \
 	haveged
 
