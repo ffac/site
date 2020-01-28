@@ -29,97 +29,65 @@ GLUON_SITE_PACKAGES := \
 	-gluon-status-page \
 	ffac-status-page \
 	gluon-weeklyreboot \
-	ffffm-button-bind \
 	iwinfo \
 	haveged
 
-# add offline ssid only if the target has wifi device
-ifeq ($(GLUON_TARGET),ar71xx-generic)
-GLUON_SITE_PACKAGES += \
+# add offline ssid and other wifi related packages only if the target has wifi
+INCLUDE_WIFI_EXTRAS := \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
-	gluon-ssid-changer
+	gluon-ssid-changer \
+	ffffm-button-bind
+
+ifeq ($(GLUON_TARGET),ar71xx-generic)
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-mikrotik)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-nand)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ar71xx-tiny)
-GLUON_SITE_PACKAGES += \
-	zram-swap \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
+	zram-swap
 endif
 
 ifeq ($(GLUON_TARGET),ipq40xx)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ipq806x)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),mpc85xx-generic)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),mpc85xx-p1020)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),mvebu-cortexa9)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt7620)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt7621)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt76x8)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
@@ -127,6 +95,7 @@ GLUON_SITE_PACKAGES += \
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
@@ -134,6 +103,7 @@ GLUON_SITE_PACKAGES += \
 endif
 
 ifeq ($(GLUON_TARGET),sunxi-cortexa7)
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 GLUON_SITE_PACKAGES += \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
