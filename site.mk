@@ -158,10 +158,7 @@ endif
 # Add offline ssid, network drivers and usb stuff to raspberry and banana pi images
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2708)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer \
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
         kmod-usb-core \
         kmod-usb2 \
         kmod-usb-hid \
@@ -172,9 +169,7 @@ endif
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2709)
 GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer \
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
         kmod-usb-core \
         kmod-usb2 \
         kmod-usb-hid \
@@ -184,10 +179,7 @@ GLUON_SITE_PACKAGES += \
 endif
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2710)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer \
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
         kmod-usb-core \
         kmod-usb2 \
         kmod-usb-hid \
