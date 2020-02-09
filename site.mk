@@ -226,9 +226,9 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2019.1.1-1~exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2019.1.2-1~exp$(shell date '+%Y%m%d')
 
-DEFAULT_GLUON_CHECKOUT := v2019.1.1
+DEFAULT_GLUON_CHECKOUT := v2019.1.2
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
