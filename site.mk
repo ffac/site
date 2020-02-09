@@ -90,26 +90,14 @@ endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),ramips-rt305x)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
 endif
 
 ifeq ($(GLUON_TARGET),sunxi-cortexa7)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-	gluon-ssid-changer
 endif
 
 # add addition network drivers and usb stuff only to targes where disk space does not matter.
@@ -207,20 +195,6 @@ GLUON_SITE_PACKAGES += \
         kmod-usb-net-asix \
         kmod-usb-net-dm9601-ether
 endif
-
-ifeq ($(GLUON_TARGET),sunxi)
-GLUON_SITE_PACKAGES += \
-	respondd-module-airtime \
-	eulenfunk-hotfix \
-        gluon-ssid-changer \
-        kmod-usb-core \
-        kmod-usb2 \
-        kmod-usb-hid \
-        kmod-usb-net \
-        kmod-usb-net-asix \
-        kmod-usb-net-dm9601-ether
-endif
-
 
 ##	DEFAULT_GLUON_RELEASE
 #		version string to use for images
