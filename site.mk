@@ -69,6 +69,7 @@ GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),mpc85xx-p1020)
+GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
 endif
 
 ifeq ($(GLUON_TARGET),mvebu-cortexa9)
