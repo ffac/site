@@ -36,8 +36,7 @@ GLUON_SITE_PACKAGES := \
 INCLUDE_WIFI_EXTRAS := \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
-	gluon-ssid-changer \
-	ffffm-button-bind
+	gluon-ssid-changer
 
 ifeq ($(GLUON_TARGET),ar71xx-generic)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
