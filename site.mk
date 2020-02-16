@@ -6,7 +6,7 @@
 #		depending on the combination of features listed
 
 GLUON_FEATURES := \
-	mesh-batman-adv-14 \
+	mesh-batman-adv-15 \
 	respondd \
 	autoupdater \
 	ebtables-filter-multicast \
