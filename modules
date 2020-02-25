@@ -1,4 +1,4 @@
-GLUON_SITE_FEEDS="ssidchanger ffac eulenfunk ffm"
+GLUON_SITE_FEEDS="ssidchanger ffac eulenfunk"
 
 PACKAGES_SSIDCHANGER_REPO=https://github.com/ffac/gluon-ssid-changer.git
 PACKAGES_SSIDCHANGER_COMMIT=f962ab17723be144849ff988909e3a794d612d56
