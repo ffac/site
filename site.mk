@@ -13,9 +13,8 @@ GLUON_FEATURES := \
 	ebtables-filter-ra-dhcp \
 	web-wizard \
 	web-advanced \
-	web-mesh-vpn-fastd \
 	web-private-wifi \
-	mesh-vpn-fastd \
+	mesh-vpn-wireguard-vxlan \	
 	radv-filterd \
 	status-page
 
