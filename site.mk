@@ -1,4 +1,4 @@
-##	gluon site.mk Freifunk Regio Aachen
+﻿##	gluon site.mk Freifunk Regio Aachen
 
 ##	GLUON_FEATURES
 #		Specify Gluon features/packages to enable;
@@ -36,7 +36,8 @@ GLUON_SITE_PACKAGES := \
 INCLUDE_WIFI_EXTRAS := \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
-	gluon-ssid-changer
+	gluon-ssid-changer \
+	ffho-autoupdater-wifi-fallback
 
 ifeq ($(GLUON_TARGET),ar71xx-generic)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
