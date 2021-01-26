@@ -14,7 +14,7 @@ GLUON_FEATURES := \
 	web-wizard \
 	web-advanced \
 	web-private-wifi \
-	mesh-vpn-wireguard-vxlan \	
+	mesh-vpn-wireguard-vxlan \
 	radv-filterd \
 	status-page
 
