@@ -1,7 +1,7 @@
 GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
-        autoupdater \
+    autoupdater \
 	ebtables-filter-multicast \
 	ebtables-filter-ra-dhcp \
 	mesh-batman-adv-15 \
@@ -19,8 +19,8 @@ GLUON_SITE_PACKAGES := \
 	ffho-autoupdater-wifi-fallback \
 	gluon-ssid-changer \
 	iwinfo \
-        iptables \
-        respondd-module-airtime
+    iptables \
+    respondd-module-airtime
 
 DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
 
