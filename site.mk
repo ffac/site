@@ -1,34 +1,49 @@
-##	gluon site.mk Freifunk Regio Aachen
+﻿##	gluon site.mk Freifunk Regio Aachen
 GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
         autoupdater \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
+        ebtables-limit-arp \
         mesh-batman-adv-15 \
         mesh-vpn-wireguard \
         radv-filterd \
+        radvd \
         respondd \
         web-advanced \
-        web-mesh-vpn-fastd \
         web-private-wifi \
         web-wizard
-#        status-page \
+
+##	GLUON_SITE_PACKAGES
+#		Specify additional Gluon/LEDE packages to include here;
+#		A minus sign may be prepended to remove a packages from the
+#		selection that would be enabled by default or due to the
+#		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-	ffac-status-page \
-	ffho-autoupdater-wifi-fallback \
-	gluon-ssid-changer \
-	iwinfo \
-        iptables \
-        respondd-module-airtime
+    -gluon-status-page \
+    ffac-status-page \
+    iptables \
+    iwinfo \
+    haveged
+
+#gluon-weeklyreboot
+
+# add offline ssid and other wifi related packages only if the target has wifi
+INCLUDE_WIFI_EXTRAS := \
+    respondd-module-airtime \
+    eulenfunk-hotfix \
+    gluon-ssid-changer \
+    ffho-autoupdater-wifi-fallback \
+    respondd-module-airtime
 
 DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
 
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := v2021.1
+DEFAULT_GLUON_CHECKOUT := master #v2021.1
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
@@ -160,7 +175,7 @@ EXCLUDE_TLS := \
     -libustream-openssl
 
 ifeq ($(GLUON_TARGET),ar71xx-generic)
-    GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE)
+    GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE) $(INCLUDE_WIFI_EXTRAS)
 
     GLUON_allnet-all0315n_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
     GLUON_avm-fritz-wlan-repeater-300e_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
