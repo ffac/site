@@ -1,0 +1,25 @@
+From 1f4029b876bc39b2f8e176e5f2c38588b23a7a2c Mon Sep 17 00:00:00 2001
+From: Malte Moeller <malte.moeller@freifunk-aachen.de>
+Date: Fri, 6 May 2022 11:28:29 +0000
+Subject: [PATCH] bump to current gluon-packages
+
+---
+ modules | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/modules b/modules
+index f5651a3a..85dd491b 100644
+--- a/modules
++++ b/modules
+@@ -16,5 +16,6 @@ PACKAGES_LUCI_REPO=https://github.com/openwrt/luci.git
+ PACKAGES_LUCI_BRANCH=openwrt-18.06
+ PACKAGES_LUCI_COMMIT=b99e77d5c36a9d51559bae3bb61a138695d60b95
+ 
+-PACKAGES_GLUON_REPO=https://github.com/freifunk-gluon/packages.git
+-PACKAGES_GLUON_COMMIT=e130b6f54d0f99ca923e981801043c41e794d9b5
++PACKAGES_GLUON_REPO=https://github.com/ffac/packages.git
++PACKAGES_GLUON_BRANCH=v2019.1.x
++PACKAGES_GLUON_COMMIT=85c8044e6cd25571245b72592deef4ce7ae8364c
+-- 
+2.25.1
+
