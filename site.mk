@@ -36,7 +36,8 @@ GLUON_SITE_PACKAGES := \
 INCLUDE_WIFI_EXTRAS := \
 	respondd-module-airtime \
 	eulenfunk-hotfix \
-	gluon-ssid-changer
+	gluon-ssid-changer \
+	ffho-autoupdater-wifi-fallback
 
 ifeq ($(GLUON_TARGET),ar71xx-generic)
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS)
@@ -193,9 +194,9 @@ endif
 #			opkg compare-versions "$1" '>>' "$2"
 #		to decide if a version is newer or not.
 
-DEFAULT_GLUON_RELEASE := 2019.1.x-0~exp$(shell date '+%Y%m%d')
+DEFAULT_GLUON_RELEASE := 2019.1.3-1~exp$(shell date '+%Y%m%d')
 
-DEFAULT_GLUON_CHECKOUT := v2019.1.x
+DEFAULT_GLUON_CHECKOUT := v2019.1.3
 
 ##	GLUON_RELEASE
 #		call make with custom GLUON_RELEASE flag, to use your own release version scheme.
