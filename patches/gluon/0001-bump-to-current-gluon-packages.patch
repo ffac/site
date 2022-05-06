@@ -17,7 +17,7 @@ index f5651a3a..85dd491b 100644
  
 -PACKAGES_GLUON_REPO=https://github.com/freifunk-gluon/packages.git
 -PACKAGES_GLUON_COMMIT=e130b6f54d0f99ca923e981801043c41e794d9b5
-+PACKAGES_GLUON_REPO=https://github.com/ffac/packages.git
++PACKAGES_GLUON_REPO=https://github.com/freifunk-gluon/packages.git
 +PACKAGES_GLUON_BRANCH=v2019.1.x
 +PACKAGES_GLUON_COMMIT=85c8044e6cd25571245b72592deef4ce7ae8364c
 -- 
