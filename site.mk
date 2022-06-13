@@ -32,7 +32,6 @@ GLUON_SITE_PACKAGES := \
 
 # add offline ssid and other wifi related packages only if the target has wifi
 INCLUDE_WIFI_EXTRAS := \
-    respondd-module-airtime \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     ffho-autoupdater-wifi-fallback \
