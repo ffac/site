@@ -23,7 +23,7 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     gluon-status-page \
-    #ffac-status-page \
+    #ffac-status-page \ # custom status page without contact information
     iptables \
     iwinfo \
     haveged
@@ -42,7 +42,7 @@ DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := master #v2021.1
+DEFAULT_GLUON_CHECKOUT := v2021.1.x
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
