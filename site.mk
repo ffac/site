@@ -23,7 +23,8 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     gluon-status-page \
-    #ffac-status-page \ # custom status page without contact information
+    #ffac-status-page \ 
+    # custom status page without contact information \
     iptables \
     iwinfo \
     haveged
