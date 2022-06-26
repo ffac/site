@@ -1,0 +1,29 @@
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+index 8e9623ec..f71c886e 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+@@ -90,6 +90,9 @@ local primary_addrs = {
+ 		{'lantiq', 'xway', {
+ 			'netgear,dgn3500b',
+ 		}},
++		{'lantiq', 'xrx200', {
++			'arcadyan,vgv7510kw22-nor',
++		}},
+ 		{'ramips', 'mt7620', {
+ 			'netgear,ex3700',
+ 			'tplink,archer-c2-v1',
+diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
+index dd871e95..abc273e0 100644
+--- a/targets/lantiq-xrx200
++++ b/targets/lantiq-xrx200
+@@ -59,3 +59,10 @@ device('tp-link-td-w8980', 'tplink_tdw8980', {
+ 	aliases = {'tp-link-td-w9980'},
+ 	broken = true, -- 5GHz unsupported
+ })
++
++-- O2
++
++device('arcadyan-vgv7510kw22', 'arcadyan_vgv7510kw22-nor', {
++	factory = true,
++	aliases = {'o2-box-6431'},
++})
