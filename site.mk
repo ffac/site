@@ -42,7 +42,7 @@ DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := master #v2021.1
+DEFAULT_GLUON_CHECKOUT := v2021.1.2
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
