@@ -22,7 +22,7 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     gluon-status-page \
-    ffac-mesh-vpn-wireguard \
+    ff-mesh-vpn-wireguard \
     iptables \
     iwinfo \
     haveged
