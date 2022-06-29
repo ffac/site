@@ -7,7 +7,6 @@ GLUON_FEATURES := \
         ebtables-filter-ra-dhcp \
         ebtables-limit-arp \
         mesh-batman-adv-15 \
-        mesh-vpn-wireguard \
         radv-filterd \
         radvd \
         respondd \
@@ -23,7 +22,7 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     gluon-status-page \
-    #ffac-status-page \
+    ffac-mesh-vpn-wireguard \
     iptables \
     iwinfo \
     haveged
