@@ -12,6 +12,7 @@ GLUON_FEATURES := \
         respondd \
         web-advanced \
         web-private-wifi \
+        config-mode-mesh-vpn \
         web-wizard
 
 ##	GLUON_SITE_PACKAGES
