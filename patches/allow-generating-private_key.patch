@@ -3,7 +3,24 @@ new file mode 100644
 index 00000000..9d1ae78e
 --- /dev/null
 +++ b/patches/openwrt/0099-create-wg-key.patch
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,48 @@
++From: lemoer <git@irrelefant.net>
++Date: Sat, 3 Jul 2021 22:50:29 +0200
++Subject: wireguard-tools: allow generating private_key (v3)
++
++When the uci configuration is created automatically during a very early
++stage, where no entropy daemon is set up, generating the key directly is
++not an option. Therefore we allow to set the private_key to "generate"
++and generate the private key directly before the interface is taken up.
++
++v4: FM - remove -t flag to support older version - should work for our reasoning
++v3: Somebody has implemented another uci cli flag '-t' upstream to handle
++    this, before my patch to implement the new uci flag '-x' syntax was
++    accepted. So I dropped my suggestion of '-x'.
++v2: We now use a new uci cli flag to commit only the private_key and do
++    not commit uncommited user changes. This is not yet upstream as of
++    now.
++
 +diff --git a/package/network/utils/wireguard-tools/files/wireguard.sh b/package/network/utils/wireguard-tools/files/wireguard.sh
 +index 4c811c6ba9..3a944d7e65 100644
 +--- a/package/network/utils/wireguard-tools/files/wireguard.sh
