@@ -19,6 +19,10 @@ make build
 make manifest
 ```
 
+ein einzelnes target kann man auch bauen:
+
+`make BROKEN=1 GLUON_TARGETS=lantiq-xrx200`
+
 or directly with 
 
 `make all`
