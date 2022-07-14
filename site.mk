@@ -22,11 +22,12 @@ GLUON_FEATURES := \
 #		selection that would be enabled by default or due to the
 #		chosen feature flags
 
+
+# -gluon-status-page
+#ffac-status-page
+# custom status page without contact information
+
 GLUON_SITE_PACKAGES := \
-    # -gluon-status-page \
-    #ffac-status-page \
-    # custom status page without contact information \
-    iptables \
     iwinfo \
     eulenfunk-hotfix \
     gluon-ssid-changer \

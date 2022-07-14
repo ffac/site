@@ -11,7 +11,7 @@ index 74eda3e8..2835c377 100644
 +	factory_ext = '.img',
 +})
 +
-+device('netgear-wndr3800chmychart', 'netgear_wndr3800chmychart', {
++device('netgear-wndr3800ch', 'netgear_wndr3800ch', {
 +	factory_ext = '.img',
 +})
  
