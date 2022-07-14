@@ -1,0 +1,29 @@
+diff --git a/targets/ath79-generic b/targets/ath79-generic
+index 74eda3e8..0723cf62 100644
+--- a/targets/ath79-generic
++++ b/targets/ath79-generic
+@@ -155,6 +155,10 @@ device('netgear-wndr3700-v2', 'netgear_wndr3700-v2', {
+ 	factory_ext = '.img',
+ })
+ 
++device('netgear-wndr3800', 'wndr3800', {
++	aliases = {'netgear-wndr3800chmychart'},
++	factory_ext = '.img',
++})
+ 
+ -- OCEDO
+ 
+@@ -443,6 +447,13 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
+ 	},
+ })
+ 
++device('tp-link-re450-v1', 'tplink_re450-v1', {
++	packages = ATH10K_PACKAGES_QCA9880,
++	manifest_aliases = {
++		'tp-link-re450', -- upgrade from OpenWrt 19.07
++	},
++})
++
+ device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
+ 
+ device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {

@@ -1,30 +1,29 @@
 GLUON_BUILD_DIR := gluon-build
 GLUON_GIT_URL := https://github.com/freifunk-gluon/gluon.git
-GLUON_GIT_REF := master
+GLUON_GIT_REF := ac24b707edfeeef814f909bdaf727903d289dfc8
 
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
 
 GLUON_TARGETS ?= \
-	ar71xx-generic \
-	ar71xx-mikrotik \
-	ar71xx-nand \
-	ar71xx-tiny \
 	ath79-generic \
-	brcm2708-bcm2708 \
-	brcm2708-bcm2709 \
-	brcm2708-bcm2710 \
+	ath79-nand \
+	bcm27xx-bcm2708 \
+	bcm27xx-bcm2709 \
+	bcm27xx-bcm2710 \
+	bcm27xx-bcm2711 \
 	ipq40xx-generic \
 	ipq806x-generic \
 	lantiq-xrx200 \
 	lantiq-xway \
-	mpc85xx-generic \
-	mpc85cc-p1020 \
+	mediatek-mt7622 \
+	mpc85xx-p1010 \
+	mpc85xx-p1020 \
 	mvebu-cortexa9 \
 	ramips-mt7620 \
 	ramips-mt7621 \
 	ramips-mt76x8 \
-	ramips-rt305x \
+	rockchip-armv8 \
 	sunxi-cortexa7 \
 	x86-64 \
 	x86-generic \

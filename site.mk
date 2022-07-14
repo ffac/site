@@ -3,6 +3,7 @@ GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
         autoupdater \
+        config-mode-geo-location-osm \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
         ebtables-limit-arp \
@@ -11,10 +12,10 @@ GLUON_FEATURES := \
         radv-filterd \
         radvd \
         respondd \
+        status-page \
         web-advanced \
         web-private-wifi \
         web-wizard
-
 ##	GLUON_SITE_PACKAGES
 #		Specify additional Gluon/LEDE packages to include here;
 #		A minus sign may be prepended to remove a packages from the
@@ -22,21 +23,18 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-    gluon-status-page \
-    #ffac-status-page \ 
+    # -gluon-status-page \
+    #ffac-status-page \
     # custom status page without contact information \
     iptables \
     iwinfo \
-    haveged
-
-#gluon-weeklyreboot
-
-# add offline ssid and other wifi related packages only if the target has wifi
-INCLUDE_WIFI_EXTRAS := \
+    haveged \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     ffho-autoupdater-wifi-fallback \
     respondd-module-airtime
+
+#gluon-weeklyreboot
 
 DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
 
@@ -175,7 +173,7 @@ EXCLUDE_TLS := \
     -libustream-openssl
 
 ifeq ($(GLUON_TARGET),ar71xx-generic)
-    GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE) $(INCLUDE_WIFI_EXTRAS)
+    GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE)
 
     GLUON_allnet-all0315n_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
     GLUON_avm-fritz-wlan-repeater-300e_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
