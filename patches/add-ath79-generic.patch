@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 74eda3e8..2835c377 100644
+index 74eda3e8..7e9a1585 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -155,6 +155,14 @@ device('netgear-wndr3700-v2', 'netgear_wndr3700-v2', {
@@ -7,25 +7,35 @@ index 74eda3e8..2835c377 100644
  })
  
 +device('netgear-wndr3800', 'netgear_wndr3800', {
-+	aliases = {'netgear-wndr3800chmychart'},
 +	factory_ext = '.img',
 +})
 +
 +device('netgear-wndr3800ch', 'netgear_wndr3800ch', {
 +	factory_ext = '.img',
++	aliases = {'netgear-wndr3800chmychart'},
 +})
  
  -- OCEDO
  
-@@ -443,6 +451,13 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
+@@ -443,6 +451,23 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
  	},
  })
  
++device('tp-link-re355-v1', 'tplink_re355-v1', {
++	manifest_aliases = {
++		'tp-link-re355', -- upgrade from OpenWrt 19.07
++	},
++	packages = ATH10K_PACKAGES_QCA9880,
++	broken = true, -- OOM with 5GHz enabled in most environments if device is 64M RAM variant
++	class = 'tiny', -- Only 6M of usable Firmware space
++})
++
 +device('tp-link-re450-v1', 'tplink_re450-v1', {
 +	packages = ATH10K_PACKAGES_QCA9880,
 +	manifest_aliases = {
 +		'tp-link-re450', -- upgrade from OpenWrt 19.07
 +	},
++	class = 'tiny', -- Only 6M of usable Firmware space	
 +})
 +
  device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
