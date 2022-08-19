@@ -23,7 +23,7 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     gluon-status-page \
-    ff-mesh-vpn-wireguard \
+    ff-mesh-vpn-wireguard-openwrt19 \
     iptables \
     iwinfo \
     haveged
