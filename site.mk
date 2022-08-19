@@ -32,6 +32,7 @@ GLUON_SITE_PACKAGES := \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     ffho-autoupdater-wifi-fallback \
+    ff-wg-registration \
     respondd-module-airtime
 
 #gluon-weeklyreboot
