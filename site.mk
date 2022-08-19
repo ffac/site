@@ -3,6 +3,8 @@ GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
         autoupdater \
+	    config-mode-geo-location-osm \
+        config-mode-mesh-vpn \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
         ebtables-limit-arp \
@@ -12,7 +14,6 @@ GLUON_FEATURES := \
         respondd \
         web-advanced \
         web-private-wifi \
-        config-mode-mesh-vpn \
         web-wizard
 
 ##	GLUON_SITE_PACKAGES
