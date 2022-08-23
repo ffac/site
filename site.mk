@@ -1,9 +1,6 @@
 ﻿##	gluon site.mk Freifunk Regio Aachen
-GLUON_DEPRECATED=upgrade
-
 GLUON_FEATURES := \
         autoupdater \
-	    config-mode-geo-location-osm \
         config-mode-mesh-vpn \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
@@ -14,6 +11,7 @@ GLUON_FEATURES := \
         respondd \
         web-advanced \
         web-private-wifi \
+        status-page \
         web-wizard
 
 ##	GLUON_SITE_PACKAGES
@@ -23,11 +21,8 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-    gluon-status-page \
     ff-mesh-vpn-wireguard-openwrt19 \
-    iptables \
-    iwinfo \
-    haveged
+    iwinfo
 
 #gluon-weeklyreboot
 
@@ -352,3 +347,5 @@ ifeq ($(GLUON_TARGET),x86-geode)
 endif
 
 # no pkglists for target x86-legacy
+
+GLUON_DEPRECATED ?= full
