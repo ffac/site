@@ -13,9 +13,6 @@ a problem.
 Firmware can be built using:
 
 ```
-make gluon-prepare
-make info
-make build
 make manifest
 ```
 
