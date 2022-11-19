@@ -80,7 +80,7 @@ ${GLUON_BUILD_DIR}:
 gluon-prepare: output-clean ${GLUON_BUILD_DIR}
 	cd ${GLUON_BUILD_DIR} \
 		&& git remote set-url origin ${GLUON_GIT_URL} \
-		&& git fetch origin \
+		&& git fetch --tags origin ${GLUON_GIT_REF} \
 		&& rm -rf packages \
 		&& git checkout -q --force ${GLUON_GIT_REF} \
 		&& git clean -fd;
