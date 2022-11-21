@@ -1,23 +1,22 @@
 This repository contains the site information for the Freifunk Aachen Gluon
 firmware.
 
-This branch is compatible to: Gluon master
-As it needs gluons upstream package gluon-mesh-vpn-wireguard, it is incompatible to current 2021.1.x 
+This branch is compatible to: Gluon v2021.1.2
+As it needs gluons upstream package gluon-mesh-vpn-wireguard, it is incompatible to latest 2022.1.x 
 
-This Version of our firmware is currently only used for our test server
+This Version of our firmware is currently only used for our test server.
 
-All information in this repository is licensed under [CC0 1.0 Universal][CC0],
-so any inspiration or reuse for your own firmware site.conf should not be
-a problem.
+Currently, registration using Wireguard already works using a custom repository - yet there is still an issue establishing the VXLAN connection.
 
 Firmware can be built using:
 
 ```
-make gluon-prepare
-make info
-make build
 make manifest
 ```
+
+a single target can be built using:
+
+`make build BROKEN=1 GLUON_TARGETS=lantiq-xrx200`
 
 or directly with 
 
