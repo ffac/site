@@ -5,7 +5,7 @@ from collections import defaultdict
 from jinja2 import Template
 
 # path to your gluon checkout, will be used to find targets and devices
-GLUON_DIR = '/home/hexa/git/gluon/master/'
+GLUON_DIR = './gluon-build/'
 
 
 class PackageList:
@@ -50,7 +50,7 @@ class Target:
 		self.pkglists.add(pkglist)
 		return self
 
-	def include(self, devices: list[str], pkglists: list[PackageList]=None):
+	def include(self, devices: [str], pkglists: [PackageList]=None):
 		for device in devices:
 			assert(device in self.devices), "Device %s not in target %s" % (device, self.name)
 			if not pkglists:
@@ -60,7 +60,7 @@ class Target:
 
 		return self
 
-	def exclude(self, devices: list[str], pkglists: list[PackageList]=None):
+	def exclude(self, devices: [str], pkglists: [PackageList]=None):
 		for device in devices:
 			assert(device in self.devices), "Device %s not in target %s" % (device, self.name)
 			if not pkglists:
@@ -71,36 +71,24 @@ class Target:
 		return self
 
 	def render(self):
-		if bool(self.includes):
-			assert not bool(self.excludes), "A target can either include or exclude devices."
-
 		if not bool(self.includes) and not self.pkglists:
 			return """
 # no pkglists for target %s
 """ % self.name
 
-		if bool(self.includes):
-			return Template("""
-ifeq ($(GLUON_TARGET),{{ target }})
-{% for device, include in includes.items() %}
-	GLUON_{{ device }}_SITE_PACKAGES += {% for pkglist in include|sort %}$(INCLUDE_{{ pkglist.name }}){% if not loop.last %} {% endif %}{% endfor %}
-{%- endfor %}
-endif""").render(
-			target=self.name,
-			includes=self.includes
-		)
-
-
 		return Template("""
 ifeq ($(GLUON_TARGET),{{ target }})
 	GLUON_SITE_PACKAGES += {% for pkglist in pkglists %}$(INCLUDE_{{ pkglist.name }}){% if not loop.last %} {% endif %}{% endfor %}
-{% for device, exclude in excludes.items() %}
+{% for device, include in includes.items() %}
+	GLUON_{{ device }}_SITE_PACKAGES += {% for pkglist in include|sort %}$(INCLUDE_{{ pkglist.name }}){% if not loop.last %} {% endif %}{% endfor %}
+{%- endfor %}{% for device, exclude in excludes.items() %}
 	GLUON_{{ device }}_SITE_PACKAGES += {% for pkglist in exclude|sort %}$(EXCLUDE_{{ pkglist.name }}){% if not loop.last %} {% endif %}{% endfor %}
 {%- endfor %}
 endif""").render(
 			target=self.name,
 			pkglists=sorted(self.pkglists),
-			excludes=self.excludes
+			excludes=self.excludes,
+			includes=self.includes
 		)
 
 
@@ -178,7 +166,7 @@ PKGS_USB_NET = PackageList('USB_NET', [
 	'kmod-usb-net-pegasus',
 	'kmod-usb-net-rndis',
 	'kmod-usb-net-rtl8152',
-	'kmod-usb-net-smsc95xx',
+	'kmod-usb-net-smsc95xx'
 ])
 pkglists.append(PKGS_USB_NET)
 
@@ -190,11 +178,18 @@ PKGS_PCI_NET = PackageList('PCI_NET', [
 ])
 pkglists.append(PKGS_PCI_NET)
 
+PKGS_TLS = PackageList('TLS', [
+	'ca-bundle',
+	'libustream-openssl'
+])
+pkglists.append(PKGS_TLS)
+
 #
 # package assignment
 #
 
 targets.get('ath79-generic'). \
+	add_pkglist(PKGS_TLS). \
 	include([ # 7M usable firmware space + USB port
 		'devolo-wifi-pro-1750e',
 		'gl.inet-gl-ar150',
@@ -210,39 +205,49 @@ targets.get('ath79-generic'). \
 		'tp-link-tl-wr842n-v3',
 		'tp-link-tl-wr1043nd-v4',
 		'tp-link-tl-wr1043n-v5'
-	], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
+	], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE]). \
+	exclude([
+		'tp-link-re355-v1',
+		'tp-link-re450-v1'
+	], pkglists=[PKGS_TLS])
 
-for target in ['ipq40xx-generic', 'ipq806x-generic', 'mpc85xx-p1010', 'mpc85xx-p1020', 'mvebu-cortexa9', 'rockchip-armv8', 'sunxi-cortexa7']:
+for target in ['ath79-nand', 'ipq40xx-generic', 'ipq806x-generic', 'lantiq-xway', 'mpc85xx-p1010', 'mpc85xx-p1020', 'mvebu-cortexa9', 'ramips-mt7620', 'rockchip-armv8', 'sunxi-cortexa7']:
 	targets.get(target). \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
-		add_pkglist(PKGS_USB_STORAGE)
+		add_pkglist(PKGS_USB_STORAGE). \
+		add_pkglist(PKGS_TLS)
 
 targets.get('lantiq-xrx200'). \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
+		add_pkglist(PKGS_TLS). \
 		exclude([ # 7M usable firmware space + USB port
 			'avm-fritz-box-7412',
 			'tp-link-td-w8970',
 			'tp-link-td-w8980'
-		])
+		], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-for target in ['bcm27xx-bcm2708', 'bcm27xx-bcm2709', 'bcm27xx-bcm2710']:
+targets.get('mpc85xx-p1020').add_pkglist(PKGS_TLS)
+
+for target in ['bcm27xx-bcm2708', 'bcm27xx-bcm2709', 'bcm27xx-bcm2710', 'bcm27xx-bcm2711']:
 	targets.get(target). \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
-		add_pkglist(PKGS_USB_HID)
+		add_pkglist(PKGS_USB_HID). \
+		add_pkglist(PKGS_TLS)
 
 targets.get('mediatek-mt7622'). \
 	add_pkglist(PKGS_USB). \
 	add_pkglist(PKGS_USB_NET). \
 	add_pkglist(PKGS_USB_SERIAL). \
 	add_pkglist(PKGS_USB_STORAGE). \
+	add_pkglist(PKGS_TLS). \
 	exclude([  # devices without usb ports
 		'ubiquiti-unifi-6-lr-v1'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
@@ -251,21 +256,22 @@ targets.get('ramips-mt7621'). \
 	add_pkglist(PKGS_USB_NET). \
 	add_pkglist(PKGS_USB_SERIAL). \
 	add_pkglist(PKGS_USB_STORAGE). \
+	add_pkglist(PKGS_TLS). \
 	exclude([  # devices without usb ports
 		'netgear-ex6150',
 		'ubiquiti-edgerouter-x',
 		'ubiquiti-edgerouter-x-sfp'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
 targets.get('ramips-mt76x8'). \
-	add_pkglist(PKGS_USB). \
-	add_pkglist(PKGS_USB_NET). \
-	add_pkglist(PKGS_USB_SERIAL). \
-	add_pkglist(PKGS_USB_STORAGE). \
+	add_pkglist(PKGS_TLS). \
 	include([ # 7M usable firmware space + USB port
 		'gl-mt300n-v2',
 		'gl.inet-microuter-n300',
 		'netgear-r6120',
-		'ravpower-rp-wd009'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
+		'ravpower-rp-wd009'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE]). \
+	exclude([
+		'tp-link-re305'
+	], pkglists=[PKGS_TLS])
 
 for target in ['x86-64', 'x86-generic', 'x86-geode']:
 	targets.get(target). \
@@ -274,8 +280,10 @@ for target in ['x86-64', 'x86-generic', 'x86-geode']:
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
 		add_pkglist(PKGS_PCI). \
-		add_pkglist(PKGS_PCI_NET)
+		add_pkglist(PKGS_PCI_NET). \
+		add_pkglist(PKGS_TLS)
 
+targets.get('x86-legacy').add_pkglist(PKGS_TLS)
 
 if __name__ == '__main__':
 	for pkglist in pkglists:

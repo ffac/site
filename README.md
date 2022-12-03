@@ -29,3 +29,12 @@ if a key for signing the manifest exists at `${HOME}/.gluon-secret-key`
 
 [wiki]: https://wiki.freifunk.net/Freifunk_Aachen/Firmware#Dokumentation
 
+## Update site.mk packages
+
+To update the site.mk packages, the `genpkglist.py` can be executed from the build server like:
+
+```console
+~/site-ffac$ ./contrib/genpkglist.py 
+```
+
+The output must then be appended to the end of the `site.mk`
