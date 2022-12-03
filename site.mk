@@ -21,16 +21,11 @@ GLUON_FEATURES := \
 #		chosen feature flags
 
 GLUON_SITE_PACKAGES := \
-    ff-mesh-vpn-wireguard-openwrt19 \
-    iwinfo
-
-#gluon-weeklyreboot
-
-# add offline ssid and other wifi related packages only if the target has wifi
-INCLUDE_WIFI_EXTRAS := \
+    iwinfo \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     ffho-autoupdater-wifi-fallback \
+    ff-mesh-vpn-wireguard-openwrt19 \
     respondd-module-airtime
 
 DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
