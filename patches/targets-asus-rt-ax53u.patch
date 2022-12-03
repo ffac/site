@@ -1,0 +1,15 @@
+diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
+index 6744e5c6..99a125ad 100644
+--- a/targets/ramips-mt7621
++++ b/targets/ramips-mt7621
+@@ -4,6 +4,10 @@ device('asus-rt-ac57u', 'asus_rt-ac57u', {
+ 	factory = false,
+ })
+ 
++device('asus-rt-ax53u', 'asus_rt-ax53u', {
++        factory = false,
++})
++
+ 
+ -- Cudy
+ 
