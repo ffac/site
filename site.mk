@@ -4,9 +4,7 @@ GLUON_FEATURES := \
         config-mode-mesh-vpn \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
-        ebtables-limit-arp \
         mesh-batman-adv-15 \
-        radv-filterd \
         radvd \
         respondd \
         web-advanced \
