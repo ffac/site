@@ -1,8 +1,8 @@
 This repository contains the site information for the Freifunk Aachen Gluon
 firmware.
 
-This branch is compatible to: Gluon master
-As it needs gluons upstream package gluon-mesh-vpn-wireguard, it is incompatible to current 2021.1.x 
+This branch is compatible to: Gluon v2022.1.x
+As it needs gluons upstream package gluon-mesh-vpn-wireguard, it is incompatible to prior releases
 
 This Version of our firmware is currently only used for our test server running at 01.wg-test.freifunk-aachen.de
 

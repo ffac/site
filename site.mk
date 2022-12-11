@@ -39,12 +39,12 @@ GLUON_SITE_PACKAGES := \
 # gluon-mesh-wireless-sae
 # GLUON_FEATURES_standard := wireless-encryption-wpa3
 
-DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
+DEFAULT_GLUON_RELEASE := 2022.1-1~exp$(shell date '+%Y%m%d%H')
 
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := v2021.1.x
+DEFAULT_GLUON_CHECKOUT := v2022.1.x
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
