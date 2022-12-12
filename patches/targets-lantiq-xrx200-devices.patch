@@ -1,35 +1,22 @@
-Adds experimental support for avm-fritzbox-7430 and o2-box-6431
-
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
-index 8e9623ec..7edebeda 100755
+index 597201f3..72d73190 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
 @@ -90,6 +90,10 @@ local primary_addrs = {
-               {'lantiq', 'xway', {
-                       'netgear,dgn3500b',
-               }},
-+              {'lantiq', 'xrx200', {
-+                      'arcadyan,vgv7510kw22-nor',
-+                      'avm,fritz7430',
-+              }},
-               {'ramips', 'mt7620', {
-                       'netgear,ex3700',
-                       'tplink,archer-c2-v1',
+ 		{'lantiq', 'xway', {
+ 			'netgear,dgn3500b',
+ 		}},
++		{'lantiq', 'xrx200', {
++			'arcadyan,vgv7510kw22-nor',
++			'avm,fritz7430',
++		}},
+ 		{'ramips', 'mt7620', {
+ 			'netgear,ex3700',
+ 			'tplink,archer-c2-v1',
 diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
-index 364c0c31..851408a2 100644
+index 364c0c31..7590efd5 100644
 --- a/targets/lantiq-xrx200
 +++ b/targets/lantiq-xrx200
-@@ -24,8 +24,8 @@ device('avm-fritz-box-3370-rev-2-hynix-nand', 'avm_fritz3370-rev2-hynix', {
- device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {
- 	factory = false,
- 	extra_images = {
--		{'-squashfs-eva-filesystem', '-eva-filesystem', '.bin'},
--		{'-squashfs-eva-kernel', '-eva-kernel', '.bin'},
-+		 {'-squashfs-eva-filesystem', '-eva-filesystem', '.bin'},
-+		 {'-squashfs-eva-kernel', '-eva-kernel', '.bin'},
- 	},
- 	broken = true, -- no button for setup mode; hw revision not visible on device
- })
 @@ -47,6 +47,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
  	factory = false,
  })
@@ -41,10 +28,11 @@ index 364c0c31..851408a2 100644
  -- TP-Link
  
    -- CAVEAT: These devices don't have a dedicated WAN port.
-@@ -63,3 +67,10 @@ device('tp-link-td-w8980', 'tplink_tdw8980', {
+@@ -63,3 +67,11 @@ device('tp-link-td-w8980', 'tplink_tdw8980', {
  	aliases = {'tp-link-td-w9980'},
  	broken = true, -- 5GHz unsupported
  })
++
 +
 +-- O2
 +
@@ -52,3 +40,5 @@ index 364c0c31..851408a2 100644
 +	factory = false,
 +	aliases = {'o2-box-6431'},
 +})
+
+\ No newline at end of file

@@ -1,30 +1,11 @@
-diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig b/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
-index 719d90c0..19824c7f 100755
---- a/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
-+++ b/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
-@@ -7,12 +7,13 @@ local switch_vlans = {
-	-- device identifier, lan ports, wan ports
-	["ubnt,unifiac-mesh-pro"] = {"3 0t", "2 0t"},
-	["ubnt,unifiac-pro"] = {"2 0t", "3 0t"},
-+	["avm,fritz-box-7530"] = {"2 3 4", "1"},
- }
- 
- local board_name = platform.get_board_name()
- local assignments = switch_vlans[board_name]
- 
--if not platform.match('ath79', 'generic') or not assignments then
-+if not assignments then
-	return
- end
- 
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-index cf21e907..19c83a7e 100755
+index cf21e907..d9b05b0a 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 @@ -67,6 +67,14 @@ elseif platform.match('ramips', 'mt7621', {
-	'netgear,wac104',
+ 	'netgear,wac104',
  }) then
-	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
+ 	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
 +elseif platform.match('ipq40xx', 'generic', {
 +	'avm,fritz-box-7530',
 +}) then
@@ -36,4 +17,22 @@ index cf21e907..19c83a7e 100755
  end
  
  if wan_ifname and lan_ifname then
-
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig b/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
+index 719d90c0..19824c7f 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/115-swconfig
+@@ -7,12 +7,13 @@ local switch_vlans = {
+ 	-- device identifier, lan ports, wan ports
+ 	["ubnt,unifiac-mesh-pro"] = {"3 0t", "2 0t"},
+ 	["ubnt,unifiac-pro"] = {"2 0t", "3 0t"},
++	["avm,fritz-box-7530"] = {"2 3 4", "1"},
+ }
+ 
+ local board_name = platform.get_board_name()
+ local assignments = switch_vlans[board_name]
+ 
+-if not platform.match('ath79', 'generic') or not assignments then
++if not assignments then
+ 	return
+ end
+ 
