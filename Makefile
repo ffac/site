@@ -19,7 +19,7 @@ GLUON_TARGETS ?= \
 	lantiq-xrx200 \
 	lantiq-xway \
 	mpc85xx-generic \
-	mpc85cc-p1020 \
+	mpc85xx-p1020 \
 	mvebu-cortexa9 \
 	ramips-mt7620 \
 	ramips-mt7621 \
@@ -31,7 +31,7 @@ GLUON_TARGETS ?= \
 	x86-geode \
 	x86-legacy
 
-GLUON_AUTOUPDATER_BRANCH := stable
+GLUON_AUTOUPDATER_BRANCH := experimental
 
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
 	GLUON_AUTOUPDATER_ENABLED := 1
