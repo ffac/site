@@ -169,6 +169,8 @@ PKGS_TLS = PackageList('TLS', [
 ])
 pkglists.append(PKGS_TLS)
 
+PKGS_EOL = PackageList('EOL', [])
+
 #
 # package assignment
 #
@@ -184,7 +186,6 @@ targets.get('ar71xx-generic'). \
 		'avm-fritz-wlan-repeater-300e',
 		'avm-fritz-wlan-repeater-450e',
 		'd-link-dap-1330-rev-a1',
-		'd-link-dir-825-rev-b1',
 		'meraki-mr12',
 		'meraki-mr16',
 		'ocedo-koala',
@@ -225,6 +226,7 @@ targets.get('ar71xx-generic'). \
 		'ubiquiti-unifi-ac-pro',
 		'ubiquiti-unifi-ac-mesh'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE]). \
 	exclude([  # devices with less than 64M memory
+		'd-link-dir-825-rev-b1',
 		'linksys-wrt160nl',
 		'tp-link-tl-wr710n-v1',
 		'tp-link-tl-wr710n-v2.1',
@@ -249,13 +251,22 @@ targets.get('ath79-generic'). \
 		'tp-link-archer-c6-v2',
 		'tp-link-cpe220-v3'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-for target in ['ar71xx-nand', 'ipq40xx-generic', 'ipq806x-generic', 'lantiq-xway', 'lantiq-xrx200', 'mpc85xx-generic', 'mpc85xx-p1020', 'mvebu-cortexa9', 'ramips-mt7620', 'sunxi-cortexa7']:
+for target in ['ar71xx-nand', 'ipq40xx-generic', 'ipq806x-generic', 'lantiq-xway', 'lantiq-xrx200', 'mpc85xx-generic', 'mpc85xx-p1020', 'mvebu-cortexa9', 'sunxi-cortexa7']:
 	targets.get(target). \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
 		add_pkglist(PKGS_TLS)
+
+targets.get('ramips-mt7620'). \
+	add_pkglist(PKGS_USB). \
+	add_pkglist(PKGS_USB_NET). \
+	add_pkglist(PKGS_USB_SERIAL). \
+	add_pkglist(PKGS_USB_STORAGE). \
+	add_pkglist(PKGS_TLS). \
+	exclude([  # devices without usb ports
+		'netgear-ex3700'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
 targets.get('mpc85xx-p1020').add_pkglist(PKGS_TLS)
 
