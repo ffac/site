@@ -31,11 +31,11 @@ GLUON_SITE_PACKAGES := \
     iwinfo \
     eulenfunk-hotfix \
     gluon-ssid-changer \
+    gluon-weeklyreboot \
     ffho-autoupdater-wifi-fallback \
     ff-wg-registration \
     respondd-module-airtime
 
-# gluon-weeklyreboot
 # gluon-mesh-wireless-sae
 # GLUON_FEATURES_standard := wireless-encryption-wpa3
 
