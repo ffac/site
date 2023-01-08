@@ -2,6 +2,7 @@
 
 ## v2021.1.x
   - add radv-filterd and ebtables-limit-arp
+  - remove factory images for deprecated devices
 
 ## v2021.1.7
  - working Mesh-VPN for v2021
