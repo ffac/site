@@ -1,0 +1,44 @@
+diff --git a/patches/openwrt/0040-o2box.patch b/patches/openwrt/0040-o2box.patch
+new file mode 100644
+index 00000000..d80bef7e
+--- /dev/null
++++ b/patches/openwrt/0040-o2box.patch
+@@ -0,0 +1,38 @@
++From 2e3d1edf59109d6329a00d90b1e953261d602af5 Mon Sep 17 00:00:00 2001
++From: Florian Maurer <f.maurer@outlook.de>
++Date: Tue, 10 Jan 2023 13:39:50 +0100
++Subject: [PATCH] lantiq: xrx200: Fix wifi LED on o2 box 6431
++
++Wifi LED did not work using phy0radio, which somehow slipped through in
++the previous testing
++
++Signed-off-by: Florian Maurer <f.maurer@outlook.de>
++---
++ .../arch/mips/boot/dts/lantiq/vr9_arcadyan_vgv7510kw22.dtsi      | 1 +
++ target/linux/lantiq/xrx200/base-files/etc/board.d/01_leds        | 1 -
++ 2 files changed, 1 insertion(+), 1 deletion(-)
++
++diff --git a/target/linux/lantiq/files/arch/mips/boot/dts/lantiq/vr9_arcadyan_vgv7510kw22.dtsi b/target/linux/lantiq/files/arch/mips/boot/dts/lantiq/vr9_arcadyan_vgv7510kw22.dtsi
++index 1158aa371e..1a7a11db42 100644
++--- a/target/linux/lantiq/files/arch/mips/boot/dts/lantiq/vr9_arcadyan_vgv7510kw22.dtsi
+++++ b/target/linux/lantiq/files/arch/mips/boot/dts/lantiq/vr9_arcadyan_vgv7510kw22.dtsi
++@@ -80,6 +80,7 @@
++ 		wifi: wifi {
++ 			label = "green:wlan";
++ 			gpios = <&gpio 20 GPIO_ACTIVE_LOW>;
+++			linux,default-trigger = "phy0tpt";
++ 		};
++ 
++ 		power_red: power2 {
++diff --git a/target/linux/lantiq/xrx200/base-files/etc/board.d/01_leds b/target/linux/lantiq/xrx200/base-files/etc/board.d/01_leds
++index 8f59538b83..0c80aaa3b8 100644
++--- a/target/linux/lantiq/xrx200/base-files/etc/board.d/01_leds
+++++ b/target/linux/lantiq/xrx200/base-files/etc/board.d/01_leds
++@@ -30,7 +30,6 @@ arcadyan,arv7519rw22)
++ arcadyan,vgv7510kw22-nor|\
++ arcadyan,vgv7510kw22-brn)
++ 	ucidef_set_led_netdev "internet" "internet" "$led_internet" "wan"
++-	ucidef_set_led_wlan "wifi" "wifi" "green:wlan" "phy0radio"
++ 	;;
++ zyxel,p-2812hnu-f1|\
++ zyxel,p-2812hnu-f3)

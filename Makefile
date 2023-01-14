@@ -39,7 +39,7 @@ else
 	GLUON_AUTOUPDATER_ENABLED := 1
 	EXP_FALLBACK = $(shell date '+%Y%m%d')
 	BUILD_NUMBER ?= $(EXP_FALLBACK)
-	GLUON_RELEASE := $(shell git describe --tags)~exp$(BUILD_NUMBER)
+	GLUON_RELEASE := $(shell git describe --tags)-next$(BUILD_NUMBER)
 endif
 
 JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
