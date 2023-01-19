@@ -1,0 +1,33 @@
+From 62c19102406a12ad613cb813acbbce0f4641404f Mon Sep 17 00:00:00 2001
+From: Jan Niehusmann <jan@gondor.com>
+Date: Sun, 3 Mar 2019 23:36:57 +0100
+Subject: [PATCH] remove owner information from status page
+
+---
+ .../lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo   | 2 +-
+ .../luasrc/lib/gluon/status-page/controller/status-page.lua     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
+index 3f149100..3f3ce8c0 100755
+--- a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
++++ b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
+@@ -8,4 +8,4 @@ badrequest() {
+ 
+ ( gluon-list-mesh-interfaces | grep -qxF "$QUERY_STRING" ) 2>/dev/null || badrequest
+ 
+-exec gluon-neighbour-info -s neighbour -i "$QUERY_STRING" -d ff02::2:1001 -p 1001 -r nodeinfo
++exec gluon-neighbour-info -s neighbour -i "$QUERY_STRING" -d ff02::2:1001 -p 1001 -r nodeinfo | sed 's/"owner":{"contact":"[^"]*"},//'
+diff --git a/package/gluon-status-page/luasrc/lib/gluon/status-page/controller/status-page.lua b/package/gluon-status-page/luasrc/lib/gluon/status-page/controller/status-page.lua
+index 80c5e50a..55fbb86b 100644
+--- a/package/gluon-status-page/luasrc/lib/gluon/status-page/controller/status-page.lua
++++ b/package/gluon-status-page/luasrc/lib/gluon/status-page/controller/status-page.lua
+@@ -61,7 +61,7 @@ local function match(a, b, n)
+ end
+ 
+ entry({}, call(function(http, renderer)
+-	local nodeinfo = json.parse(util.exec('exec gluon-neighbour-info -d ::1 -p 1001 -t 3 -c 1 -r nodeinfo'))
++	local nodeinfo = json.parse(util.exec('exec gluon-neighbour-info -d ::1 -p 1001 -t 3 -c 1 -r nodeinfo | sed \'s/"owner":{"contact":"[^"]*"},//\''))
+ 
+ 	local node_ip = parse_ip(http:getenv('SERVER_ADDR'))
+ 	if node_ip and (
