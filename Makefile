@@ -44,7 +44,7 @@ endif
 
 JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
 
-GLUON_MAKE := ${MAKE} -j ${JOBS} -C ${GLUON_BUILD_DIR} \
+GLUON_MAKE := ${MAKE} --no-print-directory -C ${GLUON_BUILD_DIR} \
 	GLUON_RELEASE=${GLUON_RELEASE} \
 	GLUON_AUTOUPDATER_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
 	GLUON_AUTOUPDATER_ENABLED=${GLUON_AUTOUPDATER_ENABLED}
@@ -62,7 +62,7 @@ info:
 build: gluon-prepare
 	for target in ${GLUON_TARGETS}; do \
 		echo ""Building target $$target""; \
-		${GLUON_MAKE} download all GLUON_TARGET="$$target"; \
+		${GLUON_MAKE} -j ${JOBS} download all GLUON_TARGET="$$target"; \
 	done
 
 manifest: build
