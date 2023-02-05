@@ -1,15 +1,38 @@
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index 6744e5c6..99a125ad 100644
+index 4e6e1cff..3bef6c52 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
-@@ -4,6 +4,10 @@ device('asus-rt-ac57u', 'asus_rt-ac57u', {
- 	factory = false,
- })
- 
-+device('asus-rt-ax53u', 'asus_rt-ax53u', {
-+        factory = false,
-+})
-+
+@@ -7,6 +7,33 @@ device('asus-rt-ac57u', 'asus_rt-ac57u', {
  
  -- Cudy
  
++device('cudy-x6', 'cudy_x6', {
++        factory = false,
++})
++
++device('cudy-wr1300', 'cudy_wr1300', {
++        factory = false,
++})
++
++--device('cudy-m1800', 'cudy_m1800', {
++--       factory = false,
++--})
++--
++--device('cudy-wr1300-v1', 'cudy_wr1300-v1', {
++--       factory = false,
++--})
++--
++--device('cudy-wr1300-v2', 'cudy_wr1300-v2', {
++--       factory = false,
++--       manifest_aliases = {
++--               'cudy-wr1300-v3',
++--       },
++--})
++
++device('cudy-wr2100', 'cudy_wr2100', {
++        factory = false,
++})
++
+ device('cudy-wr2100', 'cudy_wr2100', {
+ 	factory = false,
+ })
