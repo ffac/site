@@ -8,10 +8,6 @@ SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
 GLUON_TARGETS ?= \
 	ath79-generic \
 	ath79-nand \
-	bcm27xx-bcm2708 \
-	bcm27xx-bcm2709 \
-	bcm27xx-bcm2710 \
-	bcm27xx-bcm2711 \
 	ipq40xx-generic \
 	ipq806x-generic \
 	lantiq-xrx200 \
@@ -23,7 +19,6 @@ GLUON_TARGETS ?= \
 	ramips-mt7620 \
 	ramips-mt7621 \
 	ramips-mt76x8 \
-	realtek-rtl838x \
 	rockchip-armv8 \
 	sunxi-cortexa7 \
 	x86-64 \

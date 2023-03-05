@@ -1,8 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 74eda3e8..7e9a1585 100644
+index 1a8ddcc7..c832f0c6 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -155,6 +155,14 @@ device('netgear-wndr3700-v2', 'netgear_wndr3700-v2', {
+@@ -226,6 +226,14 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
  	factory_ext = '.img',
  })
  
@@ -17,7 +17,7 @@ index 74eda3e8..7e9a1585 100644
  
  -- OCEDO
  
-@@ -443,6 +451,23 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
+@@ -542,6 +550,23 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
  	},
  })
  
@@ -41,3 +41,10 @@ index 74eda3e8..7e9a1585 100644
  device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
  
  device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
+@@ -610,3 +635,6 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+ })
+ 
+ device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
++
++device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite')
++
