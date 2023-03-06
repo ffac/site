@@ -1,7 +1,7 @@
 This repository contains the site configuration for the Freifunk Aachen Gluon
 firmware.
 
-This is the `next` branch which is compatible to Gluon master.
+This is the `v2023.1.x` branch which is compatible with currents Openwrt Master and will be merged into v2023.1.x once released.
 
 Nothing is guaranteed here, it might get force-pushed from time to time to be rebased onto v2022.1.x.
 It provides an option to test devices which are available in Gluon's master branch but are not released yet.
