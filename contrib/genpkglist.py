@@ -183,7 +183,8 @@ pkglists.append(PKGS_VIRT)
 
 PKGS_TLS = PackageList('TLS', [
 	'ca-bundle',
-	'libustream-openssl'
+	'libustream-openssl',
+	'openssh-sftp-server'
 ])
 pkglists.append(PKGS_TLS)
 
