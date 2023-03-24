@@ -178,9 +178,13 @@ PKGS_PCI_NET = PackageList('PCI_NET', [
 ])
 pkglists.append(PKGS_PCI_NET)
 
+PKGS_VIRT = PackageList('VIRT', ['qemu-ga'])
+pkglists.append(PKGS_VIRT)
+
 PKGS_TLS = PackageList('TLS', [
 	'ca-bundle',
-	'libustream-openssl'
+	'libustream-openssl',
+	'openssh-sftp-server'
 ])
 pkglists.append(PKGS_TLS)
 
@@ -291,6 +295,7 @@ for target in ['x86-64', 'x86-generic', 'x86-geode']:
 		add_pkglist(PKGS_USB_STORAGE). \
 		add_pkglist(PKGS_PCI). \
 		add_pkglist(PKGS_PCI_NET). \
+		add_pkglist(PKGS_VIRT). \
 		add_pkglist(PKGS_TLS)
 
 targets.get('x86-legacy').add_pkglist(PKGS_TLS)
