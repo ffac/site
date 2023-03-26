@@ -36,9 +36,6 @@ GLUON_SITE_PACKAGES := \
     ff-wg-registration \
     respondd-module-airtime
 
-# https://forum.openwrt.org/t/replacing-libustream-mbedtls-and-wpad-basic-mbedtls-packages-with-openssl-variants/153263
-GLUON_SITE_PACKAGES += -wpad-basic-mbedtls -libustream-mbedtls -libmbedtls
-
 # gluon-mesh-wireless-sae
 # GLUON_FEATURES_standard := wireless-encryption-wpa3
 
