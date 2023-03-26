@@ -1,6 +1,12 @@
 # Freifunk Aachen Firmware Changelog
 
+
 ## v2021.1.x
+
+## v2021.1.9
+  - update segments
+
+## v2021.1.8
   - add radv-filterd and ebtables-limit-arp
   - remove factory images for deprecated devices
 
