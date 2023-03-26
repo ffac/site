@@ -1,10 +1,7 @@
-GLUON_SITE_FEEDS="ssidchanger ffac eulenfunk ffho"
+GLUON_SITE_FEEDS="ffac eulenfunk ffho"
 
-PACKAGES_SSIDCHANGER_REPO=https://github.com/ffac/gluon-ssid-changer.git
-PACKAGES_SSIDCHANGER_COMMIT=f962ab17723be144849ff988909e3a794d612d56
-PACKAGES_SSIDCHANGER_BRANCH=2019.1.x
 
-PACKAGES_FFAC_REPO=https://github.com/maurerle/gluon-mesh-vpn-wireguard.git
+PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-mesh-vpn-wireguard.git
 PACKAGES_FFAC_COMMIT=fb9dd6ae7eb80c8ad8d88b3088dd592569cf8860
 PACKAGES_FFAC_BRANCH=main
 
