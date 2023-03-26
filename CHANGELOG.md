@@ -5,6 +5,7 @@
 
 ## v2021.1.9
   - update segments
+  - add djfe signing key
 
 ## v2021.1.8
   - add radv-filterd and ebtables-limit-arp
