@@ -12,7 +12,7 @@
 
 ## v2021.1.7
  - working Mesh-VPN for v2021
- - add missing udp6zerocsumtx udp6zerocsumrx https://github.com/maurerle/gluon-mesh-vpn-wireguard/commit/6fe6dba6270781690f65db5147c416848b34f2df
+ - add missing udp6zerocsumtx udp6zerocsumrx https://github.com/ffac/gluon-mesh-vpn-wireguard/commit/6fe6dba6270781690f65db5147c416848b34f2df
  - add anonymization on status page
  - update genpkglist and site.mk
  - Enable TLS on all devices
