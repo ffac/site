@@ -1,8 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 1a8ddcc7..c832f0c6 100644
+index a5d0e484..185b811b 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -226,6 +226,14 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
+@@ -222,6 +222,14 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
  	factory_ext = '.img',
  })
  
@@ -17,31 +17,7 @@ index 1a8ddcc7..c832f0c6 100644
  
  -- OCEDO
  
-@@ -542,6 +550,23 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
- 	},
- })
- 
-+device('tp-link-re355-v1', 'tplink_re355-v1', {
-+	manifest_aliases = {
-+		'tp-link-re355', -- upgrade from OpenWrt 19.07
-+	},
-+	packages = ATH10K_PACKAGES_QCA9880,
-+	broken = true, -- OOM with 5GHz enabled in most environments if device is 64M RAM variant
-+	class = 'tiny', -- Only 6M of usable Firmware space
-+})
-+
-+device('tp-link-re450-v1', 'tplink_re450-v1', {
-+	packages = ATH10K_PACKAGES_QCA9880,
-+	manifest_aliases = {
-+		'tp-link-re450', -- upgrade from OpenWrt 19.07
-+	},
-+	class = 'tiny', -- Only 6M of usable Firmware space	
-+})
-+
- device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
- 
- device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
-@@ -610,3 +635,6 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -606,3 +614,6 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
