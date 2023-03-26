@@ -1,6 +1,10 @@
 # Freifunk Aachen Firmware Changelog
 
-## v2022.1.x
+## v2023.1.x
+
+## v2023.1.1
+ - switch to openwrt master
+ - remove mbedtls and stay with openssl for now
 
 ## v2022.1.11
  - add anonymization on status page
