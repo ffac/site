@@ -7,6 +7,7 @@
  - update gluon to v2022.1.3
  - add qemu-ga to x86-64
  - add openssh-sftp-server to make using scp in the future as easy as it is now
+ - add djfe signing key
 
 ## v2022.1.11
  - add anonymization on status page
