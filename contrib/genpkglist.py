@@ -298,6 +298,7 @@ for target in ['x86-64', 'x86-generic', 'x86-geode']:
 		add_pkglist(PKGS_VIRT). \
 		add_pkglist(PKGS_TLS)
 
+targets.get('x86-64').add_pkglist(PKGS_VIRT)
 targets.get('x86-legacy').add_pkglist(PKGS_TLS)
 
 if __name__ == '__main__':

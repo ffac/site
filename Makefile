@@ -8,6 +8,10 @@ SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
 GLUON_TARGETS ?= \
 	ath79-generic \
 	ath79-nand \
+	bcm27xx-bcm2708 \
+	bcm27xx-bcm2709 \
+	bcm27xx-bcm2710 \
+	bcm27xx-bcm2711 \
 	ipq40xx-generic \
 	ipq806x-generic \
 	lantiq-xrx200 \
