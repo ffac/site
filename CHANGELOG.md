@@ -6,6 +6,20 @@
  - switch to openwrt master
  - remove mbedtls and stay with openssl for now
 
+## v2022.1.13
+ - update segments
+ - update gluon to v2022.1.3
+ - add qemu-ga to x86-64
+ - add openssh-sftp-server to make using scp in the future as easy as it is now
+ - add djfe signing key
+ - switch to ffac repo mirrors
+ - add eulenfunk hotfix patches
+ - easier targets in makefile
+ - switch default autoupdater branch to stable
+
+ ## v2022.1.12
+ - revert to v2022.1.1 as v2022.1.2 did break on some devices
+
 ## v2022.1.11
  - add anonymization on status page
  - add weekly-reboot
