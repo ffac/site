@@ -5,33 +5,8 @@ GLUON_GIT_REF := v2021.1.2
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
 
-GLUON_TARGETS ?= \
-	ar71xx-generic \
-	ar71xx-mikrotik \
-	ar71xx-nand \
-	ar71xx-tiny \
-	ath79-generic \
-	brcm2708-bcm2708 \
-	brcm2708-bcm2709 \
-	brcm2708-bcm2710 \
-	ipq40xx-generic \
-	ipq806x-generic \
-	lantiq-xrx200 \
-	lantiq-xway \
-	mpc85xx-generic \
-	mpc85xx-p1020 \
-	mvebu-cortexa9 \
-	ramips-mt7620 \
-	ramips-mt7621 \
-	ramips-mt76x8 \
-	ramips-rt305x \
-	sunxi-cortexa7 \
-	x86-64 \
-	x86-generic \
-	x86-geode \
-	x86-legacy
-
-GLUON_AUTOUPDATER_BRANCH := experimental
+GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
+GLUON_AUTOUPDATER_BRANCH := stable
 
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
 	GLUON_AUTOUPDATER_ENABLED := 1
@@ -45,7 +20,8 @@ endif
 
 JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
 
-GLUON_MAKE := ${MAKE} -j ${JOBS} -C ${GLUON_BUILD_DIR} \
+GLUON_MAKE := ${MAKE} -j ${JOBS} --no-print-directory -C ${GLUON_BUILD_DIR} \
+	BROKEN=1 \
 	GLUON_RELEASE=${GLUON_RELEASE} \
 	GLUON_AUTOUPDATER_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
 	GLUON_AUTOUPDATER_ENABLED=${GLUON_AUTOUPDATER_ENABLED}
@@ -81,7 +57,7 @@ ${GLUON_BUILD_DIR}:
 gluon-prepare: output-clean ${GLUON_BUILD_DIR}
 	cd ${GLUON_BUILD_DIR} \
 		&& git remote set-url origin ${GLUON_GIT_URL} \
-		&& git fetch origin \
+		&& git fetch --tags origin ${GLUON_GIT_REF} \
 		&& rm -rf packages \
 		&& git checkout -q --force ${GLUON_GIT_REF} \
 		&& git clean -fd;
