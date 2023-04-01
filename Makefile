@@ -5,32 +5,8 @@ GLUON_GIT_REF := master #v2022.1.x
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
 
-GLUON_TARGETS ?= \
-	ath79-generic \
-	ath79-nand \
-	bcm27xx-bcm2708 \
-	bcm27xx-bcm2709 \
-	bcm27xx-bcm2710 \
-	bcm27xx-bcm2711 \
-	ipq40xx-generic \
-	ipq806x-generic \
-	lantiq-xrx200 \
-	lantiq-xway \
-	mediatek-mt7622 \
-	mpc85xx-p1010 \
-	mpc85xx-p1020 \
-	mvebu-cortexa9 \
-	ramips-mt7620 \
-	ramips-mt7621 \
-	ramips-mt76x8 \
-	rockchip-armv8 \
-	sunxi-cortexa7 \
-	x86-64 \
-	x86-generic \
-	x86-geode \
-	x86-legacy
-
-GLUON_AUTOUPDATER_BRANCH := experimental
+GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
+GLUON_AUTOUPDATER_BRANCH := stable
 
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
 	GLUON_AUTOUPDATER_ENABLED := 1
@@ -62,7 +38,7 @@ info:
 build: gluon-prepare
 	for target in ${GLUON_TARGETS}; do \
 		echo ""Building target $$target""; \
-		${GLUON_MAKE} -j ${JOBS} download all GLUON_TARGET="$$target"; \
+		${GLUON_MAKE} -j ${JOBS} download all BROKEN=1 GLUON_TARGET="$$target"; \
 	done
 
 manifest: build
