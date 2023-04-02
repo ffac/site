@@ -1,8 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index a5d0e484..185b811b 100644
+index a5d0e48..2ea8ea9 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -222,6 +222,14 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
+@@ -222,6 +222,15 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
  	factory_ext = '.img',
  })
  
@@ -14,13 +14,15 @@ index a5d0e484..185b811b 100644
 +	factory_ext = '.img',
 +	aliases = {'netgear-wndr3800chmychart'},
 +})
++
  
  -- OCEDO
  
-@@ -606,3 +614,6 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -606,3 +615,7 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
-+device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite')
-+
++device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite'), {
++	packages = ATH10K_PACKAGES_QCA9888,
++})
