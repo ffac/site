@@ -1,60 +1,19 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index bcbf4ac..616ccb1 100644
+index bcbf4acd..b59ca78b 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -222,6 +222,15 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
- 	factory_ext = '.img',
- })
- 
-+device('netgear-wndr3800', 'netgear_wndr3800', {
-+	factory_ext = '.img',
-+})
-+
-+device('netgear-wndr3800ch', 'netgear_wndr3800ch', {
-+	factory_ext = '.img',
-+	aliases = {'netgear-wndr3800chmychart'},
-+})
-+
- 
- -- OCEDO
- 
-@@ -546,6 +555,24 @@ device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
- 	},
- })
- 
-+device('tp-link-re355-v1', 'tplink_re355-v1', {
-+	manifest_aliases = {
-+		'tp-link-re355', -- upgrade from OpenWrt 19.07
-+	},
-+	packages = ATH10K_PACKAGES_QCA9880,
-+	broken = true, -- OOM with 5GHz enabled in most environments if device is 64M RAM variant
-+	class = 'tiny', -- Only 6M of usable Firmware space
-+})
-+
-+device('tp-link-re450-v1', 'tplink_re450-v1', {
-+	packages = ATH10K_PACKAGES_QCA9880,
-+	manifest_aliases = {
-+		'tp-link-re450', -- upgrade from OpenWrt 19.07
-+	},
-+	class = 'tiny', -- Only 6M of usable Firmware space	
-+})
-+
-+
- -- Ubiquiti
- 
- device('ubiquiti-nanostation-loco-m-xw', 'ubnt_nanostation-loco-m-xw', {
-@@ -606,3 +633,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -606,3 +606,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
-+device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite'), {
++device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite', {
 +	packages = ATH10K_PACKAGES_QCA9888,
 +})
 +
 +
 +-- Zyxel
 +
-+device('zyxel-nbg6616', 'zyxel_nbg6616'), {
++device('zyxel-nbg6616', 'zyxel_nbg6616', {
 +	packages = ATH10K_PACKAGES_QCA9888,
 +})

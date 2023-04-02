@@ -1,0 +1,15 @@
+diff --git a/targets/ath79-nand b/targets/ath79-nand
+index 7dff2453..a29d448c 100644
+--- a/targets/ath79-nand
++++ b/targets/ath79-nand
+@@ -47,3 +47,10 @@ device('zte-mf281', 'zte_mf281', {
+ 	broken = true,
+ 	packages = ATH10K_PACKAGES_QCA9888,
+ })
++
++-- Zyxel
++
++device('zyxel-nbg6716', 'zyxel_nbg6716', {
++	packages = ATH10K_PACKAGES_QCA9888,
++	sysupgrade_ext = '.tar',
++})
