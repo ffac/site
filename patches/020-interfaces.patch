@@ -1,0 +1,23 @@
+diff --git a/020-interfaces b/020-interfaces2
+index 063ab1a..59ec9b1 100644
+--- a/020-interfaces
++++ b/020-interfaces2
+@@ -67,10 +67,18 @@ elseif platform.match('ramips', 'mt7621', {
+ 	'netgear,wac104',
+ }) then
+ 	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
++elseif platform.match('ipq40xx', 'generic', {
++	'avm,fritz-box-7530',
++}) then
++	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
+ elseif platform.match('lantiq', 'xrx200', {
+ 	'arcadyan,vgv7510kw22-nor',
+ }) then
+ 	lan_ifname, wan_ifname = 'lan1 lan2 lan3 lan4', 'wan'
++elseif platform.match('lantiq', 'xrx200', {
++	'tplink,tdw8970',
++}) then
++	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
+ elseif platform.match('realtek', 'rtl838x', {
+ 	'd-link,dgs-1210-10p',
+ }) then

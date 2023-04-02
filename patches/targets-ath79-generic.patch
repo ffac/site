@@ -1,8 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 1a8ddcc7..c832f0c6 100644
+index bcbf4ac..616ccb1 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -226,6 +226,14 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
+@@ -222,6 +222,15 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
  	factory_ext = '.img',
  })
  
@@ -14,10 +14,11 @@ index 1a8ddcc7..c832f0c6 100644
 +	factory_ext = '.img',
 +	aliases = {'netgear-wndr3800chmychart'},
 +})
++
  
  -- OCEDO
  
-@@ -542,6 +550,23 @@ device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
+@@ -546,6 +555,24 @@ device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
  	},
  })
  
@@ -38,13 +39,22 @@ index 1a8ddcc7..c832f0c6 100644
 +	class = 'tiny', -- Only 6M of usable Firmware space	
 +})
 +
- device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
++
+ -- Ubiquiti
  
- device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
-@@ -610,3 +635,6 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+ device('ubiquiti-nanostation-loco-m-xw', 'ubnt_nanostation-loco-m-xw', {
+@@ -606,3 +633,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
-+device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite')
++device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite'), {
++	packages = ATH10K_PACKAGES_QCA9888,
++})
 +
++
++-- Zyxel
++
++device('zyxel-nbg6616', 'zyxel_nbg6616'), {
++	packages = ATH10K_PACKAGES_QCA9888,
++})
