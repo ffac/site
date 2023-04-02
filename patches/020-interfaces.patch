@@ -1,7 +1,7 @@
-diff --git a/020-interfaces b/020-interfaces2
-index 063ab1a..59ec9b1 100644
---- a/020-interfaces
-+++ b/020-interfaces2
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
+index cf21e907..f9fed670 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 @@ -67,10 +67,18 @@ elseif platform.match('ramips', 'mt7621', {
  	'netgear,wac104',
  }) then
