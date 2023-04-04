@@ -1,6 +1,6 @@
 GLUON_BUILD_DIR := gluon-build
 GLUON_GIT_URL := https://github.com/ffac/gluon.git
-GLUON_GIT_REF := c62565e940bf06488b5ab6ab504f24829ce19780 #next v2023.1.x
+GLUON_GIT_REF := 7c71eb5571c516b43d12a896127fee0dff760e40 #next v2023.1.x
 
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
