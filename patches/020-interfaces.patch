@@ -1,19 +1,20 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-index cf21e907..f9fed670 100755
+index cf21e907..bb0f4fed 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-@@ -67,6 +67,14 @@ elseif platform.match('ramips', 'mt7621', {
+@@ -67,6 +67,15 @@ elseif platform.match('ramips', 'mt7621', {
  	'netgear,wac104',
  }) then
  	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
-+elseif platform.match('ipq40xx', 'generic', {
-+	'avm,fritz-box-7530',
-+}) then
-+	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
 +elseif platform.match('lantiq', 'xrx200', {
 +	'arcadyan,vgv7510kw22-nor',
 +}) then
 +	lan_ifname, wan_ifname = 'lan1 lan2 lan3 lan4', 'wan'
++elseif platform.match('lantiq', 'xrx200', {
++	'tplink,tdw8970',
++	'tplink,tdw8980',
++}) then
++	lan_ifname, wan_ifname = 'lan1 lan2 lan3', 'lan4'
  end
  
  if wan_ifname and lan_ifname then
