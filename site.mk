@@ -27,12 +27,12 @@ GLUON_FEATURES := \
 #ffac-status-page
 # custom status page without contact information
 
+# ffho-autoupdater-wifi-fallback \
 GLUON_SITE_PACKAGES := \
     iwinfo \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     gluon-weeklyreboot \
-    ffho-autoupdater-wifi-fallback \
     ff-wg-registration \
     respondd-module-airtime
 
