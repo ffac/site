@@ -1,5 +1,5 @@
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index 4e6e1cff..3bef6c52 100644
+index b183bc58..e70a3574 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
 @@ -7,6 +7,33 @@ device('asus-rt-ac57u', 'asus_rt-ac57u', {
@@ -36,3 +36,12 @@ index 4e6e1cff..3bef6c52 100644
  device('cudy-wr2100', 'cudy_wr2100', {
  	factory = false,
  })
+@@ -14,6 +41,8 @@ device('cudy-wr2100', 'cudy_wr2100', {
+ 
+ -- D-Link
+ 
++device('d-link-dap-x1860-a1', 'dlink_dap-x1860-a1')
++
+ device('d-link-dir-860l-b1', 'dlink_dir-860l-b1')
+ 
+ 
