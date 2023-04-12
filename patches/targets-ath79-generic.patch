@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index a5d0e48..2ea8ea9 100644
+index a5d0e484..55ccf959 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -222,6 +222,15 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
@@ -23,6 +23,6 @@ index a5d0e48..2ea8ea9 100644
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
-+device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite'), {
++device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite', {
 +	packages = ATH10K_PACKAGES_QCA9888,
 +})
