@@ -1,0 +1,810 @@
+From f26d0c28df8189192ca1e4108c33362afc5fd81b Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 15 Apr 2022 00:44:39 +0200
+Subject: [PATCH 01/15] gluon-web-model: add MultiListValue class
+
+---
+ .luacheckrc                                   |  1 +
+ .../gluon/config-mode/www/static/gluon.css    |  2 +-
+ .../gluon-config-mode-theme/sass/gluon.scss   |  7 +++
+ .../lib/gluon/web/view/model/mlvalue.html     | 23 +++++++
+ .../usr/lib/lua/gluon/web/model/classes.lua   | 60 +++++++++++++++++++
+ 5 files changed, 92 insertions(+), 1 deletion(-)
+ create mode 100644 package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
+
+diff --git a/.luacheckrc b/.luacheckrc
+index 2f491ca253..0f17ecc565 100644
+--- a/.luacheckrc
++++ b/.luacheckrc
+@@ -50,6 +50,7 @@ files["package/**/check_site.lua"] = {
+ 
+ files["package/**/luasrc/lib/gluon/config-mode/*"] = {
+ 	globals = {
++		"MultiListValue",
+ 		"DynamicList",
+ 		"Flag",
+ 		"Form",
+diff --git a/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css b/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
+index c84ac01bed..296dc49a39 100644
+--- a/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
++++ b/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
+@@ -1 +1 @@
+-﻿html{min-height:100%;height:auto;position:relative}body,input,select,option{font-family:'Open Sans', Arial, sans-serif;font-size:12pt}body{color:#4d4e53;line-height:1.5em;margin:0;display:flex;flex-direction:column;min-height:100vh;background-color:#f3f3f3}.tabmenu1{text-align:center}ul.tabmenu{list-style:none;padding:0;margin:2em 0;display:inline-flex}ul.tabmenu li{white-space:nowrap;margin:0 0.5em;padding:0;text-align:center}ul.tabmenu li a{display:block;text-decoration:none;padding:1em;margin:0;color:#333;border-radius:2em}ul.tabmenu li a:hover{background:#ffe9b3}ul.tabmenu li.active a{font-weight:bold;background:white;color:#333}#maincontent ul{margin-left:2em}.error{color:#ff0000;background-color:white}#menubar{display:flex;background:#dc0067;color:#ffffff}#menubar a:link.topcat,#menubar a:visited.topcat{position:relative;display:block;padding:0.5em;text-decoration:none;font-size:80%;font-weight:normal;color:white}#menubar a:link.topcat:hover,#menubar a:link.topcat:focus,#menubar a:visited.topcat:hover,#menubar a:visited.topcat:focus{background:#ffb400;color:black}#menubar a:link.topcat.active,#menubar a:visited.topcat.active{background:#ffb400;color:black;font-weight:bold}#menubar .hostinfo{position:relative;margin:0;padding:0.5em;flex:1;font-weight:bold;font-size:80%}#menubar .hostinfo a:link,#menubar .hostinfo a:visited{text-decoration:none;font-weight:bold;color:white}#menubar .hostinfo a:link:hover,#menubar .hostinfo a:link:focus,#menubar .hostinfo a:visited:hover,#menubar .hostinfo a:visited:focus{text-decoration:underline}#topmenu{list-style:none;margin:0;padding:0}#topmenu li{display:inline-block}#maincontent{padding:0 1em 2em;max-width:60em;min-width:40em;margin:1em auto}#maincontent p{margin-bottom:1em}.gluon-section{margin:0;padding:0;border:none;margin-bottom:1.3em}.gluon-section:last-child{margin-bottom:0.7em}.gluon-section legend{font-size:1.4em;font-weight:bold;position:relative;padding:0;margin-bottom:0.5em}.gluon-section h2{margin:0em 0 0.5em -0.5em}.gluon-section h3{text-decoration:none;font-weight:bold;color:#555555;margin:0.25em;font-size:100%}.gluon-section-descr,.gluon-warning{margin-bottom:2em}.gluon-osm-map{width:100%;height:40em;margin-bottom:1em}input::placeholder{color:#aaaaaa}input::-webkit-input-placeholder{color:#aaaaaa}input[type=checkbox]{display:none}input[type=checkbox]+label{display:inline-block;position:relative;width:1em;height:1em;margin:0}input[type=checkbox]:checked+label::after{content:'✔';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.5em;width:100%;text-align:center;font-size:1.7em}input[type=radio]{display:none}input[type=radio]+label{display:inline-block;position:relative;width:0.8em;height:0.8em;padding:0.5em;margin:0.2em 0.2em 0.2em 0.1em;border:none;background:#ffe199;vertical-align:middle;border-radius:50%}input[type=radio]:checked+label::after{content:'•';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.4em;width:100%;text-align:center;font-size:2em}input[type=submit],input[type=reset],input[type=button]{cursor:pointer}select,input,textarea,input[type=checkbox]+label{color:#003247;border:none;background:#ffe199;border-radius:3pt;padding:0.5em;margin-top:1px;margin-bottom:2px;box-sizing:content-box;outline:0}.select-wrapper{position:relative;display:inline-block}.select-wrapper::before{position:absolute;z-index:1;right:0.05em;top:calc(2px + 0.1em);bottom:calc(2px + 0.1em);width:1.4em;border-left:0.05em solid rgba(0,0,0,0.25);pointer-events:none;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="8" height="5"><path fill="none" stroke="black" stroke-linejoin="bevel" d="M1,1L4,4L7,1"/></svg>') center/0.8em 0.5em no-repeat;content:''}.select-wrapper select{-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}option{color:#003247;background:#ffe199}select,input[type=text],input[type=password]{min-width:20em}.gluon-button{display:inline-block;line-height:normal;white-space:nowrap;vertical-align:baseline;text-align:center;cursor:pointer;user-select:none;font-size:100%;padding:0.5em 1em;color:rgba(0,0,0,0.8);background-color:#E6E6E6;border:none;text-decoration:none;border-radius:2px;transition:0.1s linear box-shadow;margin-left:0.5em;background-repeat:no-repeat}.gluon-button::-moz-focus-inner{padding:0;border:0}.gluon-button:active{box-shadow:0 0 0 1px rgba(0,0,0,0.15) inset,0 0 6px rgba(0,0,0,0.2) inset}.gluon-button:focus{outline:0}.gluon-button:hover,.gluon-button:focus{background-image:linear-gradient(transparent, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.1))}.gluon-button[disabled]{border:none;background-image:none;opacity:0.40;cursor:not-allowed;box-shadow:none}.gluon-button-reset{background-color:#e30;color:#fff}.gluon-button-submit{background-color:#009ee0;color:#fff}.gluon-button-submit:active{background:grey}.gluon-input-invalid{background:#e30 !important;color:white}textarea{margin-left:-1px;margin-bottom:0.5em}.gluon-value{display:flex;flex-direction:row;margin-bottom:0.5em}.gluon-section-node .gluon-value:last-child{margin-bottom:0}.gluon-value-title{flex:2;text-align:right;padding-top:0.39em;padding-right:1em;font-weight:bold}.gluon-value-field{flex:3;position:relative}.gluon-value-field input,.gluon-value-field select,.gluon-value-field input+label{position:relative}.gluon-value-field-text{flex:3;padding-top:0.39em}.gluon-value-field-long{flex:10;position:relative;margin-top:0.65em}.gluon-value-field-long input,.gluon-value-field-long select,.gluon-value-field-long input+label{position:relative}.gluon-value-field-long-after{flex:2}.gluon-value-description{font-size:8pt}.gluon-form-descr{margin-bottom:1em}.gluon-form-descr:empty,.gluon-section-descr:empty,.gluon-warning:empty{display:none}.gluon-form-descr,.gluon-section-descr,.gluon-warning,.gluon-page-actions{padding:1em;background:#ececec}.gluon-page-actions{text-align:right;display:flex;flex-flow:row-reverse}.gluon-section-node{clear:both;position:relative;border:none}.gluon-value-error input,.gluon-value-error select{background-color:#ffcccc}.gluon-add::after,.gluon-remove::after{cursor:pointer;display:inline-block;text-align:center;vertical-align:middle;font-size:180%;width:1.2em;height:1em}.gluon-add{color:#008000;position:relative;left:21em}input+.gluon-add{left:0;top:0.04em}.gluon-add:first-child{top:0.53em;left:-0.08em}.gluon-add::after{content:'+'}.gluon-remove{color:#800000;position:relative;top:-0.03em}.gluon-remove::after{content:'–'}.gluon-warning{background:#ffe9b3}.error500{border:1px dotted #ff0000;background-color:#ffffff;color:#000000;padding:0.5em}.errorbox{border:1px solid #FF0000;background-color:#FFCCCC;padding:5px;margin-bottom:5px}.errorbox a{color:#000000 !important}.the-key{text-align:left;font-size:1.4em;background:#ffe9b3;border:3pt dashed #dc0067;margin-bottom:0.5em;padding:0.5em}
++﻿html{min-height:100%;height:auto;position:relative}body,input,select,option{font-family:'Open Sans', Arial, sans-serif;font-size:12pt}body{color:#4d4e53;line-height:1.5em;margin:0;display:flex;flex-direction:column;min-height:100vh;background-color:#f3f3f3}.tabmenu1{text-align:center}ul.tabmenu{list-style:none;padding:0;margin:2em 0;display:inline-flex}ul.tabmenu li{white-space:nowrap;margin:0 0.5em;padding:0;text-align:center}ul.tabmenu li a{display:block;text-decoration:none;padding:1em;margin:0;color:#333;border-radius:2em}ul.tabmenu li a:hover{background:#ffe9b3}ul.tabmenu li.active a{font-weight:bold;background:white;color:#333}#maincontent ul{margin-left:2em}.error{color:#ff0000;background-color:white}#menubar{display:flex;background:#dc0067;color:#ffffff}#menubar a:link.topcat,#menubar a:visited.topcat{position:relative;display:block;padding:0.5em;text-decoration:none;font-size:80%;font-weight:normal;color:white}#menubar a:link.topcat:hover,#menubar a:link.topcat:focus,#menubar a:visited.topcat:hover,#menubar a:visited.topcat:focus{background:#ffb400;color:black}#menubar a:link.topcat.active,#menubar a:visited.topcat.active{background:#ffb400;color:black;font-weight:bold}#menubar .hostinfo{position:relative;margin:0;padding:0.5em;flex:1;font-weight:bold;font-size:80%}#menubar .hostinfo a:link,#menubar .hostinfo a:visited{text-decoration:none;font-weight:bold;color:white}#menubar .hostinfo a:link:hover,#menubar .hostinfo a:link:focus,#menubar .hostinfo a:visited:hover,#menubar .hostinfo a:visited:focus{text-decoration:underline}#topmenu{list-style:none;margin:0;padding:0}#topmenu li{display:inline-block}#maincontent{padding:0 1em 2em;max-width:60em;min-width:40em;margin:1em auto}#maincontent p{margin-bottom:1em}.gluon-section{margin:0;padding:0;border:none;margin-bottom:1.3em}.gluon-section:last-child{margin-bottom:0.7em}.gluon-section legend{font-size:1.4em;font-weight:bold;position:relative;padding:0;margin-bottom:0.5em}.gluon-section h2{margin:0em 0 0.5em -0.5em}.gluon-section h3{text-decoration:none;font-weight:bold;color:#555555;margin:0.25em;font-size:100%}.gluon-section-descr,.gluon-warning{margin-bottom:2em}.gluon-osm-map{width:100%;height:40em;margin-bottom:1em}input::placeholder{color:#aaaaaa}input::-webkit-input-placeholder{color:#aaaaaa}input[type=checkbox]{display:none}input[type=checkbox]+label{display:inline-block;position:relative;width:1em;height:1em;margin:0}input[type=checkbox]:checked+label::after{content:'✔';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.5em;width:100%;text-align:center;font-size:1.7em}input[type=radio]{display:none}input[type=radio]+label{display:inline-block;position:relative;width:0.8em;height:0.8em;padding:0.5em;margin:0.2em 0.2em 0.2em 0.1em;border:none;background:#ffe199;vertical-align:middle;border-radius:50%}input[type=radio]:checked+label::after{content:'•';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.4em;width:100%;text-align:center;font-size:2em}input[type=submit],input[type=reset],input[type=button]{cursor:pointer}select,input,textarea,input[type=checkbox]+label{color:#003247;border:none;background:#ffe199;border-radius:3pt;padding:0.5em;margin-top:1px;margin-bottom:2px;box-sizing:content-box;outline:0}.select-wrapper{position:relative;display:inline-block}.select-wrapper::before{position:absolute;z-index:1;right:0.05em;top:calc(2px + 0.1em);bottom:calc(2px + 0.1em);width:1.4em;border-left:0.05em solid rgba(0,0,0,0.25);pointer-events:none;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="8" height="5"><path fill="none" stroke="black" stroke-linejoin="bevel" d="M1,1L4,4L7,1"/></svg>') center/0.8em 0.5em no-repeat;content:''}.select-wrapper select{-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}option{color:#003247;background:#ffe199}select,input[type=text],input[type=password]{min-width:20em}.gluon-multi-list-option-descr{display:inline-block;vertical-align:top;margin-top:0.35em;margin-left:0.4em}.gluon-button{display:inline-block;line-height:normal;white-space:nowrap;vertical-align:baseline;text-align:center;cursor:pointer;user-select:none;font-size:100%;padding:0.5em 1em;color:rgba(0,0,0,0.8);background-color:#E6E6E6;border:none;text-decoration:none;border-radius:2px;transition:0.1s linear box-shadow;margin-left:0.5em;background-repeat:no-repeat}.gluon-button::-moz-focus-inner{padding:0;border:0}.gluon-button:active{box-shadow:0 0 0 1px rgba(0,0,0,0.15) inset,0 0 6px rgba(0,0,0,0.2) inset}.gluon-button:focus{outline:0}.gluon-button:hover,.gluon-button:focus{background-image:linear-gradient(transparent, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.1))}.gluon-button[disabled]{border:none;background-image:none;opacity:0.40;cursor:not-allowed;box-shadow:none}.gluon-button-reset{background-color:#e30;color:#fff}.gluon-button-submit{background-color:#009ee0;color:#fff}.gluon-button-submit:active{background:grey}.gluon-input-invalid{background:#e30 !important;color:white}textarea{margin-left:-1px;margin-bottom:0.5em}.gluon-value{display:flex;flex-direction:row;margin-bottom:0.5em}.gluon-section-node .gluon-value:last-child{margin-bottom:0}.gluon-value-title{flex:2;text-align:right;padding-top:0.39em;padding-right:1em;font-weight:bold}.gluon-value-field{flex:3;position:relative}.gluon-value-field input,.gluon-value-field select,.gluon-value-field input+label{position:relative}.gluon-value-field-text{flex:3;padding-top:0.39em}.gluon-value-field-long{flex:10;position:relative;margin-top:0.65em}.gluon-value-field-long input,.gluon-value-field-long select,.gluon-value-field-long input+label{position:relative}.gluon-value-field-long-after{flex:2}.gluon-value-description{font-size:8pt}.gluon-form-descr{margin-bottom:1em}.gluon-form-descr:empty,.gluon-section-descr:empty,.gluon-warning:empty{display:none}.gluon-form-descr,.gluon-section-descr,.gluon-warning,.gluon-page-actions{padding:1em;background:#ececec}.gluon-page-actions{text-align:right;display:flex;flex-flow:row-reverse}.gluon-section-node{clear:both;position:relative;border:none}.gluon-value-error input,.gluon-value-error select{background-color:#ffcccc}.gluon-add::after,.gluon-remove::after{cursor:pointer;display:inline-block;text-align:center;vertical-align:middle;font-size:180%;width:1.2em;height:1em}.gluon-add{color:#008000;position:relative;left:21em}input+.gluon-add{left:0;top:0.04em}.gluon-add:first-child{top:0.53em;left:-0.08em}.gluon-add::after{content:'+'}.gluon-remove{color:#800000;position:relative;top:-0.03em}.gluon-remove::after{content:'–'}.gluon-warning{background:#ffe9b3}.error500{border:1px dotted #ff0000;background-color:#ffffff;color:#000000;padding:0.5em}.errorbox{border:1px solid #FF0000;background-color:#FFCCCC;padding:5px;margin-bottom:5px}.errorbox a{color:#000000 !important}.the-key{text-align:left;font-size:1.4em;background:#ffe9b3;border:3pt dashed #dc0067;margin-bottom:0.5em;padding:0.5em}
+diff --git a/package/gluon-config-mode-theme/sass/gluon.scss b/package/gluon-config-mode-theme/sass/gluon.scss
+index 575af4f926..3af8d5e000 100644
+--- a/package/gluon-config-mode-theme/sass/gluon.scss
++++ b/package/gluon-config-mode-theme/sass/gluon.scss
+@@ -366,6 +366,13 @@ input[type=password] {
+ 	min-width: 20em;
+ }
+ 
++.gluon-multi-list-option-descr {
++	display: inline-block;
++	vertical-align: top;
++	margin-top: 0.35em;
++	margin-left: 0.4em;
++}
++
+ .gluon-button {
+ 	@include button;
+ 
+diff --git a/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html b/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
+new file mode 100644
+index 0000000000..a65eda7449
+--- /dev/null
++++ b/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
+@@ -0,0 +1,23 @@
++<%
++	local br = self.orientation == "horizontal" and '&#160;&#160;&#160;' or '<br>'
++	local entries = self:entries()
++	local util = require 'gluon.util'
++%>
++<div>
++	<% for i, entry in pairs(entries) do %>
++		<label<%=
++			attr("data-index", i) ..
++			attr("data-depends", self:deplist(entry.deps))
++		%>>
++			<input data-update="click change" type="checkbox"<%=
++				attr("id", id.."."..entry.key) ..
++				attr("name", id) ..
++				attr("value", entry.key) ..
++				attr("checked", (util.contains(self:cfgvalue(), entry.key)) and "checked")
++			%>>
++			<label<%= attr("for", id.."."..entry.key)%>></label>
++			<span class="gluon-multi-list-option-descr"><%|entry.value%></span>
++		</label>
++		<% if i ~= #entries then write(br) end %>
++	<% end %>
++</div>
+diff --git a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+index 93279c3b61..64906d6bb5 100644
+--- a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
++++ b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+@@ -361,6 +361,66 @@ function ListValue:validate()
+ end
+ 
+ 
++local MultiListValue = class(AbstractValue)
++M.MultiListValue = MultiListValue
++
++function MultiListValue:__init__(...)
++	AbstractValue.__init__(self, ...)
++	self.subtemplate  = "model/mlvalue"
++
++	self.size = 1
++
++	self.keys = {}
++	self.entry_list = {}
++end
++
++function MultiListValue:value(key, val, ...)
++	key = tostring(key)
++
++	if self.keys[key] then
++		return
++	end
++	self.keys[key] = true
++
++	val = val or key
++	table.insert(self.entry_list, {
++		key = key,
++		value = tostring(val),
++		deps = {...},
++	})
++end
++
++function MultiListValue:entries()
++	local ret = {unpack(self.entry_list)}
++
++	return ret
++end
++
++function MultiListValue:validate()
++	for _, val in ipairs(self.data) do
++		if not self.keys[val] then
++			return false
++		end
++	end
++
++	return true
++end
++
++function MultiListValue:defaultvalue()
++	local value = self.default
++
++	if type(value) == "table" then
++		return value
++	else
++		return { value }
++	end
++end
++
++function MultiListValue:formvalue(http)
++	return http:formvaluetable(self:id())
++end
++
++
+ local DynamicList = class(AbstractValue)
+ M.DynamicList = DynamicList
+ 
+
+From be8462048915941f20f58e16f4391b54c49cc5d6 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 15 Apr 2022 02:02:44 +0200
+Subject: [PATCH 02/15] gluon-web-network: initial draft of role configuration
+
+---
+ .../gluon/config-mode/model/admin/network.lua | 45 +++++++------------
+ 1 file changed, 16 insertions(+), 29 deletions(-)
+
+diff --git a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+index df92c96590..33bf44ae20 100644
+--- a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
++++ b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+@@ -9,13 +9,12 @@ http://www.apache.org/licenses/LICENSE-2.0
+ ]]--
+ 
+ local uci = require("simple-uci").cursor()
+-local sysconfig = require 'gluon.sysconfig'
+-local util = require 'gluon.util'
+ 
+ local wan = uci:get_all("network", "wan")
+ local wan6 = uci:get_all("network", "wan6")
+ local dns_static = uci:get_first("gluon-wan-dnsmasq", "static")
+ 
++
+ local f = Form(translate("WAN connection"))
+ 
+ local s = f:section(Section)
+@@ -76,36 +75,23 @@ end
+ 
+ s = f:section(Section)
+ 
+-local wired_mesh_help = {
+-	single = translate('Enable meshing on the Ethernet interface'),
+-	wan = translate('Enable meshing on the WAN interface'),
+-	lan = translate('Enable meshing on the LAN interface'),
+-}
+-
+-local function wired_mesh(iface)
+-	if not sysconfig[iface .. '_ifname'] then return end
+-	local iface_roles = uci:get_list('gluon', 'iface_' .. iface, 'role')
+-
+-	local option = s:option(Flag, 'mesh_' .. iface, wired_mesh_help[iface])
+-	option.default = util.contains(iface_roles, 'mesh') ~= false
+-
+-	function option:write(data)
+-		local roles = uci:get_list('gluon', 'iface_' .. iface, 'role')
+-		if data then
+-			util.add_to_set(roles, 'mesh')
+-		else
+-			util.remove_from_set(roles, 'mesh')
+-		end
+-		uci:set_list('gluon', 'iface_' .. iface, 'role', roles)
++uci:foreach('gluon', 'interface', function(config)
++	local section_name = config['.name']
++	local ifaces = s:option(MultiListValue, section_name, config.name)
++
++	ifaces.widget = 'radio'
++	ifaces.orientation = 'horizontal'
++	ifaces:value('uplink', 'Uplink') -- TODO: Uplink and Client should be mutually exclusive.
++	ifaces:value('mesh', 'Mesh')
++	ifaces:value('client', 'Client')
++
++	ifaces.default = config.role
+ 
+-		-- Reconfigure on next reboot
+-		uci:set('gluon', 'core', 'reconfigure', true)
++	function ifaces:write(data)
++		uci:set_list("gluon", section_name, "role", data)
+ 	end
+-end
++end)
+ 
+-wired_mesh('single')
+-wired_mesh('wan')
+-wired_mesh('lan')
+ 
+ local section
+ uci:foreach("system", "gpio_switch", function(si)
+@@ -166,4 +152,5 @@ function f:write()
+ 	uci:commit('system')
+ end
+ 
++
+ return f
+
+From 76e239665152d9584ebb8c1b109815a52e98669f Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 30 Oct 2022 14:15:34 +0100
+Subject: [PATCH 03/15] gluon-web-network: show pretty interface names
+
+---
+ .../lib/gluon/config-mode/model/admin/network.lua      | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+index 33bf44ae20..cf1d323757 100644
+--- a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
++++ b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+@@ -75,13 +75,19 @@ end
+ 
+ s = f:section(Section)
+ 
++local pretty_ifnames = {
++	["/wan"] = translate("WAN-Interfaces"),
++	["/single"] = translate("Interface"),
++	["/lan"] = translate("LAN-Interfaces")
++}
++
+ uci:foreach('gluon', 'interface', function(config)
+ 	local section_name = config['.name']
+-	local ifaces = s:option(MultiListValue, section_name, config.name)
++	local ifaces = s:option(MultiListValue, section_name, pretty_ifnames[config.name] or config.name)
+ 
+ 	ifaces.widget = 'radio'
+ 	ifaces.orientation = 'horizontal'
+-	ifaces:value('uplink', 'Uplink') -- TODO: Uplink and Client should be mutually exclusive.
++	ifaces:value('uplink', 'Uplink')
+ 	ifaces:value('mesh', 'Mesh')
+ 	ifaces:value('client', 'Client')
+ 
+
+From 98db33babc5edc50fb273bc8d232f42ce34ce0ca Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Wed, 4 Jan 2023 22:12:56 +0100
+Subject: [PATCH 04/15] gluon-web-model: uglify flag --support-ie8 is now --ie
+
+From uglify 3.14.0 on, this command is called --ie:
+
+https://github.com/mishoo/UglifyJS/commit/ef5f7fc25e93833396540cf7479685b241bd1b8f
+---
+ package/gluon-web-model/javascript/gluon-web-model.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.js b/package/gluon-web-model/javascript/gluon-web-model.js
+index ec9cdc4af3..9e8a11b9d2 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.js
+@@ -13,7 +13,7 @@
+ /*
+ 	Build using:
+ 
+-	uglifyjs javascript/gluon-web-model.js -o javascript/gluon-web-model.min.js -c -m --support-ie8
++	uglifyjs javascript/gluon-web-model.js -o javascript/gluon-web-model.min.js -c -m --ie
+ */
+ 
+ 
+
+From f489885f0cbf2b94c260f1193eb4d36eec6d4198 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 6 May 2022 04:15:41 +0200
+Subject: [PATCH 05/15] gluon-web-model: add exclusive options for
+ MultiListValue
+
+---
+ .../gluon/config-mode/www/static/gluon.css    |  2 +-
+ .../gluon-config-mode-theme/sass/gluon.scss   |  4 ++++
+ .../lib/gluon/web/view/model/mlvalue.html     |  4 +++-
+ .../javascript/gluon-web-model.js             | 15 ++++++++++++
+ .../javascript/gluon-web-model.min.js         |  2 +-
+ .../usr/lib/lua/gluon/web/model/classes.lua   | 24 +++++++++++++++++++
+ 6 files changed, 48 insertions(+), 3 deletions(-)
+
+diff --git a/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css b/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
+index 296dc49a39..d239fd8f1e 100644
+--- a/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
++++ b/package/gluon-config-mode-theme/files/lib/gluon/config-mode/www/static/gluon.css
+@@ -1 +1 @@
+-﻿html{min-height:100%;height:auto;position:relative}body,input,select,option{font-family:'Open Sans', Arial, sans-serif;font-size:12pt}body{color:#4d4e53;line-height:1.5em;margin:0;display:flex;flex-direction:column;min-height:100vh;background-color:#f3f3f3}.tabmenu1{text-align:center}ul.tabmenu{list-style:none;padding:0;margin:2em 0;display:inline-flex}ul.tabmenu li{white-space:nowrap;margin:0 0.5em;padding:0;text-align:center}ul.tabmenu li a{display:block;text-decoration:none;padding:1em;margin:0;color:#333;border-radius:2em}ul.tabmenu li a:hover{background:#ffe9b3}ul.tabmenu li.active a{font-weight:bold;background:white;color:#333}#maincontent ul{margin-left:2em}.error{color:#ff0000;background-color:white}#menubar{display:flex;background:#dc0067;color:#ffffff}#menubar a:link.topcat,#menubar a:visited.topcat{position:relative;display:block;padding:0.5em;text-decoration:none;font-size:80%;font-weight:normal;color:white}#menubar a:link.topcat:hover,#menubar a:link.topcat:focus,#menubar a:visited.topcat:hover,#menubar a:visited.topcat:focus{background:#ffb400;color:black}#menubar a:link.topcat.active,#menubar a:visited.topcat.active{background:#ffb400;color:black;font-weight:bold}#menubar .hostinfo{position:relative;margin:0;padding:0.5em;flex:1;font-weight:bold;font-size:80%}#menubar .hostinfo a:link,#menubar .hostinfo a:visited{text-decoration:none;font-weight:bold;color:white}#menubar .hostinfo a:link:hover,#menubar .hostinfo a:link:focus,#menubar .hostinfo a:visited:hover,#menubar .hostinfo a:visited:focus{text-decoration:underline}#topmenu{list-style:none;margin:0;padding:0}#topmenu li{display:inline-block}#maincontent{padding:0 1em 2em;max-width:60em;min-width:40em;margin:1em auto}#maincontent p{margin-bottom:1em}.gluon-section{margin:0;padding:0;border:none;margin-bottom:1.3em}.gluon-section:last-child{margin-bottom:0.7em}.gluon-section legend{font-size:1.4em;font-weight:bold;position:relative;padding:0;margin-bottom:0.5em}.gluon-section h2{margin:0em 0 0.5em -0.5em}.gluon-section h3{text-decoration:none;font-weight:bold;color:#555555;margin:0.25em;font-size:100%}.gluon-section-descr,.gluon-warning{margin-bottom:2em}.gluon-osm-map{width:100%;height:40em;margin-bottom:1em}input::placeholder{color:#aaaaaa}input::-webkit-input-placeholder{color:#aaaaaa}input[type=checkbox]{display:none}input[type=checkbox]+label{display:inline-block;position:relative;width:1em;height:1em;margin:0}input[type=checkbox]:checked+label::after{content:'✔';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.5em;width:100%;text-align:center;font-size:1.7em}input[type=radio]{display:none}input[type=radio]+label{display:inline-block;position:relative;width:0.8em;height:0.8em;padding:0.5em;margin:0.2em 0.2em 0.2em 0.1em;border:none;background:#ffe199;vertical-align:middle;border-radius:50%}input[type=radio]:checked+label::after{content:'•';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.4em;width:100%;text-align:center;font-size:2em}input[type=submit],input[type=reset],input[type=button]{cursor:pointer}select,input,textarea,input[type=checkbox]+label{color:#003247;border:none;background:#ffe199;border-radius:3pt;padding:0.5em;margin-top:1px;margin-bottom:2px;box-sizing:content-box;outline:0}.select-wrapper{position:relative;display:inline-block}.select-wrapper::before{position:absolute;z-index:1;right:0.05em;top:calc(2px + 0.1em);bottom:calc(2px + 0.1em);width:1.4em;border-left:0.05em solid rgba(0,0,0,0.25);pointer-events:none;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="8" height="5"><path fill="none" stroke="black" stroke-linejoin="bevel" d="M1,1L4,4L7,1"/></svg>') center/0.8em 0.5em no-repeat;content:''}.select-wrapper select{-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}option{color:#003247;background:#ffe199}select,input[type=text],input[type=password]{min-width:20em}.gluon-multi-list-option-descr{display:inline-block;vertical-align:top;margin-top:0.35em;margin-left:0.4em}.gluon-button{display:inline-block;line-height:normal;white-space:nowrap;vertical-align:baseline;text-align:center;cursor:pointer;user-select:none;font-size:100%;padding:0.5em 1em;color:rgba(0,0,0,0.8);background-color:#E6E6E6;border:none;text-decoration:none;border-radius:2px;transition:0.1s linear box-shadow;margin-left:0.5em;background-repeat:no-repeat}.gluon-button::-moz-focus-inner{padding:0;border:0}.gluon-button:active{box-shadow:0 0 0 1px rgba(0,0,0,0.15) inset,0 0 6px rgba(0,0,0,0.2) inset}.gluon-button:focus{outline:0}.gluon-button:hover,.gluon-button:focus{background-image:linear-gradient(transparent, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.1))}.gluon-button[disabled]{border:none;background-image:none;opacity:0.40;cursor:not-allowed;box-shadow:none}.gluon-button-reset{background-color:#e30;color:#fff}.gluon-button-submit{background-color:#009ee0;color:#fff}.gluon-button-submit:active{background:grey}.gluon-input-invalid{background:#e30 !important;color:white}textarea{margin-left:-1px;margin-bottom:0.5em}.gluon-value{display:flex;flex-direction:row;margin-bottom:0.5em}.gluon-section-node .gluon-value:last-child{margin-bottom:0}.gluon-value-title{flex:2;text-align:right;padding-top:0.39em;padding-right:1em;font-weight:bold}.gluon-value-field{flex:3;position:relative}.gluon-value-field input,.gluon-value-field select,.gluon-value-field input+label{position:relative}.gluon-value-field-text{flex:3;padding-top:0.39em}.gluon-value-field-long{flex:10;position:relative;margin-top:0.65em}.gluon-value-field-long input,.gluon-value-field-long select,.gluon-value-field-long input+label{position:relative}.gluon-value-field-long-after{flex:2}.gluon-value-description{font-size:8pt}.gluon-form-descr{margin-bottom:1em}.gluon-form-descr:empty,.gluon-section-descr:empty,.gluon-warning:empty{display:none}.gluon-form-descr,.gluon-section-descr,.gluon-warning,.gluon-page-actions{padding:1em;background:#ececec}.gluon-page-actions{text-align:right;display:flex;flex-flow:row-reverse}.gluon-section-node{clear:both;position:relative;border:none}.gluon-value-error input,.gluon-value-error select{background-color:#ffcccc}.gluon-add::after,.gluon-remove::after{cursor:pointer;display:inline-block;text-align:center;vertical-align:middle;font-size:180%;width:1.2em;height:1em}.gluon-add{color:#008000;position:relative;left:21em}input+.gluon-add{left:0;top:0.04em}.gluon-add:first-child{top:0.53em;left:-0.08em}.gluon-add::after{content:'+'}.gluon-remove{color:#800000;position:relative;top:-0.03em}.gluon-remove::after{content:'–'}.gluon-warning{background:#ffe9b3}.error500{border:1px dotted #ff0000;background-color:#ffffff;color:#000000;padding:0.5em}.errorbox{border:1px solid #FF0000;background-color:#FFCCCC;padding:5px;margin-bottom:5px}.errorbox a{color:#000000 !important}.the-key{text-align:left;font-size:1.4em;background:#ffe9b3;border:3pt dashed #dc0067;margin-bottom:0.5em;padding:0.5em}
++﻿html{min-height:100%;height:auto;position:relative}body,input,select,option{font-family:'Open Sans', Arial, sans-serif;font-size:12pt}body{color:#4d4e53;line-height:1.5em;margin:0;display:flex;flex-direction:column;min-height:100vh;background-color:#f3f3f3}.tabmenu1{text-align:center}ul.tabmenu{list-style:none;padding:0;margin:2em 0;display:inline-flex}ul.tabmenu li{white-space:nowrap;margin:0 0.5em;padding:0;text-align:center}ul.tabmenu li a{display:block;text-decoration:none;padding:1em;margin:0;color:#333;border-radius:2em}ul.tabmenu li a:hover{background:#ffe9b3}ul.tabmenu li.active a{font-weight:bold;background:white;color:#333}#maincontent ul{margin-left:2em}.error{color:#ff0000;background-color:white}#menubar{display:flex;background:#dc0067;color:#ffffff}#menubar a:link.topcat,#menubar a:visited.topcat{position:relative;display:block;padding:0.5em;text-decoration:none;font-size:80%;font-weight:normal;color:white}#menubar a:link.topcat:hover,#menubar a:link.topcat:focus,#menubar a:visited.topcat:hover,#menubar a:visited.topcat:focus{background:#ffb400;color:black}#menubar a:link.topcat.active,#menubar a:visited.topcat.active{background:#ffb400;color:black;font-weight:bold}#menubar .hostinfo{position:relative;margin:0;padding:0.5em;flex:1;font-weight:bold;font-size:80%}#menubar .hostinfo a:link,#menubar .hostinfo a:visited{text-decoration:none;font-weight:bold;color:white}#menubar .hostinfo a:link:hover,#menubar .hostinfo a:link:focus,#menubar .hostinfo a:visited:hover,#menubar .hostinfo a:visited:focus{text-decoration:underline}#topmenu{list-style:none;margin:0;padding:0}#topmenu li{display:inline-block}#maincontent{padding:0 1em 2em;max-width:60em;min-width:40em;margin:1em auto}#maincontent p{margin-bottom:1em}.gluon-section{margin:0;padding:0;border:none;margin-bottom:1.3em}.gluon-section:last-child{margin-bottom:0.7em}.gluon-section legend{font-size:1.4em;font-weight:bold;position:relative;padding:0;margin-bottom:0.5em}.gluon-section h2{margin:0em 0 0.5em -0.5em}.gluon-section h3{text-decoration:none;font-weight:bold;color:#555555;margin:0.25em;font-size:100%}.gluon-section-descr,.gluon-warning{margin-bottom:2em}.gluon-osm-map{width:100%;height:40em;margin-bottom:1em}input::placeholder{color:#aaaaaa}input::-webkit-input-placeholder{color:#aaaaaa}input[type=checkbox]{display:none}input[type=checkbox]+label{display:inline-block;position:relative;width:1em;height:1em;margin:0}input[type=checkbox]:checked+label::after{content:'✔';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.5em;width:100%;text-align:center;font-size:1.7em}input[type=checkbox][disabled]+label{background-color:#dcdcdc !important}input[type=radio]{display:none}input[type=radio]+label{display:inline-block;position:relative;width:0.8em;height:0.8em;padding:0.5em;margin:0.2em 0.2em 0.2em 0.1em;border:none;background:#ffe199;vertical-align:middle;border-radius:50%}input[type=radio]:checked+label::after{content:'•';color:#dc0067;vertical-align:middle;position:absolute;top:50%;left:0;margin-top:-0.4em;width:100%;text-align:center;font-size:2em}input[type=submit],input[type=reset],input[type=button]{cursor:pointer}select,input,textarea,input[type=checkbox]+label{color:#003247;border:none;background:#ffe199;border-radius:3pt;padding:0.5em;margin-top:1px;margin-bottom:2px;box-sizing:content-box;outline:0}.select-wrapper{position:relative;display:inline-block}.select-wrapper::before{position:absolute;z-index:1;right:0.05em;top:calc(2px + 0.1em);bottom:calc(2px + 0.1em);width:1.4em;border-left:0.05em solid rgba(0,0,0,0.25);pointer-events:none;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="8" height="5"><path fill="none" stroke="black" stroke-linejoin="bevel" d="M1,1L4,4L7,1"/></svg>') center/0.8em 0.5em no-repeat;content:''}.select-wrapper select{-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}option{color:#003247;background:#ffe199}select,input[type=text],input[type=password]{min-width:20em}.gluon-multi-list-option-descr{display:inline-block;vertical-align:top;margin-top:0.35em;margin-left:0.4em}.gluon-button{display:inline-block;line-height:normal;white-space:nowrap;vertical-align:baseline;text-align:center;cursor:pointer;user-select:none;font-size:100%;padding:0.5em 1em;color:rgba(0,0,0,0.8);background-color:#E6E6E6;border:none;text-decoration:none;border-radius:2px;transition:0.1s linear box-shadow;margin-left:0.5em;background-repeat:no-repeat}.gluon-button::-moz-focus-inner{padding:0;border:0}.gluon-button:active{box-shadow:0 0 0 1px rgba(0,0,0,0.15) inset,0 0 6px rgba(0,0,0,0.2) inset}.gluon-button:focus{outline:0}.gluon-button:hover,.gluon-button:focus{background-image:linear-gradient(transparent, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.1))}.gluon-button[disabled]{border:none;background-image:none;opacity:0.40;cursor:not-allowed;box-shadow:none}.gluon-button-reset{background-color:#e30;color:#fff}.gluon-button-submit{background-color:#009ee0;color:#fff}.gluon-button-submit:active{background:grey}.gluon-input-invalid{background:#e30 !important;color:white}textarea{margin-left:-1px;margin-bottom:0.5em}.gluon-value{display:flex;flex-direction:row;margin-bottom:0.5em}.gluon-section-node .gluon-value:last-child{margin-bottom:0}.gluon-value-title{flex:2;text-align:right;padding-top:0.39em;padding-right:1em;font-weight:bold}.gluon-value-field{flex:3;position:relative}.gluon-value-field input,.gluon-value-field select,.gluon-value-field input+label{position:relative}.gluon-value-field-text{flex:3;padding-top:0.39em}.gluon-value-field-long{flex:10;position:relative;margin-top:0.65em}.gluon-value-field-long input,.gluon-value-field-long select,.gluon-value-field-long input+label{position:relative}.gluon-value-field-long-after{flex:2}.gluon-value-description{font-size:8pt}.gluon-form-descr{margin-bottom:1em}.gluon-form-descr:empty,.gluon-section-descr:empty,.gluon-warning:empty{display:none}.gluon-form-descr,.gluon-section-descr,.gluon-warning,.gluon-page-actions{padding:1em;background:#ececec}.gluon-page-actions{text-align:right;display:flex;flex-flow:row-reverse}.gluon-section-node{clear:both;position:relative;border:none}.gluon-value-error input,.gluon-value-error select{background-color:#ffcccc}.gluon-add::after,.gluon-remove::after{cursor:pointer;display:inline-block;text-align:center;vertical-align:middle;font-size:180%;width:1.2em;height:1em}.gluon-add{color:#008000;position:relative;left:21em}input+.gluon-add{left:0;top:0.04em}.gluon-add:first-child{top:0.53em;left:-0.08em}.gluon-add::after{content:'+'}.gluon-remove{color:#800000;position:relative;top:-0.03em}.gluon-remove::after{content:'–'}.gluon-warning{background:#ffe9b3}.error500{border:1px dotted #ff0000;background-color:#ffffff;color:#000000;padding:0.5em}.errorbox{border:1px solid #FF0000;background-color:#FFCCCC;padding:5px;margin-bottom:5px}.errorbox a{color:#000000 !important}.the-key{text-align:left;font-size:1.4em;background:#ffe9b3;border:3pt dashed #dc0067;margin-bottom:0.5em;padding:0.5em}
+diff --git a/package/gluon-config-mode-theme/sass/gluon.scss b/package/gluon-config-mode-theme/sass/gluon.scss
+index 3af8d5e000..a63156e430 100644
+--- a/package/gluon-config-mode-theme/sass/gluon.scss
++++ b/package/gluon-config-mode-theme/sass/gluon.scss
+@@ -273,6 +273,10 @@ input[type=checkbox] {
+ 		text-align: center;
+ 		font-size: 1.7em;
+ 	}
++
++	&[disabled] + label {
++		background-color: #dcdcdc !important;
++	}
+ }
+ 
+ input[type=radio] {
+diff --git a/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html b/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
+index a65eda7449..0a4fb5c9db 100644
+--- a/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
++++ b/package/gluon-web-model/files/lib/gluon/web/view/model/mlvalue.html
+@@ -13,7 +13,9 @@
+ 				attr("id", id.."."..entry.key) ..
+ 				attr("name", id) ..
+ 				attr("value", entry.key) ..
+-				attr("checked", (util.contains(self:cfgvalue(), entry.key)) and "checked")
++				attr("checked", (util.contains(self:cfgvalue(), entry.key)) and "checked") ..
++				attr("data-exclusive-with", self.exclusions[entry.key]) ..
++				attr("data-update", "change")
+ 			%>>
+ 			<label<%= attr("for", id.."."..entry.key)%>></label>
+ 			<span class="gluon-multi-list-option-descr"><%|entry.value%></span>
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.js b/package/gluon-web-model/javascript/gluon-web-model.js
+index 9e8a11b9d2..ce8ad6478a 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.js
+@@ -219,6 +219,20 @@
+ 				parent.parentNode.style.display = (parent.options.length <= 1) ? 'none' : '';
+ 		}
+ 
++		var nodes = document.querySelectorAll('[data-exclusive-with]');
++		for (var i = 0, node; (node = nodes[i]) !== undefined; i++) {
++			var excusive_with = JSON.parse(node.getAttribute('data-exclusive-with'));
++
++			node.disabled = false;
++			for (let list_item of excusive_with) {
++				var el = document.getElementById(node.name + '.' + list_item);
++				node.disabled |= el.checked;
++			}
++
++			if (node.disabled)
++				node.checked = false;
++		}
++
+ 		if (state) {
+ 			update();
+ 		}
+@@ -533,6 +547,7 @@
+ 			init_dynlist(node, attr);
+ 		}
+ 
++
+ 		update();
+ 	})();
+ })();
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.min.js b/package/gluon-web-model/javascript/gluon-web-model.min.js
+index 07478cbb02..2adf363f08 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.min.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.min.js
+@@ -1 +1 @@
+-!function(){var v={};function a(e){return/^-?\d+$/.test(e)?+e:NaN}function r(e){return/^-?\d*\.?\d+?$/.test(e)?+e:NaN}var u={integer:function(){return!isNaN(a(this))},uinteger:function(){return 0<=a(this)},float:function(){return!isNaN(r(this))},ufloat:function(){return 0<=r(this)},ipaddr:function(){return u.ip4addr.apply(this)||u.ip6addr.apply(this)},ip4addr:function(){var e;return!!(e=this.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/))&&(0<=e[1]&&e[1]<=255&&0<=e[2]&&e[2]<=255&&0<=e[3]&&e[3]<=255&&0<=e[4]&&e[4]<=255)},ip6addr:function(){return this.indexOf("::")<0?null!=this.match(/^(?:[a-f0-9]{1,4}:){7}[a-f0-9]{1,4}$/i):!(0<=this.indexOf(":::")||this.match(/::.+::/)||this.match(/^:[^:]/)||this.match(/[^:]:$/))&&(!!this.match(/^(?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}$/i)||(!!this.match(/^(?:[a-f0-9]{1,4}:){7}:$/i)||!!this.match(/^:(?::[a-f0-9]{1,4}){7}$/i)))},wpakey:function(){var e=this;return 64==e.length?null!=e.match(/^[a-f0-9]{64}$/i):8<=e.length&&e.length<=63},range:function(e,t){var n=r(this);return+e<=n&&n<=+t},min:function(e){return r(this)>=+e},max:function(e){return r(this)<=+e},irange:function(e,t){var n=a(this);return+e<=n&&n<=+t},imin:function(e){return a(this)>=+e},imax:function(e){return a(this)<=+e},minlength:function(e){return+e<=(""+this).length},maxlength:function(e){return(""+this).length<=+e}};function o(e){for(var t=0;t<e.length;t++){var n=!0;for(var a in e[t])n=n&&(r=a,i=e[t][a],o=void 0,(o=document.getElementById(r))?("checkbox"==o.type?o.checked:o.value?o.value:"")==i:!!(o=document.getElementById(r+"."+i))&&"radio"==o.type&&o.checked);if(n)return!0}var r,i,o;return!1}function h(){window.dispatchEvent(new Event("gluon-update"));var e=!1;for(var t in v){var n=v[t],a=document.getElementById(t),r=document.getElementById(n.parent);if(a&&a.parentNode&&!o(n.deps))a.parentNode.removeChild(a),a.dispatchEvent(new Event("gluon-hide")),e=!0;else if(r&&(!a||!a.parentNode)&&o(n.deps)){var i=void 0;for(i=r.firstChild;i&&!(i.getAttribute&&parseInt(i.getAttribute("data-index"),10)>n.index);i=i.nextSibling);i?r.insertBefore(n.node,i):r.appendChild(n.node),n.node.dispatchEvent(new Event("gluon-show")),e=!0}r&&r.parentNode&&r.getAttribute("data-optionals")&&(r.parentNode.style.display=r.options.length<=1?"none":"")}e&&h()}function g(e,t,n,a){return e.addEventListener?e.addEventListener(t,n,!!a):e.attachEvent("on"+t,function(){var e=window.event;return!e.target&&e.srcElement&&(e.target=e.srcElement),!!n(e)}),e}function m(l,s){var c=s.prefix;function o(e,t,n){for(var a=[];l.firstChild;){var r=l.firstChild;(i=+r.index)!=n&&("input"==r.nodeName.toLowerCase()?a.push(r.value||""):"select"==r.nodeName.toLowerCase()&&(a[a.length-1]=r.options[r.selectedIndex].value)),l.removeChild(r)}0<=t?(e=t+1,a.splice(t,0,"")):s.optional||0!=a.length||a.push("");for(var i=1;i<=a.length;i++){var o=document.createElement("input");if(o.id=c+"."+i,o.name=c,o.value=a[i-1],o.type="text",o.index=i,s.size&&(o.size=s.size),s.placeholder&&(o.placeholder=s.placeholder),l.appendChild(o),s.type&&y(o,!1,s.type),g(o,"keydown",f),g(o,"keypress",p),i==e)o.focus();else if(-i==e){o.focus();var d=o.value;o.value=" ",o.value=d}if(s.optional||1<a.length)(u=document.createElement("span")).className="gluon-remove",l.appendChild(u),g(u,"click",v(!1)),l.appendChild(document.createElement("br"))}var u;(u=document.createElement("span")).className="gluon-add",l.appendChild(u),g(u,"click",v(!0))}function p(e){var t=(e=e||window.event).target?e.target:e.srcElement;switch(3==t.nodeType&&(t=t.parentNode),e.keyCode){case 8:case 46:return 0!=t.value.length||(e.preventDefault&&e.preventDefault(),!1);case 13:case 38:case 40:return e.preventDefault&&e.preventDefault(),!1}return!0}function f(e){var t,n,a=(e=e||window.event).target?e.target:e.srcElement,r=0;if(a){for(3==a.nodeType&&(a=a.parentNode),r=a.index,t=a.previousSibling;t&&t.name!=c;)t=t.previousSibling;for(n=a.nextSibling;n&&n.name!=c;)n=n.nextSibling}switch(e.keyCode){case 8:case 46:if("select"!=a.nodeName.toLowerCase()&&0!=a.value.length)break;e.preventDefault&&e.preventDefault();var i=a.index;return 8==e.keyCode&&(i=1-i),o(i,-1,r),!1;case 13:o(-1,r,-1);break;case 38:t&&t.focus();break;case 40:n&&n.focus()}return!0}function v(n){return function(e){for(var t=((e=e||window.event).target?e.target:e.srcElement).previousSibling;t&&t.name!=c;)t=t.previousSibling;return n?f({target:t,keyCode:13}):(t.value="",f({target:t,keyCode:8})),!1}}o(NaN,-1,-1)}function y(t,n,e){var a,r,i,o=(i=(a=e).match(/^([^\(]+)\(([^,]+),([^\)]+)\)$/))&&void 0!==(r=u[i[1]])?function(){return r.apply(this,[i[2],i[3]])}:(i=a.match(/^([^\(]+)\(([^,\)]+)\)$/))&&void 0!==(r=u[i[1]])?function(){return r.apply(this,[i[2]])}:u[a];if(o){function d(){if(t.form){t.className=t.className.replace(/ gluon-input-invalid/g,"");var e=t.options&&-1<t.options.selectedIndex?t.options[t.options.selectedIndex].value:t.value;0==e.length&&n||o.apply(e)||(t.className+=" gluon-input-invalid")}}g(t,"blur",d),g(t,"keyup",d),g(t,"gluon-revalidate",d),"select"==t.nodeName.toLowerCase()&&(g(t,"change",d),g(t,"click",d)),d()}}!function(){var e,t,n,a,r;e=document.querySelectorAll("[data-depends]");for(var i=0;void 0!==(p=e[i]);i++){var o=parseInt(p.getAttribute("data-index"),10),d=JSON.parse(p.getAttribute("data-depends"));if(!isNaN(o)&&0<d.length)for(var u=0;u<d.length;u++)t=p,n=d[u],a=o,r=void 0,(r=v[t.id])||(r={node:t,parent:t.parentNode.id,deps:[],index:a},v[t.id]=r),r.deps.push(n)}e=document.querySelectorAll("[data-update]");for(i=0;void 0!==(p=e[i]);i++)for(var l,s=p.getAttribute("data-update").split(" "),c=0;void 0!==(l=s[c]);c++)g(p,l,function(){setTimeout(h,0)});e=document.querySelectorAll("[data-type]");for(i=0;void 0!==(p=e[i]);i++)y(p,"true"===p.getAttribute("data-optional"),p.getAttribute("data-type"));e=document.querySelectorAll("[data-dynlist]");var p;for(i=0;void 0!==(p=e[i]);i++){var f=JSON.parse(p.getAttribute("data-dynlist"));m(p,f)}h()}()}();
+\ No newline at end of file
++!function(){var s={};function a(e){return/^-?\d+$/.test(e)?+e:NaN}function i(e){return/^-?\d*\.?\d+?$/.test(e)?+e:NaN}var d={integer:function(){return!isNaN(a(this))},uinteger:function(){return 0<=a(this)},"float":function(){return!isNaN(i(this))},ufloat:function(){return 0<=i(this)},ipaddr:function(){return d.ip4addr.apply(this)||d.ip6addr.apply(this)},ip4addr:function(){var e;return!!(e=this.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/))&&0<=e[1]&&e[1]<=255&&0<=e[2]&&e[2]<=255&&0<=e[3]&&e[3]<=255&&0<=e[4]&&e[4]<=255},ip6addr:function(){return this.indexOf("::")<0?null!=this.match(/^(?:[a-f0-9]{1,4}:){7}[a-f0-9]{1,4}$/i):!(0<=this.indexOf(":::")||this.match(/::.+::/)||this.match(/^:[^:]/)||this.match(/[^:]:$/)||!this.match(/^(?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}$/i)&&!this.match(/^(?:[a-f0-9]{1,4}:){7}:$/i)&&!this.match(/^:(?::[a-f0-9]{1,4}){7}$/i))},wpakey:function(){var e=this;return 64==e.length?null!=e.match(/^[a-f0-9]{64}$/i):8<=e.length&&e.length<=63},range:function(e,t){var n=i(this);return+e<=n&&n<=+t},min:function(e){return i(this)>=+e},max:function(e){return i(this)<=+e},irange:function(e,t){var n=a(this);return+e<=n&&n<=+t},imin:function(e){return a(this)>=+e},imax:function(e){return a(this)<=+e},minlength:function(e){return+e<=(""+this).length},maxlength:function(e){return(""+this).length<=+e}};function p(e){for(var t,n,a,i=0;i<e.length;i++){var r,d=!0;for(r in e[i])d=d&&(t=r,n=e[i][r],a=void 0,(a=document.getElementById(t))?("checkbox"==a.type?a.checked:a.value||"")==n:!!(a=document.getElementById(t+"."+n))&&"radio"==a.type&&a.checked);if(d)return 1}}function f(){window.dispatchEvent(new Event("gluon-update"));var e,t=!1;for(e in s){var n=s[e],a=document.getElementById(e),i=document.getElementById(n.parent);if(a&&a.parentNode&&!p(n.deps))a.parentNode.removeChild(a),a.dispatchEvent(new Event("gluon-hide")),t=!0;else if(i&&(!a||!a.parentNode)&&p(n.deps)){for(var r=undefined,r=i.firstChild;r&&!(r.getAttribute&&parseInt(r.getAttribute("data-index"),10)>n.index);r=r.nextSibling);r?i.insertBefore(n.node,r):i.appendChild(n.node),n.node.dispatchEvent(new Event("gluon-show")),t=!0}i&&i.parentNode&&i.getAttribute("data-optionals")&&(i.parentNode.style.display=i.options.length<=1?"none":"")}for(var d=document.querySelectorAll("[data-exclusive-with]"),o=0;(a=d[o])!==undefined;o++){var u,l=JSON.parse(a.getAttribute("data-exclusive-with"));a.disabled=!1;for(u of l){var c=document.getElementById(a.name+"."+u);a.disabled|=c.checked}a.disabled&&(a.checked=!1)}t&&f()}function v(e,t,n,a){e.addEventListener?e.addEventListener(t,n,!!a):e.attachEvent("on"+t,function(){var e=window.event;return!e.target&&e.srcElement&&(e.target=e.srcElement),!!n(e)})}function m(t,n,e){var a,i,r=(i=(e=e).match(/^([^\(]+)\(([^,]+),([^\)]+)\)$/))&&(a=d[i[1]])!==undefined?function(){return a.apply(this,[i[2],i[3]])}:(i=e.match(/^([^\(]+)\(([^,\)]+)\)$/))&&(a=d[i[1]])!==undefined?function(){return a.apply(this,[i[2]])}:d[e];r&&(v(t,"blur",e=function(){var e;t.form&&(t.className=t.className.replace(/ gluon-input-invalid/g,""),0==(e=(t.options&&-1<t.options.selectedIndex?t.options[t.options.selectedIndex]:t).value).length&&n||r.apply(e)||(t.className+=" gluon-input-invalid"))}),v(t,"keyup",e),v(t,"gluon-revalidate",e),"select"==t.nodeName.toLowerCase()&&(v(t,"change",e),v(t,"click",e)),e())}for(var e,t,n,r,o=document.querySelectorAll("[data-depends]"),u=0;(b=o[u])!==undefined;u++){var l=parseInt(b.getAttribute("data-index"),10),c=JSON.parse(b.getAttribute("data-depends"));if(!isNaN(l)&&0<c.length)for(var h=0;h<c.length;h++)e=b,t=c[h],n=l,r=void 0,(r=s[e.id])||(r={node:e,parent:e.parentNode.id,deps:[],index:n},s[e.id]=r),r.deps.push(t)}for(o=document.querySelectorAll("[data-update]"),u=0;(b=o[u])!==undefined;u++)for(var g,y=b.getAttribute("data-update").split(" "),N=0;(g=y[N])!==undefined;N++)v(b,g,function(){setTimeout(f,0)});for(o=document.querySelectorAll("[data-type]"),u=0;(b=o[u])!==undefined;u++)m(b,"true"===b.getAttribute("data-optional"),b.getAttribute("data-type"));o=document.querySelectorAll("[data-dynlist]");for(var b,u=0;(b=o[u])!==undefined;u++){var w=JSON.parse(b.getAttribute("data-dynlist"));!function(l,c){var s=c.prefix;function d(e,t,n){for(var a=[];l.firstChild;){var i=l.firstChild;(r=+i.index)!=n&&("input"==i.nodeName.toLowerCase()?a.push(i.value||""):"select"==i.nodeName.toLowerCase()&&(a[a.length-1]=i.options[i.selectedIndex].value)),l.removeChild(i)}0<=t?(e=t+1,a.splice(t,0,"")):c.optional||0!=a.length||a.push("");for(var r=1;r<=a.length;r++){var d,o,u=document.createElement("input");u.id=s+"."+r,u.name=s,u.value=a[r-1],u.type="text",u.index=r,c.size&&(u.size=c.size),c.placeholder&&(u.placeholder=c.placeholder),l.appendChild(u),c.type&&m(u,!1,c.type),v(u,"keydown",f),v(u,"keypress",p),r==e?u.focus():-r==e&&(u.focus(),d=u.value,u.value=" ",u.value=d),(c.optional||1<a.length)&&((o=document.createElement("span")).className="gluon-remove",l.appendChild(o),v(o,"click",h(!1)),l.appendChild(document.createElement("br")))}(o=document.createElement("span")).className="gluon-add",l.appendChild(o),v(o,"click",h(!0))}function p(e){var t=(e=e||window.event).target||e.srcElement;switch(3==t.nodeType&&(t=t.parentNode),e.keyCode){case 8:case 46:return 0==t.value.length?(e.preventDefault&&e.preventDefault(),!1):!0;case 13:case 38:case 40:return e.preventDefault&&e.preventDefault(),!1}return!0}function f(e){var t,n,a,i=(e=e||window.event).target||e.srcElement,r=0;if(i){for(r=(i=3==i.nodeType?i.parentNode:i).index,t=i.previousSibling;t&&t.name!=s;)t=t.previousSibling;for(n=i.nextSibling;n&&n.name!=s;)n=n.nextSibling}switch(e.keyCode){case 8:case 46:if("select"==i.nodeName.toLowerCase()||0==i.value.length)return e.preventDefault&&e.preventDefault(),a=i.index,d(a=8==e.keyCode?1-a:a,-1,r),!1;break;case 13:d(-1,r,-1);break;case 38:t&&t.focus();break;case 40:n&&n.focus()}return!0}function h(n){return function(e){for(var t=((e=e||window.event).target||e.srcElement).previousSibling;t&&t.name!=s;)t=t.previousSibling;return n?f({target:t,keyCode:13}):(t.value="",f({target:t,keyCode:8})),!1}}d(NaN,-1,-1)}(b,w)}f()}();
+\ No newline at end of file
+diff --git a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+index 64906d6bb5..31b46476f1 100644
+--- a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
++++ b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+@@ -3,6 +3,7 @@
+ -- Licensed to the public under the Apache License 2.0.
+ 
+ local util = require "gluon.web.util"
++local gluon_util = require "gluon.util"
+ 
+ local datatypes  = require "gluon.web.model.datatypes"
+ local class      = util.class
+@@ -381,6 +382,7 @@ function MultiListValue:value(key, val, ...)
+ 		return
+ 	end
+ 	self.keys[key] = true
++	self.exclusions = {}
+ 
+ 	val = val or key
+ 	table.insert(self.entry_list, {
+@@ -403,9 +405,31 @@ function MultiListValue:validate()
+ 		end
+ 	end
+ 
++	for key, exclusive_with in pairs(self.exclusions) do
++		if gluon_util.contains(self.data, key) then
++			for _, exclusion in ipairs(exclusive_with) do
++				if gluon_util.contains(self.data, exclusion) then
++					return false
++				end
++			end
++		end
++	end
++
+ 	return true
+ end
+ 
++function MultiListValue:exclusive(a, b)
++	if not self.exclusions[a] then
++		self.exclusions[a] = {}
++	end
++	if not self.exclusions[b] then
++		self.exclusions[b] = {}
++	end
++
++	gluon_util.add_to_set(self.exclusions[a], b)
++	gluon_util.add_to_set(self.exclusions[b], a)
++end
++
+ function MultiListValue:defaultvalue()
+ 	local value = self.default
+ 
+
+From 92eea8cac70396518da8c8327693721eca90a34c Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 6 May 2022 04:16:05 +0200
+Subject: [PATCH 06/15] gluon-web-network: make roles "uplink" / "mesh" and
+ "client" exclusive
+
+---
+ .../luasrc/lib/gluon/config-mode/model/admin/network.lua        | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+index cf1d323757..73bf555fea 100644
+--- a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
++++ b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+@@ -90,6 +90,8 @@ uci:foreach('gluon', 'interface', function(config)
+ 	ifaces:value('uplink', 'Uplink')
+ 	ifaces:value('mesh', 'Mesh')
+ 	ifaces:value('client', 'Client')
++	ifaces:exclusive('uplink', 'client')
++	ifaces:exclusive('mesh', 'client')
+ 
+ 	ifaces.default = config.role
+ 
+
+From 4c2027943b08e08e45eb92303a836d0dbf2cdebb Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 16 Dec 2022 00:29:29 +0100
+Subject: [PATCH 07/15] gluon-core: fix invalid role configurations during
+ reconfigure
+
+---
+ .../luasrc/lib/gluon/upgrade/021-interface-roles  | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/021-interface-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/021-interface-roles
+index 5d27fb708b..6e39219a69 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/021-interface-roles
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/021-interface-roles
+@@ -63,4 +63,19 @@ for iface in pairs(interfaces) do
+ 	end
+ end
+ 
++-- Fix invalid role configurations
++
++uci:foreach('gluon', 'interface', function(interface)
++
++	local function has_role(role)
++		return util.contains(interface.role, role)
++	end
++
++	if has_role('client') and (has_role('mesh') or has_role('uplink')) then
++		-- remove 'client' role
++		util.remove_from_set(interface.role, 'client')
++		uci:set('gluon', interface['.name'], 'role', interface.role)
++	end
++end)
++
+ uci:save('gluon')
+
+From c00bf47077384b9cd08eef5693b12668bedaf1cd Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Fri, 16 Dec 2022 00:44:48 +0100
+Subject: [PATCH 08/15] docs: explain that invalid interface roles are removed
+
+---
+ docs/user/site.rst | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/docs/user/site.rst b/docs/user/site.rst
+index fc82f314d2..96bb5eacff 100644
+--- a/docs/user/site.rst
++++ b/docs/user/site.rst
+@@ -448,13 +448,8 @@ interfaces \: optional
+   The ``client`` role requires exclusive control over an interface. When
+   the ``client`` role is assigned to an interface at the same time as other
+   roles (like ``'client', 'mesh'`` in the above example), the other roles take
+-  precedence (enabling ``mesh``, but not ``client`` in the example).
+-
+-  Such a default configuration still fulfills a purpose (and is in fact the
+-  recommended way to enable "Mesh-on-LAN" by default): The "LAN interface
+-  meshing" checkbox in the advanced network settings will only add or remove
+-  the ``mesh`` role, so the ``client`` role must already be in the configuration
+-  to make the LAN port a regular client interface when the checkbox is disabled.
++  precedence (enabling ``mesh``, but not ``client`` in the example). In that
++  case, the ``client`` role is removed from the config of the interface.
+ 
+   All interface settings are optional. If unset, the following defaults are
+   used:
+
+From e44e0bca94fafd508d4f65ca632950fb3e1d303c Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:49:08 +0100
+Subject: [PATCH 09/15] fixup! gluon-web-network: initial draft of role
+ configuration
+
+---
+ .../luasrc/lib/gluon/config-mode/model/admin/network.lua         | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+index 73bf555fea..1a50147b86 100644
+--- a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
++++ b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+@@ -85,7 +85,6 @@ uci:foreach('gluon', 'interface', function(config)
+ 	local section_name = config['.name']
+ 	local ifaces = s:option(MultiListValue, section_name, pretty_ifnames[config.name] or config.name)
+ 
+-	ifaces.widget = 'radio'
+ 	ifaces.orientation = 'horizontal'
+ 	ifaces:value('uplink', 'Uplink')
+ 	ifaces:value('mesh', 'Mesh')
+
+From a9ab6815f7a679bfa637b821c1f8b46a3de8fe05 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:53:28 +0100
+Subject: [PATCH 10/15] fixup! gluon-web-model: add exclusive options for
+ MultiListValue
+
+---
+ package/gluon-web-model/javascript/gluon-web-model.js | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.js b/package/gluon-web-model/javascript/gluon-web-model.js
+index ce8ad6478a..4c9dd72e19 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.js
+@@ -547,7 +547,6 @@
+ 			init_dynlist(node, attr);
+ 		}
+ 
+-
+ 		update();
+ 	})();
+ })();
+
+From 63d99fad284da8807af2730e0859e4332d276ee5 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:53:36 +0100
+Subject: [PATCH 11/15] fixup! gluon-web-model: add exclusive options for
+ MultiListValue
+
+---
+ package/gluon-web-model/javascript/gluon-web-model.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.js b/package/gluon-web-model/javascript/gluon-web-model.js
+index 4c9dd72e19..7b98dc1ef3 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.js
+@@ -224,7 +224,7 @@
+ 			var excusive_with = JSON.parse(node.getAttribute('data-exclusive-with'));
+ 
+ 			node.disabled = false;
+-			for (let list_item of excusive_with) {
++			for (var list_item of excusive_with) {
+ 				var el = document.getElementById(node.name + '.' + list_item);
+ 				node.disabled |= el.checked;
+ 			}
+
+From af3b1ce4736c9df58c33da84137cafdf8daf2e3d Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:24:10 +0100
+Subject: [PATCH 12/15] gluon-core: make interface roles exclusive in site
+ config
+
+---
+ .luacheckrc                                   |  1 +
+ package/gluon-core/check_site.lua             |  6 +++++-
+ .../luasrc/lib/gluon/check-site.lua           | 21 +++++++++++++++++++
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/.luacheckrc b/.luacheckrc
+index 0f17ecc565..9639097284 100644
+--- a/.luacheckrc
++++ b/.luacheckrc
+@@ -29,6 +29,7 @@ files["package/**/check_site.lua"] = {
+ 		"need",
+ 		"need_alphanumeric_key",
+ 		"need_array",
++		"need_array_elements_exclusive",
+ 		"need_array_of",
+ 		"need_boolean",
+ 		"need_chanlist",
+diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
+index 06b9ac59d0..9918984ecc 100644
+--- a/package/gluon-core/check_site.lua
++++ b/package/gluon-core/check_site.lua
+@@ -77,7 +77,11 @@ need_boolean(in_domain({'mesh', 'vxlan'}), false)
+ 
+ local interfaces_roles = {'client', 'uplink', 'mesh'}
+ for _, config in ipairs({'wan', 'lan', 'single'}) do
+-	need_array_of(in_site({'interfaces', config, 'default_roles'}), interfaces_roles, false)
++	local default_roles = in_site({'interfaces', config, 'default_roles'})
++
++	need_array_of(default_roles, interfaces_roles, false)
++	need_array_elements_exclusive(default_roles, "client", "mesh", false)
++	need_array_elements_exclusive(default_roles, "client", "uplink", false)
+ end
+ 
+ obsolete({'mesh_on_wan'}, 'Use interfaces.wan.default_roles.')
+diff --git a/package/gluon-core/luasrc/lib/gluon/check-site.lua b/package/gluon-core/luasrc/lib/gluon/check-site.lua
+index 148f4968f7..2172a984c7 100644
+--- a/package/gluon-core/luasrc/lib/gluon/check-site.lua
++++ b/package/gluon-core/luasrc/lib/gluon/check-site.lua
+@@ -55,6 +55,14 @@ local function merge(a, b)
+ 	return m
+ end
+ 
++local function contains(table, val)
++	for i=1,#table do
++		if table[i] == val then
++			return true
++		end
++	end
++	return false
++end
+ 
+ local function path_to_string(path)
+ 	if path.is_value then
+@@ -370,6 +378,19 @@ function M.need_array_of(path, array, required)
+ 	return M.need_array(path, function(e) M.need_one_of(e, array) end, required)
+ end
+ 
++function M.need_array_elements_exclusive(path, a, b, required)
++	local val = need_type(path, 'table', required, 'be an array')
++	if not val then
++		return nil
++	end
++
++	if contains(val, a) and contains(val, b) then
++		config_error(conf_src(path), 'expected %s to contain either "%s" or "%s", but not both.', path_to_string(path), a, b)
++	end
++
++	return val
++end
++
+ function M.need_chanlist(path, channels, required)
+ 	local valid_chanlist = check_chanlist(channels)
+ 	return M.need(path, valid_chanlist, required,
+
+From 77075b29fc8107938759e78485fb27cfc2aa689c Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:55:21 +0100
+Subject: [PATCH 13/15] fixup! gluon-web-model: add MultiListValue class
+
+---
+ .../luasrc/usr/lib/lua/gluon/web/model/classes.lua        | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+index 31b46476f1..74a4181b87 100644
+--- a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
++++ b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+@@ -431,13 +431,7 @@ function MultiListValue:exclusive(a, b)
+ end
+ 
+ function MultiListValue:defaultvalue()
+-	local value = self.default
+-
+-	if type(value) == "table" then
+-		return value
+-	else
+-		return { value }
+-	end
++	return self.default or {}
+ end
+ 
+ function MultiListValue:formvalue(http)
+
+From 544266af9a22bfe7af2cea9bb9cbdd4220964f22 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:43:17 +0100
+Subject: [PATCH 14/15] gluon-web-model: migrate to SPDX headers for licensing
+
+---
+ .../gluon-web-model/javascript/gluon-web-model.js  | 14 +++++---------
+ .../luasrc/usr/lib/lua/gluon/web/model/classes.lua |  7 ++++---
+ .../usr/lib/lua/gluon/web/model/datatypes.lua      |  6 +++---
+ 3 files changed, 12 insertions(+), 15 deletions(-)
+
+diff --git a/package/gluon-web-model/javascript/gluon-web-model.js b/package/gluon-web-model/javascript/gluon-web-model.js
+index 7b98dc1ef3..55c68e2e87 100644
+--- a/package/gluon-web-model/javascript/gluon-web-model.js
++++ b/package/gluon-web-model/javascript/gluon-web-model.js
+@@ -1,13 +1,9 @@
+ /*
+-	Copyright 2008 Steven Barth <steven@midlink.org>
+-	Copyright 2008-2012 Jo-Philipp Wich <jow@openwrt.org>
+-	Copyright 2017 Matthias Schiffer <mschiffer@universe-factory.net>
+-
+-	Licensed under the Apache License, Version 2.0 (the "License");
+-	you may not use this file except in compliance with the License.
+-	You may obtain a copy of the License at
+-
+-	http://www.apache.org/licenses/LICENSE-2.0
++	SPDX-License-Identifier: Apache-2.0
++	SPDX-FileCopyrightText: 2008, Steven Barth <steven@midlink.org>
++	SPDX-FileCopyrightText: 2008-2012, Jo-Philipp Wich <jow@openwrt.org>
++	SPDX-FileCopyrightText: 2017, Matthias Schiffer <mschiffer@universe-factory.net>
++	SPDX-FileCopyrightText: 2023, Leonardo Mörlein <me@irrelefant.net>
+ */
+ 
+ /*
+diff --git a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+index 74a4181b87..1b2e5f5c2b 100644
+--- a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
++++ b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/classes.lua
+@@ -1,6 +1,7 @@
+--- Copyright 2008 Steven Barth <steven@midlink.org>
+--- Copyright 2017-2018 Matthias Schiffer <mschiffer@universe-factory.net>
+--- Licensed to the public under the Apache License 2.0.
++-- SPDX-License-Identifier: Apache-2.0
++-- SPDX-FileCopyrightText: 2008, Steven Barth <steven@midlink.org>
++-- SPDX-FileCopyrightText: 2017-2018, Matthias Schiffer <mschiffer@universe-factory.net>
++-- SPDX-FileCopyrightText: 2023, Leonardo Mörlein <me@irrelefant.net>
+ 
+ local util = require "gluon.web.util"
+ local gluon_util = require "gluon.util"
+diff --git a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/datatypes.lua b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/datatypes.lua
+index fdee7d7dbe..31c1aa82fc 100644
+--- a/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/datatypes.lua
++++ b/package/gluon-web-model/luasrc/usr/lib/lua/gluon/web/model/datatypes.lua
+@@ -1,6 +1,6 @@
+--- Copyright 2010 Jo-Philipp Wich <jow@openwrt.org>
+--- Copyright 2017 Matthias Schiffer <mschiffer@universe-factory.net>
+--- Licensed to the public under the Apache License 2.0.
++-- SPDX-License-Identifier: Apache-2.0
++-- SPDX-FileCopyrightText: 2010, Jo-Philipp Wich <jow@openwrt.org>
++-- SPDX-FileCopyrightText: 2017, Matthias Schiffer <mschiffer@universe-factory.net>
+ 
+ local M = {}
+ 
+
+From 88c976a7f3afa576fce5388ea98a10bc853e51b4 Mon Sep 17 00:00:00 2001
+From: lemoer <git@irrelefant.net>
+Date: Sun, 26 Feb 2023 22:46:23 +0100
+Subject: [PATCH 15/15] gluon-web-network: migrate to SPDX headers for
+ licensing
+
+---
+ .../lib/gluon/config-mode/model/admin/network.lua    | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+index 1a50147b86..1c0b34721b 100644
+--- a/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
++++ b/package/gluon-web-network/luasrc/lib/gluon/config-mode/model/admin/network.lua
+@@ -1,12 +1,6 @@
+---[[
+-Copyright 2014 Nils Schneider <nils@nilsschneider.net>
+-
+-Licensed under the Apache License, Version 2.0 (the "License");
+-you may not use this file except in compliance with the License.
+-You may obtain a copy of the License at
+-
+-http://www.apache.org/licenses/LICENSE-2.0
+-]]--
++-- SPDX-License-Identifier: Apache-2.0
++-- SPDX-FileCopyrightText: 2014, Nils Schneider <nils@nilsschneider.net>
++-- SPDX-FileCopyrightText: 2023, Leonardo Mörlein <me@irrelefant.net>
+ 
+ local uci = require("simple-uci").cursor()
+ 
