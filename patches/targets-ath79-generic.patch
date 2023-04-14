@@ -1,28 +1,19 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index a5d0e484..55ccf959 100644
+index bcbf4acd..b59ca78b 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -222,6 +222,15 @@ device('netgear-wnr2200-16m', 'netgear_wnr2200-16m', {
- 	factory_ext = '.img',
- })
- 
-+device('netgear-wndr3800', 'netgear_wndr3800', {
-+	factory_ext = '.img',
-+})
-+
-+device('netgear-wndr3800ch', 'netgear_wndr3800ch', {
-+	factory_ext = '.img',
-+	aliases = {'netgear-wndr3800chmychart'},
-+})
-+
- 
- -- OCEDO
- 
-@@ -606,3 +615,7 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -606,3 +606,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
 +device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite', {
-+	packages = ATH10K_PACKAGES_QCA9888,
++	packages = ATH10K_PACKAGES_QCA9880,
++})
++
++
++-- Zyxel
++
++device('zyxel-nbg6616', 'zyxel_nbg6616', {
++	packages = ATH10K_PACKAGES_QCA9880,
 +})
