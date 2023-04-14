@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index bcbf4acd..b59ca78b 100644
+index e9083bea..e1300b89 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -606,3 +606,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
