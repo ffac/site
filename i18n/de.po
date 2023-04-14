@@ -29,7 +29,7 @@ msgstr ""
 msgid "gluon-config-mode:novpn"
 msgstr ""
 "<p>Du hast dich entschieden, das VPN-Netzwerk <strong>nicht</strong> zu nutzen. "
-"Dein Knoten kann sich nur dann mit dem Freifunk-Netzwerk verbinden, wenn andere Knoten in Reichweite bereits eine Verbindung haben.</p>
+"Dein Knoten kann sich nur dann mit dem Freifunk-Netzwerk verbinden, wenn andere Knoten in Reichweite bereits eine Verbindung haben.</p>"
 
 msgid "gluon-config-mode:reboot"
 msgstr ""
