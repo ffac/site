@@ -1,6 +1,6 @@
 GLUON_BUILD_DIR := gluon-build
 GLUON_GIT_URL := https://github.com/ffac/gluon.git
-GLUON_GIT_REF := 7c71eb5571c516b43d12a896127fee0dff760e40 #next v2023.1.x
+GLUON_GIT_REF := 53dce4944abf1405373eacb53d3dc305d28364f2 #next v2023.1.x
 
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
@@ -20,7 +20,8 @@ endif
 
 JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
 
-GLUON_MAKE := ${MAKE} --no-print-directory -C ${GLUON_BUILD_DIR} \
+GLUON_MAKE := ${MAKE} -j ${JOBS} --no-print-directory -C ${GLUON_BUILD_DIR} \
+	BROKEN=1 \
 	GLUON_RELEASE=${GLUON_RELEASE} \
 	GLUON_AUTOUPDATER_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
 	GLUON_AUTOUPDATER_ENABLED=${GLUON_AUTOUPDATER_ENABLED}
@@ -38,7 +39,7 @@ info:
 build: gluon-prepare
 	for target in ${GLUON_TARGETS}; do \
 		echo ""Building target $$target""; \
-		${GLUON_MAKE} -j ${JOBS} download all BROKEN=1 GLUON_TARGET="$$target"; \
+		${GLUON_MAKE} download all BROKEN=1 GLUON_TARGET="$$target"; \
 	done
 
 manifest: build
