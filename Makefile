@@ -62,8 +62,8 @@ gluon-prepare: output-clean ${GLUON_BUILD_DIR}
 		&& git checkout -q --force ${GLUON_GIT_REF} \
 		&& git clean -fd;
 	ln -sfT .. ${GLUON_BUILD_DIR}/site
-	make gluon-patch
-	${GLUON_MAKE} update
+	${MAKE} gluon-patch
+	${GLUON_MAKE} -j1 update
 
 gluon-patch:
 	echo "Applying Patches ..."
