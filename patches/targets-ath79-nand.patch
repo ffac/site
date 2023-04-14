@@ -10,6 +10,6 @@ index 7dff2453..a29d448c 100644
 +-- Zyxel
 +
 +device('zyxel-nbg6716', 'zyxel_nbg6716', {
-+	packages = ATH10K_PACKAGES_QCA9888,
++	packages = ATH10K_PACKAGES_QCA9880,
 +	sysupgrade_ext = '.tar',
 +})
