@@ -3,6 +3,12 @@
 
 ## v2021.1.x
 
+## v2021.1.10
+  - remove upstreamed patch (vxlan)
+  - fix a few bugs introduced by merging branch 22
+  - update translation
+  - update gluon to newest commit in branch v2021.1.x
+
 ## v2021.1.9
   - update segments
   - add djfe signing key
