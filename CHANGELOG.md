@@ -2,6 +2,14 @@
 
 ## v2022.1.x
 
+## v2022.1.14
+ - update to latest gluon v2022.1.x
+ - use batman_iv
+ - this release changes the autoupdater to stable
+ - add french site support
+ - use new broker and second supernode
+ - fixes for registration script
+
 ## v2022.1.13
  - update segments
  - update gluon to v2022.1.3
