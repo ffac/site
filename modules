@@ -1,7 +1,7 @@
 GLUON_SITE_FEEDS="ffac eulenfunk ffho"
 
 PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-mesh-vpn-wireguard.git
-PACKAGES_FFAC_COMMIT=fb9dd6ae7eb80c8ad8d88b3088dd592569cf8860
+PACKAGES_FFAC_COMMIT=5a9c3f70e42ec98fe1d8e17add8383cabaf6da78
 PACKAGES_FFAC_BRANCH=main
 
 PACKAGES_EULENFUNK_REPO=https://github.com/ffac/eulenfunk-packages.git
