@@ -4,6 +4,10 @@
 ## v2021.1.x
 
 ## v2021.1.10
+  - use wg-broker.freifunk-aachen.de
+  - use 02.wg-node.freifunk-aachen.de
+  - switch to BATMAN_IV
+  - remove BATMAN_V patches
   - remove upstreamed patch (vxlan)
   - fix a few bugs introduced by merging branch 22
   - update translation
