@@ -36,7 +36,8 @@ GLUON_SITE_PACKAGES := \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
-# GLUON_FEATURES_standard := wireless-encryption-wpa3
+# wireless-encryption-wpa3
+GLUON_FEATURES_standard := web-cellular
 
 DEFAULT_GLUON_RELEASE := 2022.1-1~exp$(shell date '+%Y%m%d%H')
 
