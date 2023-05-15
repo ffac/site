@@ -1,8 +1,20 @@
 diff --git a/targets/ath79-nand b/targets/ath79-nand
-index 7dff2453..a29d448c 100644
+index ddbbc7c9..6e654cc4 100644
 --- a/targets/ath79-nand
 +++ b/targets/ath79-nand
-@@ -47,3 +47,10 @@ device('zte-mf281', 'zte_mf281', {
+@@ -1,3 +1,11 @@
++local ATH10K_PACKAGES_QCA9880 = {
++	'kmod-ath10k',
++	'-kmod-ath10k-ct',
++	'-kmod-ath10k-ct-smallbuffers',
++	'ath10k-firmware-qca988x',
++	'-ath10k-firmware-qca988x-ct',
++}
++
+ local ATH10K_PACKAGES_QCA9887 = {
+ 	'kmod-ath10k',
+ 	'-kmod-ath10k-ct',
+@@ -52,3 +60,10 @@ device('zte-mf281', 'zte_mf281', {
  	broken = true,
  	packages = ATH10K_PACKAGES_QCA9888,
  })
