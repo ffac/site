@@ -29,22 +29,22 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     iwinfo \
-    gluon-ssid-changer \
-    ff-change-autoupdater \
-    ffho-autoupdater-wifi-fallback \
-    ff-wg-registration \
+    ffac-ssid-changer \
+    ffac-change-autoupdater \
+    ffac-autoupdater-wifi-fallback \
+    ffac-wg-registration \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
 # wireless-encryption-wpa3
 GLUON_FEATURES_standard := web-cellular
 
-DEFAULT_GLUON_RELEASE := 2022.1-1~exp$(shell date '+%Y%m%d%H')
+DEFAULT_GLUON_RELEASE := 2023.1.0~exp$(shell date '+%Y%m%d%H')
 
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := v2022.1.x
+DEFAULT_GLUON_CHECKOUT := master
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
