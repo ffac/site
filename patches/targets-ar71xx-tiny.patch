@@ -1,0 +1,30 @@
+diff --git a/targets/ar71xx-tiny b/targets/ar71xx-tiny
+index a0a8d510..32baa321 100644
+--- a/targets/ar71xx-tiny
++++ b/targets/ar71xx-tiny
+@@ -18,9 +18,9 @@ defaults {
+ 
+ -- D-Link
+ 
+-device('d-link-dir-615-rev-c1', 'dir-615-c1', {
+-	profile = 'DIR615C1',
+-})
++--device('d-link-dir-615-rev-c1', 'dir-615-c1', {
++--	profile = 'DIR615C1',
++--})
+ 
+ 
+ -- TP-Link
+@@ -126,8 +126,8 @@ device('tp-link-tl-mr3020-v1', 'tl-mr3020-v1')
+ device('tp-link-tl-mr3040-v1', 'tl-mr3040-v1')
+ device('tp-link-tl-mr3040-v2', 'tl-mr3040-v2')
+ 
+-device('tp-link-tl-mr3220-v1', 'tl-mr3220-v1')
+-device('tp-link-tl-mr3220-v2', 'tl-mr3220-v2')
++--device('tp-link-tl-mr3220-v1', 'tl-mr3220-v1')
++--device('tp-link-tl-mr3220-v2', 'tl-mr3220-v2')
+ 
+-device('tp-link-tl-mr3420-v1', 'tl-mr3420-v1')
+-device('tp-link-tl-mr3420-v2', 'tl-mr3420-v2')
++--device('tp-link-tl-mr3420-v1', 'tl-mr3420-v1')
++--device('tp-link-tl-mr3420-v2', 'tl-mr3420-v2')
