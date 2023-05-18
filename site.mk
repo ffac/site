@@ -1,4 +1,4 @@
-##	gluon site.mk Freifunk Regio Aachen
+﻿##	gluon site.mk Freifunk Regio Aachen
 GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
@@ -30,10 +30,9 @@ GLUON_FEATURES := \
 # ffho-autoupdater-wifi-fallback \
 GLUON_SITE_PACKAGES := \
     iwinfo \
-    gluon-ssid-changer \
-    ff-change-autoupdater \
-    ffho-autoupdater-wifi-fallback \
-    ff-wg-registration \
+    ffac-ssid-changer \
+    ffac-autoupdater-wifi-fallback \
+    ffac-wg-registration \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
@@ -44,7 +43,7 @@ DEFAULT_GLUON_RELEASE := 2023.1-1~exp$(shell date '+%Y%m%d%H')
 # Allow overriding the release number from the command line
 GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
 
-DEFAULT_GLUON_CHECKOUT := v2023.1.x
+DEFAULT_GLUON_CHECKOUT := v2023.2.x
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 

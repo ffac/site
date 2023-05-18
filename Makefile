@@ -1,6 +1,6 @@
 GLUON_BUILD_DIR := gluon-build
 GLUON_GIT_URL := https://github.com/ffac/gluon.git
-GLUON_GIT_REF := next #v2023.1.x
+GLUON_GIT_REF := next #v2023.2.x
 
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
@@ -43,7 +43,7 @@ build: gluon-prepare
 	done
 
 manifest: build
-	for branch in experimental testing stable; do \
+	for branch in experimental beta stable; do \
 		${GLUON_MAKE} manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
 	done
 	mv -f ${GLUON_BUILD_DIR}/output/* ./output/
