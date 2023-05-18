@@ -43,7 +43,7 @@ build: gluon-prepare
 	done
 
 manifest: build
-	for branch in experimental testing stable; do \
+	for branch in experimental beta stable; do \
 		${GLUON_MAKE} manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
 	done
 	mv -f ${GLUON_BUILD_DIR}/output/* ./output/
