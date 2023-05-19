@@ -29,10 +29,9 @@ GLUON_FEATURES := \
 
 GLUON_SITE_PACKAGES := \
     iwinfo \
-    gluon-ssid-changer \
-    ff-change-autoupdater \
-    ffho-autoupdater-wifi-fallback \
-    ff-wg-registration \
+    ffac-ssid-changer \
+    ffac-autoupdater-wifi-fallback \
+    ffac-wg-registration \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
