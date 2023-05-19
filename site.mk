@@ -32,6 +32,7 @@ GLUON_SITE_PACKAGES := \
     ffac-ssid-changer \
     ffac-autoupdater-wifi-fallback \
     ffac-wg-registration \
+    ffac-scheduled-sysupgrade \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
