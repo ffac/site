@@ -36,8 +36,10 @@ GLUON_SITE_PACKAGES := \
 # gluon-mesh-wireless-sae
 # wireless-encryption-wpa3
 GLUON_FEATURES_standard := \
-    ffac-autoupdater-wifi-fallback \
-    web-cellular \
+    web-cellular
+
+GLUON_SITE_PACKAGES_tiny := \
+    ffac-autoupdater-wifi-fallback
 
 DEFAULT_GLUON_RELEASE := 2023.1.0~exp$(shell date '+%Y%m%d%H')
 
