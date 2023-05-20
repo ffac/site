@@ -39,7 +39,7 @@ GLUON_SITE_PACKAGES := \
 GLUON_FEATURES_standard := \
     web-cellular
 
-GLUON_SITE_PACKAGES_tiny := \
+GLUON_SITE_PACKAGES_standard := \
     ffac-autoupdater-wifi-fallback
 
 
