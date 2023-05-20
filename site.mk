@@ -31,12 +31,14 @@ GLUON_FEATURES := \
 GLUON_SITE_PACKAGES := \
     iwinfo \
     ffac-ssid-changer \
-    ffac-autoupdater-wifi-fallback \
     ffac-wg-registration \
     respondd-module-airtime
 
 # gluon-mesh-wireless-sae
-# GLUON_FEATURES_standard := wireless-encryption-wpa3
+# wireless-encryption-wpa3
+GLUON_FEATURES_standard := \
+    ffac-autoupdater-wifi-fallback \
+    web-cellular \
 
 DEFAULT_GLUON_RELEASE := 2023.1-1~exp$(shell date '+%Y%m%d%H')
 
