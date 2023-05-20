@@ -1,6 +1,11 @@
 # Freifunk Aachen Firmware Changelog
 
-## v2022.1.x
+## v2022.1.14-1
+ - use ffac/community-packages for all packages
+ - switch to ffac-bat4-mesh as new mesh id
+ - this release does therefore not mesh with previous versions
+ - built from gluon v2022.1.4
+ - fixes autoupdater-wifi-fallback
 
 ## v2022.1.14
  - update to latest gluon v2022.1.x
