@@ -38,7 +38,7 @@ GLUON_SITE_PACKAGES := \
 GLUON_FEATURES_standard := \
     web-cellular
 
-GLUON_SITE_PACKAGES_tiny := \
+GLUON_SITE_PACKAGES_standard := \
     ffac-autoupdater-wifi-fallback
 
 DEFAULT_GLUON_RELEASE := 2023.1.0~exp$(shell date '+%Y%m%d%H')
