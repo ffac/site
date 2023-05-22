@@ -33,7 +33,7 @@ GLUON_SITE_PACKAGES := \
     gluon-ssid-changer \
     gluon-weeklyreboot \
     ffho-autoupdater-wifi-fallback \
-    ff-mesh-vpn-wireguard-openwrt19 \
+    ffac-mesh-vpn-wireguard-openwrt19 \
     respondd-module-airtime
 
 DEFAULT_GLUON_RELEASE := 2021.1-1~exp$(shell date '+%Y%m%d%H')
