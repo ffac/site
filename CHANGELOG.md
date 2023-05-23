@@ -3,6 +3,9 @@
 
 ## v2021.1.2-x
 
+## v2021.1.2-11
+  - fix mesh_vpn
+
 ## v2021.1.2-10
   - use wg-broker.freifunk-aachen.de
   - use 02.wg-node.freifunk-aachen.de

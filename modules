@@ -1,7 +1,7 @@
 GLUON_SITE_FEEDS="ffac eulenfunk ffho"
 
 PACKAGES_FFAC_REPO=https://github.com/ffac/community-packages.git
-PACKAGES_FFAC_COMMIT=b5021af43a203d2adb029d599acaa99ffd7b8b94
+PACKAGES_FFAC_COMMIT=f4bfb3687422bd6bed7ca7280c43446c22cdf9fe
 PACKAGES_FFAC_BRANCH=master
 
 
