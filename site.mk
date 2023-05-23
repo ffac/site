@@ -22,12 +22,6 @@ GLUON_FEATURES := \
 #		selection that would be enabled by default or due to the
 #		chosen feature flags
 
-
-# -gluon-status-page
-#ffac-status-page
-# custom status page without contact information
-
-# ffho-autoupdater-wifi-fallback \
 GLUON_SITE_PACKAGES := \
     iwinfo \
     ffac-ssid-changer \
@@ -41,7 +35,6 @@ GLUON_FEATURES_standard := \
 
 GLUON_SITE_PACKAGES_standard := \
     ffac-autoupdater-wifi-fallback
-
 
 DEFAULT_GLUON_RELEASE := 2023.2.0-1~exp$(shell date '+%Y%m%d%H')
 
