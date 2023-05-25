@@ -1,8 +1,12 @@
-GLUON_SITE_FEEDS="ssidchanger ffac eulenfunk ffho"
+GLUON_SITE_FEEDS="ssidchanger ffac ffaccp eulenfunk ffho"
 
 PACKAGES_SSIDCHANGER_REPO=https://github.com/ffac/gluon-ssid-changer.git
 PACKAGES_SSIDCHANGER_COMMIT=f962ab17723be144849ff988909e3a794d612d56
 PACKAGES_SSIDCHANGER_BRANCH=2019.1.x
+
+PACKAGES_FFACCP_REPO=https://github.com/ffac/community-packages.git
+PACKAGES_FFACCP_COMMIT=f4bfb3687422bd6bed7ca7280c43446c22cdf9fe
+PACKAGES_FFACCP_BRANCH=master
 
 PACKAGES_FFAC_REPO=https://github.com/ffac/ffac-status-page-api.git
 PACKAGES_FFAC_COMMIT=62c19102406a12ad613cb813acbbce0f4641404f

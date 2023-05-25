@@ -1,4 +1,4 @@
-##	gluon site.mk Freifunk Regio Aachen
+﻿##	gluon site.mk Freifunk Regio Aachen
 
 ##	GLUON_FEATURES
 #		Specify Gluon features/packages to enable;
@@ -30,7 +30,8 @@ GLUON_SITE_PACKAGES := \
 	ffac-status-page \
 	gluon-weeklyreboot \
 	iwinfo \
-	haveged
+        haveged \
+	ffac-scheduled-sysupgrade
 
 # add offline ssid and other wifi related packages only if the target has wifi
 INCLUDE_WIFI_EXTRAS := \
