@@ -23,7 +23,7 @@ JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
 GLUON_MAKE := ${MAKE} -j ${JOBS} --no-print-directory -C ${GLUON_BUILD_DIR} \
 	BROKEN=1 \
 	GLUON_RELEASE=${GLUON_RELEASE} \
-	GLUON_AUTOUPDATER_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
+	GLUON_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
 	GLUON_AUTOUPDATER_ENABLED=${GLUON_AUTOUPDATER_ENABLED}
 
 all: info
@@ -44,7 +44,7 @@ build: gluon-prepare
 
 manifest: build
 	for branch in experimental beta stable; do \
-		${GLUON_MAKE} manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
+		${GLUON_MAKE} manifest GLUON_BRANCH=$$branch;\
 	done
 	mv -f ${GLUON_BUILD_DIR}/output/* ./output/
 

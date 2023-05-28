@@ -13,3 +13,10 @@ a problem.
 [wiki]: https://wiki.freifunk.net/Freifunk_Aachen/Firmware#Dokumentation
 [CC0]: https://creativecommons.org/publicdomain/zero/1.0/deed.en
 
+# As git protocol is deprecated on github switch to https instead
+
+Info: https://github.blog/2021-09-01-improving-git-protocol-security-github/
+
+To fix this, use this line:
+
+`git config --global url.https://github.com/.insteadOf git://github.com/`
