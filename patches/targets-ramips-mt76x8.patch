@@ -1,7 +1,20 @@
 diff --git a/targets/ramips-mt76x8 b/targets/ramips-mt76x8
-index b11b7672..95a4c343 100644
+index 1ebce768..7584d372 100644
 --- a/targets/ramips-mt76x8
 +++ b/targets/ramips-mt76x8
+@@ -20,9 +20,9 @@ device('gl.inet-vixmini', 'glinet_vixmini', {
+ 
+ -- Netgear
+ 
+-device('netgear-r6020', 'netgear_r6020', {
+-	factory_ext = '.img',
+-})
++--device('netgear-r6020', 'netgear_r6020', {
++--	factory_ext = '.img',
++--})
+ 
+ device('netgear-r6120', 'netgear_r6120', {
+ 	factory_ext = '.img',
 @@ -80,6 +80,14 @@ device('tp-link-tl-mr3420-v5', 'tplink_tl-mr3420-v5', {
  	},
  })
