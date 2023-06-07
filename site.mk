@@ -169,7 +169,6 @@ GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
 endif
 
 ifeq ($(GLUON_TARGET),brcm2708-bcm2709)
-GLUON_SITE_PACKAGES += \
 GLUON_SITE_PACKAGES += $(INCLUDE_WIFI_EXTRAS) \
         kmod-usb-core \
         kmod-usb2 \
@@ -223,4 +222,4 @@ GLUON_LANGS ?= en de
 
 GLUON_WLAN_MESH ?= 11s
 
-GLUON_DEPRECATED ?= full
+GLUON_DEPRECATED ?= upgrade
