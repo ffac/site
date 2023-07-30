@@ -4,6 +4,7 @@ GLUON_GIT_REF := v2022.1.4
 
 PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
 SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
+OPKG_KEY_BUILD_DIR ?= ${HOME}/.key-build
 
 GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
 GLUON_AUTOUPDATER_BRANCH := stable
@@ -37,10 +38,13 @@ info:
 	@echo
 
 build: gluon-prepare
+	cp OPKG_KEY_BUILD_DIR/* ${GLUON_BUILD_DIR}/openwrt || true
 	for target in ${GLUON_TARGETS}; do \
 		echo ""Building target $$target""; \
-		${GLUON_MAKE} download all GLUON_TARGET="$$target"; \
+		${GLUON_MAKE} download all GLUON_TARGET="$$target" CONFIG_JSON_ADD_IMAGE_INFO=1; \
 	done
+	mkdir -p ${GLUON_BUILD_DIR}/output/opkg-packages
+	cp -r ${GLUON_BUILD_DIR}/openwrt/bin/packages ${GLUON_BUILD_DIR}/output/opkg-packages/gluon-ffac-${GLUON_RELEASE}/
 
 manifest: build
 	for branch in experimental beta stable; do \
