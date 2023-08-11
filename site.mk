@@ -26,6 +26,7 @@ GLUON_FEATURES := $(GLUON_FEATURES:\n= )
 define GLUON_FEATURES_standard :=
 
 endef
+# web-cellular
 # wireless-encryption-wpa3
 # gluon-mesh-wireless-sae
 GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
