@@ -248,3 +248,5 @@ Makefile: ;
 FORCE: ;
 
 .SUFFIXES: ;
+
+.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch update-patches gluon-clean output-clean
