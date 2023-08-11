@@ -6,7 +6,7 @@ GLUON_BUILD_DIR := gluon-build
 export GLUON_SITEDIR := ..
 PATCH_DIR := patches
 SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
-OPKG_KEY_BUILD_DIR ?= $(HOME)/.key-build
+OPKG_KEY_FOLDER ?= $(HOME)/.key-build
 
 
 ## Create version scheme
@@ -102,7 +102,7 @@ manifest: build
 	done
 
 build: gluon-prepare output-clean
-	cp OPKG_KEY_BUILD_DIR/* $(GLUON_BUILD_DIR)/openwrt || true
+	cp OPKG_KEY_FOLDER/* $(GLUON_BUILD_DIR)/openwrt || true
 	+for target in $(GLUON_TARGETS); do \
 		echo ''Building target $$target''; \
 		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
