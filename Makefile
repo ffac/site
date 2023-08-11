@@ -138,12 +138,18 @@ manifest: build
 	done
 
 build: gluon-prepare output-clean
-	+for target in $(GLUON_TARGETS); do \
+	+@for target in $(GLUON_TARGETS); do \
+		echo ''; \
 		echo ''Building target $$target''; \
 		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
 	done
-	mkdir -p $(GLUON_BUILD_DIR)/output/opkg-packages
-	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
+	@if [ ! -f "$(OPKG_KEY_FOLDER)/key-build" ]; then \
+		echo 'Copying new opkg keys to $(OPKG_KEY_FOLDER)'; \
+		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
+	fi
+	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
+	mkdir -p output/packages/$(PACKAGES_BRANCH)
+	rsync -a --exclude '*/base' --exclude '*/luci' --exclude '*/packages' --exclude '*/routing' --exclude '*/telephony' $(GLUON_BUILD_DIR)/openwrt/bin/packages/ output/packages/$(PACKAGES_BRANCH)/
 
 gluon-prepare: gluon-update ffac-patch | .modules
 
