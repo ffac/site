@@ -120,6 +120,10 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 all: manifest
 
 sign: manifest | $(SECRET_KEY_FILE)
+ifndef GLUON_DEVICES
+	echo "make sign hasn't been designed to work while GLUON_DEVICES is set."
+	exit 1
+endif
 	@for branch in experimental beta stable; do \
 		echo ''; \
 		echo ''Signing $$branch.manifest''; \
@@ -147,9 +151,11 @@ build: gluon-prepare output-clean
 		echo 'Copying new opkg keys to $(OPKG_KEY_FOLDER)'; \
 		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
 	fi
+ifndef GLUON_DEVICES
 	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
 	mkdir -p output/packages/$(PACKAGES_BRANCH)
 	rsync -a --exclude '*/base' --exclude '*/luci' --exclude '*/packages' --exclude '*/routing' --exclude '*/telephony' $(GLUON_BUILD_DIR)/openwrt/bin/packages/ output/packages/$(PACKAGES_BRANCH)/
+endif
 
 gluon-prepare: gluon-update ffac-patch | .modules
 
@@ -184,15 +190,26 @@ ffac-patch: gluon-update
 	fi
 	@touch .modules
 
+
+## Cleanup rules
+devices-clean:
+	mkdir -p devices/
+	rm -rf devices/*
+
 gluon-clean:
 	rm -f .modules
 	rm -rf $(GLUON_BUILD_DIR)
 	@echo
 
 output-clean:
+ifdef GLUON_DEVICES
+	mkdir -p devices/
+else
 	mkdir -p output/
 	rm -rf output/*
+endif
+	@echo
 
-clean: gluon-clean output-clean
+clean: gluon-clean output-clean devices-clean
 
 FORCE: ;
