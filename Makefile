@@ -190,6 +190,37 @@ ffac-patch: gluon-update
 	fi
 	@touch .modules
 
+update-patches: gluon-update | .modules
+	@echo
+	@echo 'Updating our patches…'
+	@if [ `$(GLUON_GIT) branch --list refresh` ]; then \
+		$(GLUON_GIT) branch -D refresh; \
+	fi
+	@$(GLUON_GIT) restore .
+	@$(GLUON_GIT) clean -fd -q
+	@$(GLUON_GIT) checkout -B refreshing
+	@$(GLUON_GIT) commit --allow-empty -m "Patches" -q
+	+@for file in $(PATCH_FILES); do \
+		echo ''; \
+		echo ''Refreshing $$file''; \
+		(git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $$file) && true;\
+		EXIT_CODE=$$?; \
+		if [ $$EXIT_CODE -ne 0 ]; then \
+			echo ''Error applying patch $$file''; \
+			$(GLUON_GIT) clean -fd -q; \
+			$(GLUON_GIT) checkout -B refresh; \
+			$(GLUON_GIT) branch -D refreshing; \
+			break; \
+		else \
+			echo 'Updating Gluon patches'; \
+			$(GLUON_MAKE) update-patches >/dev/null 2>&1; \
+			$(GLUON_GIT) add --all; \
+			$(GLUON_GIT) diff --staged > $$file; \
+			$(GLUON_GIT) commit -a --amend --no-edit -q; \
+		fi; \
+	done; exit $$EXIT_CODE
+	@$(GLUON_GIT) branch -M refresh
+
 
 ## Cleanup rules
 devices-clean:
