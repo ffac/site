@@ -56,6 +56,7 @@ MAKEFLAGS += --no-print-directory
 MAKEFLAGS += --output-sync
 
 GLUON_MAKE = $(MAKE) -C $(GLUON_BUILD_DIR)
+GLUON_GIT = git -C $(GLUON_BUILD_DIR)
 
 
 ## Build strings for INFO
@@ -94,19 +95,25 @@ $(info $(INFO))
 endif
 
 
+## Prepare folders
 $(GLUON_BUILD_DIR):
 	mkdir -p $(GLUON_BUILD_DIR)
+	@echo
 
 # Note: "|" means "order only", e.g. "do not care about folder timestamps"
+# In other words: call requirement when file/folder doesn't exist instead of when it is outdated.
+# e.g. after running gluon-clean but not on every run.
 # https://www.gnu.org/savannah-checkouts/gnu/make/manual/html_node/Prerequisite-Types.html
 $(GLUON_BUILD_DIR)/.git: | $(GLUON_BUILD_DIR)
-	git init $(GLUON_BUILD_DIR)
-	cd $(GLUON_BUILD_DIR) && git remote add origin $(GLUON_GIT_URL)
+	@git init $(GLUON_BUILD_DIR) -b master
+	@$(GLUON_GIT) remote add origin $(GLUON_GIT_URL)
 
 gluon-update: | $(GLUON_BUILD_DIR)/.git
-	cd $(GLUON_BUILD_DIR) && git fetch --tags origin $(GLUON_GIT_REF)
-	cd $(GLUON_BUILD_DIR) && git reset --hard FETCH_HEAD
-	cd $(GLUON_BUILD_DIR) && git clean -fd
+	@$(GLUON_GIT) fetch --tags origin $(GLUON_GIT_REF)
+	@$(GLUON_GIT) checkout master >/dev/null 2>&1 || exit 0
+	@$(GLUON_GIT) reset --hard FETCH_HEAD
+	@$(GLUON_GIT) clean -fd
+	@echo
 
 
 ## Build rules
@@ -134,26 +141,25 @@ build: gluon-prepare output-clean
 	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
 
 gluon-prepare: gluon-update
-	make gluon-patch
+	make ffac-patch
 	+$(GLUON_MAKE) update
 
-gluon-patch:
-	echo 'Applying Patches ...'
-	(cd $(GLUON_BUILD_DIR))
-			if [ `git branch --list patched` ]; then \
-				(git branch -D patched) \
-			fi
-	(cd $(GLUON_BUILD_DIR); git checkout -B patching)
-	if [ -d 'gluon-build/site/patches' -a 'gluon-build/site/patches/*.patch' ]; then \
-		(cd $(GLUON_BUILD_DIR); git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose site/patches/*.patch) || ( \
-			cd $(GLUON_BUILD_DIR); \
-			git clean -fd; \
-			git checkout -B patched; \
-			git branch -D patching; \
+PATCH_FILES = $(shell find $(PATCH_DIR)/ -type f -name '*.patch')
+ffac-patch:
+	@echo 'Applying patches…'
+	@if [ `$(GLUON_GIT) branch --list patched` ]; then \
+		$(GLUON_GIT) branch -D patched; \
+	fi
+	@$(GLUON_GIT) checkout -B patching
+	@if [ -d "$(PATCH_DIR)" -a "$(PATCH_DIR)/*.patch" ]; then \
+		(git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $(PATCH_FILES)) || ( \
+			$(GLUON_GIT) clean -fd; \
+			$(GLUON_GIT) checkout -B patched; \
+			$(GLUON_GIT) branch -D patching; \
 			exit 1 \
 		) \
 	fi
-	(cd $(GLUON_BUILD_DIR); git branch -M patched)
+	@$(GLUON_GIT) branch -M patched
 
 gluon-clean:
 	rm -rf $(GLUON_BUILD_DIR)
