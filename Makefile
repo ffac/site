@@ -119,8 +119,12 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 ## Build rules
 all: manifest
 
-sign: manifest
-	$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$(GLUON_AUTOUPDATER_BRANCH).manifest
+sign: manifest | $(SECRET_KEY_FILE)
+	@for branch in experimental beta stable; do \
+		echo ''; \
+		echo ''Signing $$branch.manifest''; \
+		$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$$branch.manifest; \
+	done
 
 # Note: $(GLUON_MAKE) is a recursive variable so it doesn't count as a $(MAKE).
 # "+" tells MAKE that there is another $(MAKE) in the following shell script.
