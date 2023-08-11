@@ -3,29 +3,27 @@ GLUON_GIT_REF := v2022.1.4
 GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
 GLUON_BUILD_DIR := gluon-build
 
-PATCH_DIR := $(GLUON_BUILD_DIR)/site/patches
+export GLUON_SITEDIR := ..
+PATCH_DIR := patches
 SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
 OPKG_KEY_BUILD_DIR ?= $(HOME)/.key-build
 
-GLUON_AUTOUPDATER_BRANCH := stable
-
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
-	GLUON_AUTOUPDATER_ENABLED := 1
 	GLUON_RELEASE := $(shell git describe --tags 2>/dev/null)
 else
-	GLUON_AUTOUPDATER_ENABLED := 1
 	EXP_FALLBACK = $(shell date '+%Y%m%d')
 	BUILD_NUMBER ?= $(EXP_FALLBACK)
 	GLUON_RELEASE := $(shell git describe --tags)~exp$(BUILD_NUMBER)
 endif
+export GLUON_RELEASE
 
-JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
+## Setup MAKE
+JOBS ?= $(shell cat /proc/cpuinfo | grep -c ^processor)
+MAKEFLAGS += -j$(JOBS)
+MAKEFLAGS += --no-print-directory
+MAKEFLAGS += --output-sync
 
-GLUON_MAKE := $(MAKE) -j $(JOBS) --no-print-directory -C $(GLUON_BUILD_DIR) \
-    BROKEN=1 \
-	GLUON_RELEASE=$(GLUON_RELEASE) \
-	GLUON_AUTOUPDATER_BRANCH=$(GLUON_AUTOUPDATER_BRANCH) \
-	GLUON_AUTOUPDATER_ENABLED=$(GLUON_AUTOUPDATER_ENABLED)
+GLUON_MAKE = $(MAKE) -C $(GLUON_BUILD_DIR)
 
 info:
 	@echo
@@ -54,15 +52,18 @@ all: info
 sign: manifest
 	$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$(GLUON_AUTOUPDATER_BRANCH).manifest
 
+# Note: $(GLUON_MAKE) is a recursive variable so it doesn't count as a $(MAKE).
+# "+" tells MAKE that there is another $(MAKE) in the following shell script.
+# This allows communication of MAKEFLAGS like -j to submake.
+# https://stackoverflow.com/a/60706372/2721478
 manifest: build
-	for branch in experimental beta stable; do \
+	+for branch in experimental beta stable; do \
 		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
 	done
-	mv -f $(GLUON_BUILD_DIR)/output/* ./output/
 
 build: gluon-prepare output-clean
 	cp OPKG_KEY_BUILD_DIR/* $(GLUON_BUILD_DIR)/openwrt || true
-	for target in $(GLUON_TARGETS); do \
+	+for target in $(GLUON_TARGETS); do \
 		echo ''Building target $$target''; \
 		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
 	done
@@ -71,8 +72,7 @@ build: gluon-prepare output-clean
 
 gluon-prepare: gluon-update
 	make gluon-patch
-	ln -sfT .. $(GLUON_BUILD_DIR)/site
-	$(GLUON_MAKE) update
+	+$(GLUON_MAKE) update
 
 gluon-patch:
 	echo 'Applying Patches ...'
