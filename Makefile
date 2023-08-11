@@ -1,12 +1,12 @@
-GLUON_BUILD_DIR := gluon-build
 GLUON_GIT_URL := https://github.com/freifunk-gluon/gluon.git
 GLUON_GIT_REF := v2022.1.4
+GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
+GLUON_BUILD_DIR := gluon-build
 
 PATCH_DIR := $(GLUON_BUILD_DIR)/site/patches
 SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
 OPKG_KEY_BUILD_DIR ?= $(HOME)/.key-build
 
-GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
 GLUON_AUTOUPDATER_BRANCH := stable
 
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
@@ -27,33 +27,12 @@ GLUON_MAKE := $(MAKE) -j $(JOBS) --no-print-directory -C $(GLUON_BUILD_DIR) \
 	GLUON_AUTOUPDATER_BRANCH=$(GLUON_AUTOUPDATER_BRANCH) \
 	GLUON_AUTOUPDATER_ENABLED=$(GLUON_AUTOUPDATER_ENABLED)
 
-all: info
-	$(MAKE) manifest
-
 info:
 	@echo
 	@echo '#########################'
 	@echo '# FFAC Firmware build'
 	@echo '# Building release $(GLUON_RELEASE) for branch $(GLUON_AUTOUPDATER_BRANCH)'
 	@echo
-
-build: gluon-prepare output-clean
-	cp OPKG_KEY_BUILD_DIR/* $(GLUON_BUILD_DIR)/openwrt || true
-	for target in $(GLUON_TARGETS); do \
-		echo ""Building target $$target""; \
-		$(GLUON_MAKE) download all GLUON_TARGET="$$target" CONFIG_JSON_ADD_IMAGE_INFO=1; \
-	done
-	mkdir -p $(GLUON_BUILD_DIR)/output/opkg-packages
-	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
-
-manifest: build
-	for branch in experimental beta stable; do \
-		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
-	done
-	mv -f $(GLUON_BUILD_DIR)/output/* ./output/
-
-sign: manifest
-	$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$(GLUON_AUTOUPDATER_BRANCH).manifest
 
 $(GLUON_BUILD_DIR):
 	mkdir -p $(GLUON_BUILD_DIR)
@@ -68,6 +47,27 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 	cd $(GLUON_BUILD_DIR) && git fetch --tags origin $(GLUON_GIT_REF)
 	cd $(GLUON_BUILD_DIR) && git reset --hard FETCH_HEAD
 	cd $(GLUON_BUILD_DIR) && git clean -fd
+
+all: info
+	$(MAKE) manifest
+
+sign: manifest
+	$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$(GLUON_AUTOUPDATER_BRANCH).manifest
+
+manifest: build
+	for branch in experimental beta stable; do \
+		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
+	done
+	mv -f $(GLUON_BUILD_DIR)/output/* ./output/
+
+build: gluon-prepare output-clean
+	cp OPKG_KEY_BUILD_DIR/* $(GLUON_BUILD_DIR)/openwrt || true
+	for target in $(GLUON_TARGETS); do \
+		echo ""Building target $$target""; \
+		$(GLUON_MAKE) download all GLUON_TARGET="$$target" CONFIG_JSON_ADD_IMAGE_INFO=1; \
+	done
+	mkdir -p $(GLUON_BUILD_DIR)/output/opkg-packages
+	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
 
 gluon-prepare: gluon-update
 	make gluon-patch
