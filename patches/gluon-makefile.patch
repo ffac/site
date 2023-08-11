@@ -1,0 +1,18 @@
+diff --git a/Makefile b/Makefile
+index 565a32a0..a39958fc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -111,11 +111,11 @@ update-modules: FORCE
+ update-ci: FORCE
+ 	@$(GLUON_ENV) scripts/update-ci.sh
+ 
+-GLUON_TARGETS :=
++override GLUON_TARGETS :=
+ 
+ define GluonTarget
+ gluon_target := $(1)$$(if $(2),-$(2))
+-GLUON_TARGETS += $$(gluon_target)
++override GLUON_TARGETS += $$(gluon_target)
+ GLUON_TARGET_$$(gluon_target)_BOARD := $(1)
+ GLUON_TARGET_$$(gluon_target)_SUBTARGET := $(2)
+ endef
