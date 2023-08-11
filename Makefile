@@ -1,5 +1,5 @@
-GLUON_GIT_URL := https://github.com/freifunk-gluon/gluon.git
-GLUON_GIT_REF := v2022.1.4
+## Setup Build environment variables
+include release.mk
 GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
 GLUON_BUILD_DIR := gluon-build
 
