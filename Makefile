@@ -138,7 +138,6 @@ manifest: build
 	done
 
 build: gluon-prepare output-clean
-	cp OPKG_KEY_FOLDER/* $(GLUON_BUILD_DIR)/openwrt || true
 	+for target in $(GLUON_TARGETS); do \
 		echo ''Building target $$target''; \
 		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
@@ -146,12 +145,10 @@ build: gluon-prepare output-clean
 	mkdir -p $(GLUON_BUILD_DIR)/output/opkg-packages
 	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
 
-gluon-prepare: gluon-update
-	make ffac-patch
-	+$(GLUON_MAKE) update
+gluon-prepare: gluon-update ffac-patch | .modules
 
 PATCH_FILES = $(shell find $(PATCH_DIR)/ -type f -name '*.patch')
-ffac-patch:
+ffac-patch: gluon-update
 	@echo 'Applying patches…'
 	@if [ `$(GLUON_GIT) branch --list patched` ]; then \
 		$(GLUON_GIT) branch -D patched; \
@@ -167,11 +164,29 @@ ffac-patch:
 	fi
 	@$(GLUON_GIT) branch -M patched
 
+.cmp-git-head: FORCE | ffac-patch
+	@$(GLUON_GIT) rev-parse @{0} | cmp -s '$@' || $(GLUON_GIT) rev-parse @{0} > '$@'
+
+.modules: release.mk modules .cmp-git-head $(PATCH_DIR) $(PATCH_FILES) | ffac-patch
+	@echo
+	@echo Updating Gluon modules…
+	@rm -f .modules
+	+$(GLUON_MAKE) update
+	@if [ -f "$(OPKG_KEY_FOLDER)/key-build" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/key-build" ]; then \
+		echo 'Installing your opkg keys'; \
+		cp $(OPKG_KEY_FOLDER)/key-build* $(GLUON_BUILD_DIR)/openwrt/; \
+	fi
+	@touch .modules
+
 gluon-clean:
+	rm -f .modules
 	rm -rf $(GLUON_BUILD_DIR)
+	@echo
 
 output-clean:
 	mkdir -p output/
 	rm -rf output/*
 
 clean: gluon-clean output-clean
+
+FORCE: ;
