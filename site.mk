@@ -45,17 +45,22 @@ respondd-module-airtime
 endef
 GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
 
-DEFAULT_GLUON_RELEASE := 2022.1.4-1~exp$(shell date '+%Y%m%d%H')
+# Build everything by default
+ifeq ($(BROKEN),0)
+    override BROKEN :=
+else
+    BROKEN := 1
+endif
+GLUON_DEPRECATED := upgrade
 
-# Allow overriding the release number from the command line
-GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
-
-DEFAULT_GLUON_CHECKOUT := v2022.1.4
-
-GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
+GLUON_OUTPUTDIR := ${GLUON_SITEDIR}/output
+GLUON_PACKAGEDIR := $(GLUON_OUTPUTDIR)/packages/modules
 
 # Default priority for updates.
 GLUON_PRIORITY ?= 0
+
+# Autoupdate by default
+GLUON_AUTOUPDATER_ENABLED ?= 1
 
 # Region code required for some images; supported values: us eu
 GLUON_REGION ?= eu
