@@ -34,12 +34,42 @@ MAKEFLAGS += --output-sync
 
 GLUON_MAKE = $(MAKE) -C $(GLUON_BUILD_DIR)
 
-info:
-	@echo
-	@echo '#########################'
-	@echo '# FFAC Firmware build'
-	@echo '# Building release $(GLUON_RELEASE) for branch $(GLUON_AUTOUPDATER_BRANCH)'
-	@echo
+
+## Build strings for INFO
+define newline
+
+
+endef
+ifneq (,$(filter GLUON_TARGETS%,$(MAKEOVERRIDES)))
+	TARGETS_INFO := $(newline)\# for target(s) '$(GLUON_TARGETS)'
+endif
+ifneq (,$(filter GLUON_DEVICES%,$(MAKEOVERRIDES)))
+	DEVICE_INFO := $(newline)\# for device(s) '$(GLUON_DEVICES)'
+endif
+
+
+## Info section
+define INFO :=
+
+#########################
+# FFAC Firmware build
+# building release '$(GLUON_RELEASE)'$(TARGETS_INFO)$(DEVICE_INFO)
+#########################
+# MAKEFLAGS:
+# $(MAKEFLAGS)
+#########################
+# git url: $(GLUON_GIT_URL)
+# git ref: $(GLUON_GIT_REF)
+#########################
+# Found $(shell ls -1 $(PATCH_DIR) 2>/dev/null | wc -l) patches
+#########################
+
+endef
+# show info section for all make calls except the filtered ones
+ifneq (,$(filter-out gluon-clean output-clean clean,$(MAKECMDGOALS)))
+$(info $(INFO))
+endif
+
 
 $(GLUON_BUILD_DIR):
 	mkdir -p $(GLUON_BUILD_DIR)
@@ -55,8 +85,9 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 	cd $(GLUON_BUILD_DIR) && git reset --hard FETCH_HEAD
 	cd $(GLUON_BUILD_DIR) && git clean -fd
 
-all: info
-	$(MAKE) manifest
+
+## Build rules
+all: manifest
 
 sign: manifest
 	$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$(GLUON_AUTOUPDATER_BRANCH).manifest
