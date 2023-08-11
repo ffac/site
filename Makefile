@@ -8,14 +8,23 @@ PATCH_DIR := patches
 SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
 OPKG_KEY_BUILD_DIR ?= $(HOME)/.key-build
 
+
+## Create version scheme
+EXP_FALLBACK = $(shell date '+%Y%m%d')
+BUILD_NUMBER ?= $(EXP_FALLBACK)
+GIT_TAG := $(shell git describe --tags 2>/dev/null)
+ifeq (,$(GIT_TAG))
+ifndef GLUON_RELEASE
+$(error Set GLUON_RELEASE or create a git tag)
+endif
+endif
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
-	GLUON_RELEASE := $(shell git describe --tags 2>/dev/null)
+	GLUON_RELEASE ?= $(GIT_TAG)
 else
-	EXP_FALLBACK = $(shell date '+%Y%m%d')
-	BUILD_NUMBER ?= $(EXP_FALLBACK)
-	GLUON_RELEASE := $(shell git describe --tags)~exp$(BUILD_NUMBER)
+	GLUON_RELEASE ?= $(GIT_TAG)~exp$(BUILD_NUMBER)
 endif
 export GLUON_RELEASE
+
 
 ## Setup MAKE
 JOBS ?= $(shell cat /proc/cpuinfo | grep -c ^processor)
