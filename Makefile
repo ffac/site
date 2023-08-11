@@ -131,8 +131,10 @@ sign: manifest | $(SECRET_KEY_FILE)
 # This allows communication of MAKEFLAGS like -j to submake.
 # https://stackoverflow.com/a/60706372/2721478
 manifest: build
-	+for branch in experimental beta stable; do \
-		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
+	+@for branch in experimental beta stable; do \
+		echo ''; \
+		echo ''Creating $$branch manifest''; \
+		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch; \
 	done
 
 build: gluon-prepare output-clean
