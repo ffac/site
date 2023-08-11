@@ -1,41 +1,48 @@
 ﻿##	gluon site.mk Freifunk Regio Aachen
 GLUON_DEPRECATED=upgrade
 
-GLUON_FEATURES := \
-        autoupdater \
-        config-mode-geo-location-osm \
-        ebtables-filter-multicast \
-        ebtables-filter-ra-dhcp \
-        ebtables-limit-arp \
-        mesh-batman-adv-15 \
-        mesh-vpn-wireguard \
-        radv-filterd \
-        radvd \
-        respondd \
-        status-page \
-        web-advanced \
-        web-private-wifi \
-        web-wizard
-##	GLUON_SITE_PACKAGES
-#		Specify additional Gluon/LEDE packages to include here;
-#		A minus sign may be prepended to remove a packages from the
-#		selection that would be enabled by default or due to the
-#		chosen feature flags
+##  GLUON_FEATURES
+#       Specify Gluon features/packages to enable;
+#       Gluon will automatically enable a set of packages
+#       depending on the combination of features listed
+define GLUON_FEATURES :=
+autoupdater
+config-mode-geo-location-osm
+ebtables-filter-multicast
+ebtables-filter-ra-dhcp
+ebtables-limit-arp
+mesh-batman-adv-15
+mesh-vpn-wireguard
+radv-filterd
+radvd
+respondd
+status-page
+web-advanced
+web-private-wifi
+web-wizard
+endef
+GLUON_FEATURES := $(GLUON_FEATURES:\n= )
 
+##  GLUON_SITE_PACKAGES
+#       Specify additional Gluon/OpenWrt packages to include here;
+#       A minus sign may be prepended to remove a packages from the
+#       selection that would be enabled by default or due to the
+#       chosen feature flags
+define GLUON_SITE_PACKAGES :=
+ffac-autoupdater-wifi-fallback
+ffac-ssid-changer
+ffac-wg-registration
+iwinfo
+respondd-module-airtime
+endef
+GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
 
-# -gluon-status-page
-#ffac-status-page
-# custom status page without contact information
+define GLUON_FEATURES_standard :=
 
-GLUON_SITE_PACKAGES := \
-    iwinfo \
-    ffac-ssid-changer \
-    ffac-autoupdater-wifi-fallback \
-    ffac-wg-registration \
-    respondd-module-airtime
-
+endef
+# wireless-encryption-wpa3
 # gluon-mesh-wireless-sae
-# GLUON_FEATURES_standard := wireless-encryption-wpa3
+GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
 
 DEFAULT_GLUON_RELEASE := 2022.1.4-1~exp$(shell date '+%Y%m%d%H')
 
