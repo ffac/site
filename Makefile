@@ -63,8 +63,8 @@ manifest: build
 build: gluon-prepare output-clean
 	cp OPKG_KEY_BUILD_DIR/* $(GLUON_BUILD_DIR)/openwrt || true
 	for target in $(GLUON_TARGETS); do \
-		echo ""Building target $$target""; \
-		$(GLUON_MAKE) download all GLUON_TARGET="$$target" CONFIG_JSON_ADD_IMAGE_INFO=1; \
+		echo ''Building target $$target''; \
+		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
 	done
 	mkdir -p $(GLUON_BUILD_DIR)/output/opkg-packages
 	cp -r $(GLUON_BUILD_DIR)/openwrt/bin/packages $(GLUON_BUILD_DIR)/output/opkg-packages/gluon-ffac-$(GLUON_RELEASE)/
@@ -75,13 +75,13 @@ gluon-prepare: gluon-update
 	$(GLUON_MAKE) update
 
 gluon-patch:
-	echo "Applying Patches ..."
+	echo 'Applying Patches ...'
 	(cd $(GLUON_BUILD_DIR))
 			if [ `git branch --list patched` ]; then \
 				(git branch -D patched) \
 			fi
 	(cd $(GLUON_BUILD_DIR); git checkout -B patching)
-	if [ -d "gluon-build/site/patches" -a "gluon-build/site/patches/*.patch" ]; then \
+	if [ -d 'gluon-build/site/patches' -a 'gluon-build/site/patches/*.patch' ]; then \
 		(cd $(GLUON_BUILD_DIR); git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose site/patches/*.patch) || ( \
 			cd $(GLUON_BUILD_DIR); \
 			git clean -fd; \
