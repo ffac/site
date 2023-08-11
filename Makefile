@@ -243,4 +243,8 @@ endif
 
 clean: gluon-clean output-clean devices-clean
 
+Makefile: ;
+
 FORCE: ;
+
+.SUFFIXES: ;
