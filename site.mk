@@ -54,6 +54,9 @@ endif
 GLUON_DEPRECATED := upgrade
 
 GLUON_OUTPUTDIR := ${GLUON_SITEDIR}/output
+ifdef GLUON_DEVICES
+    GLUON_OUTPUTDIR := $(GLUON_SITEDIR)/devices
+endif
 GLUON_PACKAGEDIR := $(GLUON_OUTPUTDIR)/packages/modules
 
 # Default priority for updates.
