@@ -23,6 +23,13 @@ web-wizard
 endef
 GLUON_FEATURES := $(GLUON_FEATURES:\n= )
 
+define GLUON_FEATURES_standard :=
+
+endef
+# wireless-encryption-wpa3
+# gluon-mesh-wireless-sae
+GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
+
 ##  GLUON_SITE_PACKAGES
 #       Specify additional Gluon/OpenWrt packages to include here;
 #       A minus sign may be prepended to remove a packages from the
@@ -37,13 +44,6 @@ respondd-module-airtime
 endef
 GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
 
-define GLUON_FEATURES_standard :=
-
-endef
-# wireless-encryption-wpa3
-# gluon-mesh-wireless-sae
-GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
-
 DEFAULT_GLUON_RELEASE := 2022.1.4-1~exp$(shell date '+%Y%m%d%H')
 
 # Allow overriding the release number from the command line
@@ -53,8 +53,10 @@ DEFAULT_GLUON_CHECKOUT := v2022.1.4
 
 GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
 
+# Default priority for updates.
 GLUON_PRIORITY ?= 0
 
+# Region code required for some images; supported values: us eu
 GLUON_REGION ?= eu
 
 # Languages to include
