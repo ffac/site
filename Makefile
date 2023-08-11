@@ -1,3 +1,26 @@
+#########################
+#### Custom Options: ####
+#########################
+# GLUON_RELEASE - customize full release name
+# BUILD_NUMBER - customize only the build number of the release name
+#########################
+# GLUON_TARGETS - choose which targets to build (delimited by spaces) e.g. "ath79-generic ramips-mt7621"
+# GLUON_DEVICES - choose which devices to build (delimited by spaces) e.g. "avm-fritz-box-4020 tp-link-tl-wdr4300-v1", moves images to devices/ instead of output/, no packages are copied to the devices/ folder
+# BROKEN - set to 0 to disable building devices marked as broken
+#########################
+# GLUON_PRIORITY - set update priority (integer)
+# GLUON_AUTOUPDATER_ENABLED - set to 0 to disable the autoupdater
+# GLUON_LANGS - set to subset of (en de fr) to include less languages
+#########################
+# JOBS - set number of threads manually
+# GLUON_DEBUG set to 1 to include debug symbols (requires at least 16MB of flash, advice: also set GLUON_DEVICES, run 'make clean' before executing if you care for all packages to be rebuilt with debug symbols)
+# GLUON_MINIFY set to 0 to disable minification of scripts (lua etc.)
+#########################
+# SECRET_KEY_FILE - Path to your ECDSA signing key
+# OPKG_KEY_FOLDER - Path to your OpenWrt package signing key
+#########################
+
+
 ## Setup Build environment variables
 include release.mk
 include targets.mk
