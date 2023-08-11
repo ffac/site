@@ -2,3 +2,5 @@ gluon-build
 output
 *.orig
 *.swp
+.cmp-git-head
+.modules
