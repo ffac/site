@@ -1,6 +1,6 @@
 ## Setup Build environment variables
 include release.mk
-GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
+include targets.mk
 GLUON_BUILD_DIR := gluon-build
 
 export GLUON_SITEDIR := ..
