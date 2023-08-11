@@ -1,5 +1,6 @@
 gluon-build
 output
+devices
 *.orig
 *.swp
 *.log
