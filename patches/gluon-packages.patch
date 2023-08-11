@@ -1,5 +1,5 @@
 diff --git a/modules b/modules
-index 333b29b2..a9d9cd11 100644
+index 333b29b2..2188e92e 100644
 --- a/modules
 +++ b/modules
 @@ -12,5 +12,6 @@ PACKAGES_ROUTING_REPO=https://github.com/openwrt/routing.git

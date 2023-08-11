@@ -1,6 +1,6 @@
 diff --git a/targets/bcm27xx-bcm2711 b/targets/bcm27xx-bcm2711
 new file mode 100644
-index 00000000..ba631911
+index 00000000..90420dd0
 --- /dev/null
 +++ b/targets/bcm27xx-bcm2711
 @@ -0,0 +1,9 @@
@@ -14,10 +14,10 @@ index 00000000..ba631911
 +	},
 +})
 diff --git a/targets/targets.mk b/targets/targets.mk
-index 92b58ab8..05a74935 100644
+index 346377ea..e9674f85 100644
 --- a/targets/targets.mk
 +++ b/targets/targets.mk
-@@ -22,5 +22,6 @@ $(eval $(call GluonTarget,x86,64))
+@@ -25,5 +25,6 @@ $(eval $(call GluonTarget,x86,64))
  
  ifneq ($(BROKEN),)
  $(eval $(call GluonTarget,bcm27xx,bcm2710)) # BROKEN: Untested
