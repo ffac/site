@@ -190,33 +190,40 @@ ffac-patch: gluon-update
 	fi
 	@touch .modules
 
-update-patches: gluon-update | .modules
+
+## Patch system
+patch-prepare: gluon-update
+	@echo
+	@echo 'Updating Gluon modules…'
+	+@$(GLUON_MAKE) update >/dev/null 2>&1
+
+update-patches: patch-prepare
 	@echo
 	@echo 'Updating our patches…'
 	@if [ `$(GLUON_GIT) branch --list refresh` ]; then \
 		$(GLUON_GIT) branch -D refresh; \
 	fi
-	@$(GLUON_GIT) restore .
-	@$(GLUON_GIT) clean -fd -q
 	@$(GLUON_GIT) checkout -B refreshing
 	@$(GLUON_GIT) commit --allow-empty -m "Patches" -q
 	+@for file in $(PATCH_FILES); do \
 		echo ''; \
-		echo ''Refreshing $$file''; \
 		(git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $$file) && true;\
 		EXIT_CODE=$$?; \
 		if [ $$EXIT_CODE -ne 0 ]; then \
 			echo ''Error applying patch $$file''; \
-			$(GLUON_GIT) clean -fd -q; \
+			$(GLUON_GIT) clean -fdq; \
 			$(GLUON_GIT) checkout -B refresh; \
 			$(GLUON_GIT) branch -D refreshing; \
 			break; \
 		else \
-			echo 'Updating Gluon patches'; \
-			$(GLUON_MAKE) update-patches >/dev/null 2>&1; \
+			if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+				echo 'Refreshing Gluon patches…'; \
+				$(GLUON_MAKE) refresh-patches >/dev/null 2>&1; \
+			fi; \
+			echo ''Refreshing $$file''; \
 			$(GLUON_GIT) add --all; \
 			$(GLUON_GIT) diff --staged > $$file; \
-			$(GLUON_GIT) commit -a --amend --no-edit -q; \
+			$(GLUON_GIT) commit --amend --no-edit -q; \
 		fi; \
 	done; exit $$EXIT_CODE
 	@$(GLUON_GIT) branch -M refresh
@@ -249,4 +256,4 @@ FORCE: ;
 
 .SUFFIXES: ;
 
-.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch update-patches gluon-clean output-clean
+.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch patch-prepare update-patches gluon-clean output-clean
