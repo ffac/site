@@ -1,7 +1,9 @@
 This repository contains the site configuration for the Freifunk Aachen Gluon
 firmware.
 
-This branch is compatible to Gluon v2022.1.x which is based on OpenWRT 22.03
+This is the `v2023.1.x` branch which is compatible to current Gluon v2023.1 release using OpenWRT 22.03.
+
+It allows updates from v2021.x onwards - so v2020 or before need to migrate to v2021 or v2022 first.
 
 This config uses the upstream `gluon-mesh-vpn-wireguard` [^gluon-meshvpn] implementation.
 Registration of the wireguard keys is done using a custom `wg-registration` package which sends the key through POST to our broker.
@@ -25,7 +27,6 @@ To update the site.mk packages, the `genpkglist.py` can be executed from the bui
 The output must then be appended to the end of the `site.mk`
 
 Currently outdated further information can be found in the Freifunk Wiki[^wiki]
-
 
 
 [^wiki]: https://wiki.freifunk.net/Freifunk_Aachen/Firmware#Dokumentation
