@@ -1,57 +1,70 @@
 ﻿##	gluon site.mk Freifunk Regio Aachen
-GLUON_DEPRECATED=upgrade
 
-GLUON_FEATURES := \
-        autoupdater \
-        config-mode-geo-location-osm \
-        ebtables-filter-multicast \
-        ebtables-filter-ra-dhcp \
-        ebtables-limit-arp \
-        mesh-batman-adv-15 \
-        mesh-vpn-wireguard \
-        radv-filterd \
-        radvd \
-        respondd \
-        status-page \
-        web-advanced \
-        web-private-wifi \
-        web-wizard
-##	GLUON_SITE_PACKAGES
-#		Specify additional Gluon/LEDE packages to include here;
-#		A minus sign may be prepended to remove a packages from the
-#		selection that would be enabled by default or due to the
-#		chosen feature flags
+##  GLUON_FEATURES
+#       Specify Gluon features/packages to enable;
+#       Gluon will automatically enable a set of packages
+#       depending on the combination of features listed
+define GLUON_FEATURES :=
+autoupdater
+config-mode-geo-location-osm
+ebtables-filter-multicast
+ebtables-filter-ra-dhcp
+ebtables-limit-arp
+mesh-batman-adv-15
+mesh-vpn-wireguard
+radv-filterd
+radvd
+respondd
+status-page
+web-advanced
+web-private-wifi
+web-wizard
+endef
+GLUON_FEATURES := $(GLUON_FEATURES:\n= )
 
+define GLUON_FEATURES_standard :=
 
-# -gluon-status-page
-#ffac-status-page
-# custom status page without contact information
-
-GLUON_SITE_PACKAGES := \
-    iwinfo \
-    ffac-ssid-changer \
-    ffac-wg-registration \
-    respondd-module-airtime
-
-# gluon-mesh-wireless-sae
+endef
+# web-cellular
 # wireless-encryption-wpa3
-GLUON_FEATURES_standard := \
-    web-cellular
+# gluon-mesh-wireless-sae
+GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
 
-GLUON_SITE_PACKAGES_standard := \
-    ffac-autoupdater-wifi-fallback
+##  GLUON_SITE_PACKAGES
+#       Specify additional Gluon/OpenWrt packages to include here;
+#       A minus sign may be prepended to remove a packages from the
+#       selection that would be enabled by default or due to the
+#       chosen feature flags
+define GLUON_SITE_PACKAGES :=
+ffac-autoupdater-wifi-fallback
+ffac-ssid-changer
+ffac-wg-registration
+iwinfo
+respondd-module-airtime
+endef
+GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
 
-DEFAULT_GLUON_RELEASE := 2023.1.0~exp$(shell date '+%Y%m%d%H')
+# Build everything by default
+ifeq ($(BROKEN),0)
+    override BROKEN :=
+else
+    BROKEN := 1
+endif
+GLUON_DEPRECATED := upgrade
 
-# Allow overriding the release number from the command line
-GLUON_RELEASE ?= $(DEFAULT_GLUON_RELEASE)
+GLUON_OUTPUTDIR := ${GLUON_SITEDIR}/output
+ifdef GLUON_DEVICES
+    GLUON_OUTPUTDIR := $(GLUON_SITEDIR)/devices
+endif
+GLUON_PACKAGEDIR := $(GLUON_OUTPUTDIR)/packages/modules
 
-DEFAULT_GLUON_CHECKOUT := master
-
-GLUON_CHECKOUT ?= $(DEFAULT_GLUON_CHECKOUT)
-
+# Default priority for updates.
 GLUON_PRIORITY ?= 0
 
+# Autoupdate by default
+GLUON_AUTOUPDATER_ENABLED ?= 1
+
+# Region code required for some images; supported values: us eu
 GLUON_REGION ?= eu
 
 # Languages to include

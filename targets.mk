@@ -1,3 +1,4 @@
+define GLUON_TARGETS :=
 ath79-generic
 ath79-nand
 ath79-mikrotik
@@ -20,6 +21,14 @@ x86-generic
 x86-geode
 x86-legacy
 x86-64
+endef
+
+ifneq ($(BROKEN),0)
+define GLUON_TARGETS +=
 bcm27xx-bcm2710
 bcm27xx-bcm2711
 mvebu-cortexa9
+endef
+endif
+
+GLUON_TARGETS := $(GLUON_TARGETS:\n= )
