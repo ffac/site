@@ -1,8 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 7a5140c9..af6b0b9d 100644
+index 7a5140c9..f92318b3 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -474,22 +474,22 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
+@@ -474,22 +474,26 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
@@ -13,8 +13,10 @@ index 7a5140c9..af6b0b9d 100644
 -	packages = ATH10K_PACKAGES_SMALLBUFFERS_QCA9880,
 -	broken = true, -- OOM with 5GHz enabled in most environments if device is 64M RAM variant
 -	class = 'tiny', -- Only 6M of usable Firmware space
--})
--
++device('tp-link-eap225-wall-v2', 'tplink_eap225-wall-v2', {
++	packages = ATH10K_PACKAGES_QCA9888,
+ })
+ 
 -device('tp-link-re450-v1', 'tplink_re450-v1', {
 -	packages = ATH10K_PACKAGES_QCA9880,
 -	manifest_aliases = {
@@ -41,7 +43,7 @@ index 7a5140c9..af6b0b9d 100644
  
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
-@@ -503,11 +503,11 @@ device('tp-link-tl-wr842n-v3', 'tplink_tl-wr842n-v3', {
+@@ -503,11 +507,11 @@ device('tp-link-tl-wr842n-v3', 'tplink_tl-wr842n-v3', {
  	},
  })
  
@@ -58,7 +60,7 @@ index 7a5140c9..af6b0b9d 100644
  
  device('tp-link-tl-wr1043nd-v2', 'tplink_tl-wr1043nd-v2', {
  	manifest_aliases = {
-@@ -604,3 +604,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -604,3 +608,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')

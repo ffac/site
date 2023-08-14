@@ -1,14 +1,15 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-index 1ce81b65..5eb231d9 100755
+index 1ce81b65..cdd4ba6c 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-@@ -75,6 +75,20 @@ elseif platform.match('lantiq', 'xrx200', {
+@@ -75,6 +75,21 @@ elseif platform.match('lantiq', 'xrx200', {
  	'arcadyan,vgv7510kw22-nor',
  }) then
  	lan_ifname, wan_ifname = 'lan1 lan2 lan3 lan4', 'wan'
 +elseif platform.match('lantiq', 'xrx200', {
 +	'avm,fritz3370-rev2-hynix',
 +	'avm,fritz3370-rev2-micron',
++	'avm,fritz3390',
 +	'avm,fritz7360sl',
 +	'avm,fritz7360-v2',
 +	'avm,fritz7362sl',
