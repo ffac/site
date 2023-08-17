@@ -195,7 +195,44 @@ ffac-patch: gluon-update
 patch-prepare: gluon-update
 	@echo
 	@echo 'Updating Gluon modules…'
+	@rm -f .modules
 	+@$(GLUON_MAKE) update >/dev/null 2>&1
+
+patch:
+	@echo
+	@echo 'Creating a new patch from all changes found in $(GLUON_BUILD_DIR)'
+	@echo "Note: This will only create a correct patch, if you ran 'make patch-prepare' or 'make edit-patch' before you applied those changes."
+	@echo
+	@echo 'What should your new .patch file be called?'
+	+@$(GLUON_MAKE) update-patches >/dev/null 2>&1
+	@if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+		echo 'Found changes in Gluon modules and created new .patch files for them.'; \
+	fi
+	@$(GLUON_GIT) add --all
+	@read file; \
+	echo ''Creating $$file.patch containing these changes:''; \
+	$(GLUON_GIT) status -s; \
+	$(GLUON_GIT) diff --staged > $(PATCH_DIR)/$$file.patch; \
+	$(GLUON_GIT) commit --no-edit -m "$$file.patch" -q
+
+edit-patch: patch-prepare
+	@echo
+	@echo 'Available patches:'
+	@ls -1 $(PATCH_DIR) | grep -E '\.patch$'' | sed -e 's/\.patch$///'
+	@echo
+	@echo Which one do you want to edit?
+	+@read file; \
+	if [ ! -f "patches/$$file.patch" ]; then \
+		echo ''Couldn\'t find file: $$file''; \
+		exit 1; \
+	else \
+		git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $(PATCH_DIR)/$$file.patch; \
+		if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+			echo 'Patch contained patches for Gluon modules. Applying said patches…'; \
+			$(GLUON_MAKE) refresh-patches >/dev/null 2>&1; \
+		fi; \
+		echo "You may edit $(GLUON_BUILD_DIR) now. Run 'make patch' once you are finished."; \
+	fi
 
 update-patches: patch-prepare
 	@echo
@@ -256,4 +293,4 @@ FORCE: ;
 
 .SUFFIXES: ;
 
-.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch patch-prepare update-patches gluon-clean output-clean
+.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch patch-prepare patch edit-patches update-patches gluon-clean output-clean
