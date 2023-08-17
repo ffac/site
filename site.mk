@@ -1,5 +1,4 @@
 ﻿##	gluon site.mk Freifunk Regio Aachen
-GLUON_DEPRECATED=upgrade
 
 ##  GLUON_FEATURES
 #       Specify Gluon features/packages to enable;
