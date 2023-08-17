@@ -1,5 +1,5 @@
 diff --git a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
-index 3f149100..3f3ce8c0 100755
+index ffe3651f..ef203e53 100755
 --- a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
 +++ b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
 @@ -8,4 +8,4 @@ badrequest() {

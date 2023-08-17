@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 565a32a0..a39958fc 100644
+index 695b1bc7..00dd9ceb 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -111,11 +111,11 @@ update-modules: FORCE
