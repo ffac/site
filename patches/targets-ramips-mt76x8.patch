@@ -1,5 +1,5 @@
 diff --git a/targets/ramips-mt76x8 b/targets/ramips-mt76x8
-index b11b7672..59ac70b5 100644
+index 52fb71be..382c3dfa 100644
 --- a/targets/ramips-mt76x8
 +++ b/targets/ramips-mt76x8
 @@ -62,9 +62,9 @@ device('tp-link-re200-v2', 'tplink_re200-v2')

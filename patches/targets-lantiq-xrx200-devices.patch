@@ -1,23 +1,8 @@
-diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
-index f54cd87f..978fb2af 100644
---- a/targets/lantiq-xrx200
-+++ b/targets/lantiq-xrx200
-@@ -47,6 +47,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
- 	factory = false,
- })
- 
-+device('avm-fritz-box-7430', 'avm_fritz7430', {
-+	factory = false,
-+})
-+
- device('arcadyan-vgv7510kw22', 'arcadyan_vgv7510kw22-nor', {
- 	factory = false,
- 	aliases = {'o2-box-6431'},
-diff --git a/patches/openwrt/0013-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0013-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+diff --git a/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 new file mode 100644
 index 00000000..e3f16905
 --- /dev/null
-+++ b/patches/openwrt/0013-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
++++ b/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 @@ -0,0 +1,53 @@
 +From: Felix Baumann <felix.bau@gmx.de>
 +Date: Tue, 28 Feb 2023 04:21:07 +0100
@@ -72,3 +57,18 @@ index 00000000..e3f16905
 + 			bt,homehub-v5a)
 + 				caldata_extract_ubi "caldata" 0x1000 0x1000
 + 				ath9k_patch_mac_crc $(macaddr_add $(mtd_get_mac_binary_ubi caldata 0x110c) 2) 0x10c
+diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
+index f54cd87f..978fb2af 100644
+--- a/targets/lantiq-xrx200
++++ b/targets/lantiq-xrx200
+@@ -47,6 +47,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
+ 	factory = false,
+ })
+ 
++device('avm-fritz-box-7430', 'avm_fritz7430', {
++	factory = false,
++})
++
+ device('arcadyan-vgv7510kw22', 'arcadyan_vgv7510kw22-nor', {
+ 	factory = false,
+ 	aliases = {'o2-box-6431'},

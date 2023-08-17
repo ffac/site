@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index dc884946..658be02d 100644
+index 7a5140c9..af6b0b9d 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -474,22 +474,22 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
@@ -58,7 +58,7 @@ index dc884946..658be02d 100644
  
  device('tp-link-tl-wr1043nd-v2', 'tplink_tl-wr1043nd-v2', {
  	manifest_aliases = {
-@@ -600,3 +600,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -604,3 +604,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
