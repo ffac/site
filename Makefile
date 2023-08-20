@@ -31,7 +31,6 @@ PATCH_DIR := patches
 SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
 OPKG_KEY_FOLDER ?= $(HOME)/.key-build
 
-
 ## Create version scheme
 EXP_FALLBACK = $(shell date '+%Y%m%d')
 BUILD_NUMBER ?= $(EXP_FALLBACK)

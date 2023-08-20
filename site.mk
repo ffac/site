@@ -1,4 +1,4 @@
-##	gluon site.mk Freifunk Regio Aachen
+﻿##  gluon site.mk Freifunk Regio Aachen
 
 ##  GLUON_FEATURES
 #       Specify Gluon features/packages to enable;
@@ -23,9 +23,8 @@ endef
 GLUON_FEATURES := $(GLUON_FEATURES:\n= )
 
 define GLUON_FEATURES_standard :=
-
+web-cellular
 endef
-# web-cellular
 # wireless-encryption-wpa3
 # gluon-mesh-wireless-sae
 GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
@@ -36,13 +35,17 @@ GLUON_FEATURES_standard := $(GLUON_FEATURES_standard:\n= )
 #       selection that would be enabled by default or due to the
 #       chosen feature flags
 define GLUON_SITE_PACKAGES :=
-ffac-autoupdater-wifi-fallback
 ffac-ssid-changer
 ffac-wg-registration
 iwinfo
 respondd-module-airtime
 endef
 GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
+
+define GLUON_SITE_PACKAGES_standard :=
+ffac-autoupdater-wifi-fallback
+endef
+GLUON_SITE_PACKAGES_standard := $(GLUON_SITE_PACKAGES_standard:\n= )
 
 # Build everything by default
 ifeq ($(BROKEN),0)

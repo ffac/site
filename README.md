@@ -3,7 +3,7 @@ firmware.
 
 This is the `v2023.2.x` branch which is compatible with currents Openwrt Master and will be merged into v2023.2.x once released.
 
-Nothing is guaranteed here, it might get force-pushed from time to time to be rebased onto v2022.1.x.
+Nothing is guaranteed here, it might get force-pushed from time to time to be rebased.
 It provides an option to test devices which are available in Gluon's master branch but are not released yet.
 
 This config uses the upstream `gluon-mesh-vpn-wireguard` [^gluon-meshvpn] implementation.
