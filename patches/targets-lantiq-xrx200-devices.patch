@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+diff --git a/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 new file mode 100644
-index 00000000..e3f16905
+index 00000000..9b7a21f9
 --- /dev/null
-+++ b/patches/openwrt/0014-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
++++ b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 @@ -0,0 +1,53 @@
 +From: Felix Baumann <felix.bau@gmx.de>
 +Date: Tue, 28 Feb 2023 04:21:07 +0100
@@ -22,11 +22,11 @@ index 00000000..e3f16905
 +Signed-off-by: Felix Baumann <felix.bau@gmx.de>
 +
 +diff --git a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+index c6bacb8d3c1629c6ebd290ac9d0ccccd18a0f86c..fa06437295830839b4b6ca42e072355019c559f8 100644
++index eefc39b30b463e431eecc46fb0bd6f5c4bab4a43..c8d7783f1933769d7cc737502bd233638ee80935 100644
 +--- a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
 ++++ b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+@@ -23,11 +23,29 @@ case "$FIRMWARE" in
-+ 			avm,fritz7360-v2)
++@@ -22,11 +22,29 @@ case "$FIRMWARE" in
++ 			avm,fritz7360sl)
 + 				caldata_extract "urlader" 0x985 0x1000
 + 				;;
 +-			avm,fritz7412|\

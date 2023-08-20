@@ -1,24 +1,22 @@
-diff --git a/patches/openwrt/0004-Add-Dlink-sge-image.patch b/patches/openwrt/0004-Add-Dlink-sge-image.patch
+diff --git a/patches/openwrt/0006-procd-add-Dlink-sge-image.patch b/patches/openwrt/0006-procd-add-Dlink-sge-image.patch
 new file mode 100644
-index 00000000..0706ca09
+index 00000000..a84b7335
 --- /dev/null
-+++ b/patches/openwrt/0004-Add-Dlink-sge-image.patch
-@@ -0,0 +1,893 @@
++++ b/patches/openwrt/0006-procd-add-Dlink-sge-image.patch
+@@ -0,0 +1,885 @@
 +From: Roland <75312877+RolandoMagico@users.noreply.github.com>
 +Date: Mon, 26 Jun 2023 18:03:51 +0200
 +Subject: procd: add Dlink sge image
 +
 +diff --git a/tools/firmware-utils/patches/002-add-dlink-sge-image.patch b/tools/firmware-utils/patches/002-add-dlink-sge-image.patch
 +new file mode 100644
-+index 0000000000..71bab9b418
++index 0000000000000000000000000000000000000000..c87ad267dc2924c3520eb4fcae0c3ae2ca295017
 +--- /dev/null
 ++++ b/tools/firmware-utils/patches/002-add-dlink-sge-image.patch
-+@@ -0,0 +1,883 @@
-++diff --git a/CMakeLists.txt b/CMakeLists.txt
-++index c1750d4..d7d4ed2 100644
++@@ -0,0 +1,875 @@
 ++--- a/CMakeLists.txt
 +++++ b/CMakeLists.txt
-++@@ -40,6 +40,7 @@ FW_UTIL(buffalo-tftp src/buffalo-lib.c "" "")
+++@@ -40,6 +40,7 @@ FW_UTIL(buffalo-tftp src/buffalo-lib.c "
 ++ FW_UTIL(cros-vbutil "" "" "${OPENSSL_CRYPTO_LIBRARIES}")
 ++ FW_UTIL(dgfirmware "" "" "")
 ++ FW_UTIL(dgn3500sum "" "" "")
@@ -26,9 +24,6 @@ index 00000000..0706ca09
 ++ FW_UTIL(dns313-header "" "" "")
 ++ FW_UTIL(edimax_fw_header "" "" "")
 ++ FW_UTIL(encode_crc "" "" "")
-++diff --git a/src/dlink-sge-image.c b/src/dlink-sge-image.c
-++new file mode 100644
-++index 0000000..9b567f4
 ++--- /dev/null
 +++++ b/src/dlink-sge-image.c
 ++@@ -0,0 +1,510 @@
@@ -542,9 +537,6 @@ index 00000000..0706ca09
 +++	else
 +++		image_encrypt();
 +++}
-++diff --git a/src/dlink-sge-image.h b/src/dlink-sge-image.h
-++new file mode 100644
-++index 0000000..8966cc9
 ++--- /dev/null
 +++++ b/src/dlink-sge-image.h
 ++@@ -0,0 +1,349 @@
@@ -897,17 +889,18 @@ index 00000000..0706ca09
 +++w1+nGS0KL2+sJGFlDvc7fHJmVFZBqWeSQWPJTHimLI9yaIVS5mEnuBjKZpdUB57T
 +++-----END RSA PRIVATE KEY-----
 +++)";
-diff --git a/patches/openwrt/0005-Add-DLink-COVR-X1860.patch b/patches/openwrt/0005-Add-DLink-COVR-X1860.patch
+diff --git a/patches/openwrt/0007-add-Dlink-COVR-X1860.patch b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
 new file mode 100644
-index 00000000..aa9f2245
+index 00000000..a1913492
 --- /dev/null
-+++ b/patches/openwrt/0005-Add-DLink-COVR-X1860.patch
-@@ -0,0 +1,318 @@
++++ b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
+@@ -0,0 +1,328 @@
 +From: Roland <75312877+RolandoMagico@users.noreply.github.com>
 +Date: Mon, 26 Jun 2023 18:03:51 +0200
 +Subject: add Dlink COVR-X1860
++
 +diff --git a/include/image-commands.mk b/include/image-commands.mk
-+index 9220b8dec0..84032d338c 100644
++index dc6ee6e7c160c0935c3d72fb26b88c4ebcf4b028..6666eddf8f72d3ad49aafe1b08d79c26e0089945 100644
 +--- a/include/image-commands.mk
 ++++ b/include/image-commands.mk
 +@@ -226,6 +226,11 @@ define Build/copy-file
@@ -924,10 +917,10 @@ index 00000000..aa9f2245
 + 	@mv $@.new $@
 +diff --git a/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts b/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts
 +new file mode 100644
-+index 0000000000..c06c5e36ba
++index 0000000000000000000000000000000000000000..10d5db829b5692e6cf29d82ee57120bdde438a12
 +--- /dev/null
 ++++ b/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts
-+@@ -0,0 +1,186 @@
++@@ -0,0 +1,195 @@
 ++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 ++
 ++#include "mt7621.dtsi"
@@ -1006,6 +999,15 @@ index 00000000..aa9f2245
 ++
 ++&nand {
 ++	status = "okay";
+++
+++	mediatek,nmbm;
+++	/* rsvd = Remapping Range / NAND Erase-Size */
+++	/* rsvd = 0x800000 / 0x20000 */
+++	mediatek,bmt-max-reserved-blocks = <64>;
+++	/* Remapping should include raw-nand we operate upon without UBI layer. */
+++	/* This includes (at least) the kernel which has to be loaded by U-Boot.*/
+++	mediatek,bmt-remap-range =
+++		<0x0 0x9c0000>;
 ++
 ++	partitions {
 ++		compatible = "fixed-partitions";
@@ -1115,7 +1117,7 @@ index 00000000..aa9f2245
 ++	};
 ++};
 +diff --git a/target/linux/ramips/image/mt7621.mk b/target/linux/ramips/image/mt7621.mk
-+index a5b69839a7..7b43410a5a 100644
++index fa4c83dbe18db3c5978c755695caf519327e89f4..787b0fd6c647579459b5ac3af97d3b4d150fd571 100644
 +--- a/target/linux/ramips/image/mt7621.mk
 ++++ b/target/linux/ramips/image/mt7621.mk
 +@@ -9,6 +9,14 @@ DEFAULT_SOC := mt7621
@@ -1133,7 +1135,7 @@ index 00000000..aa9f2245
 + define Build/arcadyan-trx
 + 	echo -ne "hsqs" > $@.hsqs
 + 	$(eval trx_magic=$(word 1,$(1)))
-+@@ -552,6 +560,31 @@ define Device/cudy_x6-v2
++@@ -569,6 +577,31 @@ define Device/cudy_x6-v2
 + endef
 + TARGET_DEVICES += cudy_x6-v2
 + 
@@ -1166,10 +1168,10 @@ index 00000000..aa9f2245
 +   DEVICE_VENDOR := D-Link
 +   DEVICE_MODEL := DAP-1620
 +diff --git a/target/linux/ramips/mt7621/base-files/etc/board.d/02_network b/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
-+index cd746e84ee..a772bca6d1 100644
++index 6057c171922e9861b0928b16352970eaadd54cb1..bc7a05e2fe7541eaa2d78b14f4b66b24e67ca72b 100644
 +--- a/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 ++++ b/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
-+@@ -91,6 +91,9 @@ ramips_setup_interfaces()
++@@ -92,6 +92,9 @@ ramips_setup_interfaces()
 + 	zyxel,nt7101)
 + 		ucidef_set_interfaces_lan_wan "lan" "wan"
 + 		;;
@@ -1179,7 +1181,7 @@ index 00000000..aa9f2245
 + 	gnubee,gb-pc1)
 + 		ucidef_set_interface_lan "ethblack ethblue"
 + 		;;
-+@@ -185,6 +188,11 @@ ramips_setup_macs()
++@@ -186,6 +189,11 @@ ramips_setup_macs()
 + 		lan_mac=$wan_mac
 + 		label_mac=$wan_mac
 + 		;;
@@ -1192,7 +1194,7 @@ index 00000000..aa9f2245
 + 		lan_mac=$(mtd_get_mac_ascii factory lanmac)
 + 		wan_mac=$(mtd_get_mac_ascii factory wanmac)
 +diff --git a/target/linux/ramips/mt7621/base-files/etc/hotplug.d/ieee80211/10_fix_wifi_mac b/target/linux/ramips/mt7621/base-files/etc/hotplug.d/ieee80211/10_fix_wifi_mac
-+index 80c7273543..10e055d776 100644
++index 3467e783f0482621ee933f1abcd7be780854bb38..79a521b4126e648aa7afbdc8ef7bb9bc70e34fad 100644
 +--- a/target/linux/ramips/mt7621/base-files/etc/hotplug.d/ieee80211/10_fix_wifi_mac
 ++++ b/target/linux/ramips/mt7621/base-files/etc/hotplug.d/ieee80211/10_fix_wifi_mac
 +@@ -41,6 +41,13 @@ case "$board" in
@@ -1210,22 +1212,22 @@ index 00000000..aa9f2245
 + 		hw_mac_addr="$(mtd_get_mac_binary factory 0x4)"
 + 		[ "$PHYNBR" = "0" ] && \
 +diff --git a/target/linux/ramips/mt7621/base-files/lib/upgrade/platform.sh b/target/linux/ramips/mt7621/base-files/lib/upgrade/platform.sh
-+index ce5fdd61ed..0dbd7874e8 100755
++index 5d8305b788cce391335f2563d60c999f4d0b27de..6dc0f594afc66bc4f36c19165bc3a8582d40389d 100755
 +--- a/target/linux/ramips/mt7621/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/ramips/mt7621/base-files/lib/upgrade/platform.sh
-+@@ -61,6 +61,7 @@ platform_do_upgrade() {
-+ 	beeline,smartbox-giga|\
++@@ -63,6 +63,7 @@ platform_do_upgrade() {
 + 	beeline,smartbox-turbo|\
++ 	beeline,smartbox-turbo-plus|\
 + 	belkin,rt1800|\
 ++	dlink,covr-x1860-a1|\
 + 	dlink,dap-x1860-a1|\
 + 	dlink,dir-1960-a1|\
 + 	dlink,dir-2640-a1|\
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index b0dabd4c..013a06a4 100644
+index 6f9fadbc..a4d67702 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
-@@ -40,6 +40,12 @@ device('cudy-x6-v2', 'cudy_x6-v2', {
+@@ -32,6 +32,12 @@ device('cudy-x6-v2', 'cudy_x6-v2', {
  
  -- D-Link
  
