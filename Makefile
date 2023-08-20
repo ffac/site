@@ -193,7 +193,6 @@ ffac-patch: gluon-update
 
 ## Patch system
 patch-prepare: gluon-update
-	@echo
 	@echo 'Updating Gluon modules…'
 	@rm -f .modules
 	+@$(GLUON_MAKE) update >/dev/null 2>&1
@@ -223,13 +222,13 @@ edit-patch: patch-prepare
 	@echo Which one do you want to edit?
 	+@read file; \
 	if [ ! -f "patches/$$file.patch" ]; then \
-		echo ''Couldn\'t find file: $$file''; \
+		echo ''Couldn\'t find file: $$file.patch''; \
 		exit 1; \
 	else \
 		git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $(PATCH_DIR)/$$file.patch; \
 		if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
 			echo 'Patch contained patches for Gluon modules. Applying said patches…'; \
-			$(GLUON_MAKE) refresh-patches >/dev/null 2>&1; \
+			$(GLUON_MAKE) refresh-patches >/dev/null; \
 		fi; \
 		echo "You may edit $(GLUON_BUILD_DIR) now. Run 'make patch' once you are finished."; \
 	fi
@@ -255,7 +254,7 @@ update-patches: patch-prepare
 		else \
 			if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
 				echo 'Refreshing Gluon patches…'; \
-				$(GLUON_MAKE) refresh-patches >/dev/null 2>&1; \
+				$(GLUON_MAKE) refresh-patches >/dev/null; \
 			fi; \
 			echo ''Refreshing $$file''; \
 			$(GLUON_GIT) add --all; \
