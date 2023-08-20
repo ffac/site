@@ -1,0 +1,18 @@
+diff --git a/targets/ramips-mt7620 b/targets/ramips-mt7620
+index fbf57ba8..4c9a6367 100644
+--- a/targets/ramips-mt7620
++++ b/targets/ramips-mt7620
+@@ -5,6 +5,13 @@ device('asus-rt-ac51u', 'asus_rt-ac51u', {
+ })
+ 
+ 
++-- EDIMAX
++
++device('edimax-br-6478ac-v2', 'edimax_br-6478ac-v2', {
++	factory = false,
++})
++
++
+ -- GL.iNet
+ 
+ device('gl-mt300a', 'glinet_gl-mt300a', {

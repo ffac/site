@@ -1,0 +1,20 @@
+diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
+index 6060c49a..705b8832 100644
+--- a/targets/ramips-mt7621
++++ b/targets/ramips-mt7621
+@@ -43,6 +43,15 @@ device('gl.inet-gl-mt1300', 'glinet_gl-mt1300', {
+ device('mercusys-mr70x-v1', 'mercusys_mr70x-v1')
+ 
+ 
++-- MikroTik
++
++device('mikrotik-routerboard-750gr3', 'mikrotik_routerboard-750gr3', {
++	aliases = {'mikrotik-routerboard-hex-v3'},
++	factory = false,
++	packages = {'-hostapd-mini'},
++})
++
++
+ -- Netgear
+ 
+ device('netgear-ex6150', 'netgear_ex6150', {
