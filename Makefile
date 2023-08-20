@@ -1,93 +1,295 @@
+#########################
+#### Custom Options: ####
+#########################
+# GLUON_RELEASE - customize full release name
+# BUILD_NUMBER - customize only the build number of the release name
+#########################
+# GLUON_TARGETS - choose which targets to build (delimited by spaces) e.g. "ath79-generic ramips-mt7621"
+# GLUON_DEVICES - choose which devices to build (delimited by spaces) e.g. "avm-fritz-box-4020 tp-link-tl-wdr4300-v1", moves images to devices/ instead of output/, no packages are copied to the devices/ folder
+# BROKEN - set to 0 to disable building devices marked as broken
+#########################
+# GLUON_PRIORITY - set update priority (integer)
+# GLUON_AUTOUPDATER_ENABLED - set to 0 to disable the autoupdater
+# GLUON_LANGS - set to subset of (en de fr) to include less languages
+#########################
+# JOBS - set number of threads manually
+# GLUON_DEBUG set to 1 to include debug symbols (requires at least 16MB of flash, advice: also set GLUON_DEVICES, run 'make clean' before executing if you care for all packages to be rebuilt with debug symbols)
+# GLUON_MINIFY set to 0 to disable minification of scripts (lua etc.)
+#########################
+# SECRET_KEY_FILE - Path to your ECDSA signing key
+# OPKG_KEY_FOLDER - Path to your OpenWrt package signing key
+#########################
+
+
+## Setup Build environment variables
+include release.mk
+include targets.mk
 GLUON_BUILD_DIR := gluon-build
-GLUON_GIT_URL := https://github.com/ffac/gluon.git
-GLUON_GIT_REF := v23.05 #v2023.2.x
 
-PATCH_DIR := ${GLUON_BUILD_DIR}/site/patches
-SECRET_KEY_FILE ?= ${HOME}/.gluon-secret-key
+export GLUON_SITEDIR := ..
+PATCH_DIR := patches
+SECRET_KEY_FILE ?= $(HOME)/.gluon-secret-key
+OPKG_KEY_FOLDER ?= $(HOME)/.key-build
 
-GLUON_TARGETS ?= $(shell cat targets | tr '\n' ' ')
-GLUON_AUTOUPDATER_BRANCH := stable
 
+## Create version scheme
+EXP_FALLBACK = $(shell date '+%Y%m%d')
+BUILD_NUMBER ?= $(EXP_FALLBACK)
+GIT_TAG := $(shell git describe --tags 2>/dev/null)
+ifeq (,$(GIT_TAG))
+ifndef GLUON_RELEASE
+$(error Set GLUON_RELEASE or create a git tag)
+endif
+endif
 ifneq (,$(shell git describe --exact-match --tags 2>/dev/null))
-	GLUON_AUTOUPDATER_ENABLED := 1
-	GLUON_RELEASE := $(shell git describe --tags 2>/dev/null)
+	GLUON_RELEASE ?= $(GIT_TAG)
 else
-	GLUON_AUTOUPDATER_ENABLED := 1
-	EXP_FALLBACK = $(shell date '+%Y%m%d')
-	BUILD_NUMBER ?= $(EXP_FALLBACK)
-	GLUON_RELEASE := $(shell git describe --tags)-next$(BUILD_NUMBER)
+	GLUON_RELEASE ?= $(GIT_TAG)~exp$(BUILD_NUMBER)
+endif
+export GLUON_RELEASE
+
+
+## Setup MAKE
+JOBS ?= $(shell cat /proc/cpuinfo | grep -c ^processor)
+MAKEFLAGS += -j$(JOBS)
+MAKEFLAGS += --no-print-directory
+MAKEFLAGS += --output-sync
+
+GLUON_MAKE = $(MAKE) -C $(GLUON_BUILD_DIR)
+GLUON_GIT = git -C $(GLUON_BUILD_DIR)
+
+
+## Build strings for INFO
+define newline
+
+
+endef
+ifneq (,$(filter GLUON_TARGETS%,$(MAKEOVERRIDES)))
+	TARGETS_INFO := $(newline)\# for target(s) '$(GLUON_TARGETS)'
+endif
+ifneq (,$(filter GLUON_DEVICES%,$(MAKEOVERRIDES)))
+	DEVICE_INFO := $(newline)\# for device(s) '$(GLUON_DEVICES)'
 endif
 
-JOBS ?= $(shell cat /proc/cpuinfo | grep processor | wc -l)
 
-GLUON_MAKE := ${MAKE} -j ${JOBS} --no-print-directory -C ${GLUON_BUILD_DIR} \
-	BROKEN=1 \
-	GLUON_RELEASE=${GLUON_RELEASE} \
-	GLUON_AUTOUPDATER_BRANCH=${GLUON_AUTOUPDATER_BRANCH} \
-	GLUON_AUTOUPDATER_ENABLED=${GLUON_AUTOUPDATER_ENABLED}
+## Info section
+define INFO :=
 
-all: info
-	${MAKE} manifest
+#########################
+# FFAC Firmware build
+# building release '$(GLUON_RELEASE)'$(TARGETS_INFO)$(DEVICE_INFO)
+#########################
+# MAKEFLAGS:
+# $(MAKEFLAGS)
+#########################
+# git url: $(GLUON_GIT_URL)
+# git ref: $(GLUON_GIT_REF)
+#########################
+# Found $(shell ls -1 $(PATCH_DIR) 2>/dev/null | wc -l) patches
+#########################
 
-info:
+endef
+# show info section for all make calls except the filtered ones
+ifneq (,$(filter-out gluon-clean output-clean clean,$(MAKECMDGOALS)))
+$(info $(INFO))
+endif
+
+
+## Prepare folders
+$(GLUON_BUILD_DIR):
+	mkdir -p $(GLUON_BUILD_DIR)
 	@echo
-	@echo '#########################'
-	@echo '# FFAC Firmware build'
-	@echo '# Building release ${GLUON_RELEASE} for branch ${GLUON_AUTOUPDATER_BRANCH}'
+
+# Note: "|" means "order only", e.g. "do not care about folder timestamps"
+# In other words: call requirement when file/folder doesn't exist instead of when it is outdated.
+# e.g. after running gluon-clean but not on every run.
+# https://www.gnu.org/savannah-checkouts/gnu/make/manual/html_node/Prerequisite-Types.html
+$(GLUON_BUILD_DIR)/.git: | $(GLUON_BUILD_DIR)
+	@git init $(GLUON_BUILD_DIR) -b master
+	@$(GLUON_GIT) remote add origin $(GLUON_GIT_URL)
+
+gluon-update: | $(GLUON_BUILD_DIR)/.git
+	@$(GLUON_GIT) fetch --tags origin $(GLUON_GIT_REF)
+	@$(GLUON_GIT) checkout master >/dev/null 2>&1 || exit 0
+	@$(GLUON_GIT) reset --hard FETCH_HEAD
+	@$(GLUON_GIT) clean -fd
 	@echo
 
-build: gluon-prepare
-	for target in ${GLUON_TARGETS}; do \
-		echo ""Building target $$target""; \
-		${GLUON_MAKE} download all GLUON_TARGET="$$target"; \
+
+## Build rules
+all: manifest
+
+sign: manifest | $(SECRET_KEY_FILE)
+ifndef GLUON_DEVICES
+	echo "make sign hasn't been designed to work while GLUON_DEVICES is set."
+	exit 1
+endif
+	@for branch in experimental beta stable; do \
+		echo ''; \
+		echo ''Signing $$branch.manifest''; \
+		$(GLUON_BUILD_DIR)/contrib/sign.sh $(SECRET_KEY_FILE) output/images/sysupgrade/$$branch.manifest; \
 	done
 
+# Note: $(GLUON_MAKE) is a recursive variable so it doesn't count as a $(MAKE).
+# "+" tells MAKE that there is another $(MAKE) in the following shell script.
+# This allows communication of MAKEFLAGS like -j to submake.
+# https://stackoverflow.com/a/60706372/2721478
 manifest: build
-	for branch in experimental beta stable; do \
-		${GLUON_MAKE} manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
+	+@for branch in experimental beta stable; do \
+		echo ''; \
+		echo ''Creating $$branch manifest''; \
+		$(GLUON_MAKE) manifest GLUON_AUTOUPDATER_BRANCH=$$branch; \
 	done
-	mv -f ${GLUON_BUILD_DIR}/output/* ./output/
 
-sign: manifest
-	${GLUON_BUILD_DIR}/contrib/sign.sh ${SECRET_KEY_FILE} output/images/sysupgrade/${GLUON_AUTOUPDATER_BRANCH}.manifest
+build: gluon-prepare output-clean
+	+@for target in $(GLUON_TARGETS); do \
+		echo ''; \
+		echo ''Building target $$target''; \
+		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
+	done
+	@if [ ! -f "$(OPKG_KEY_FOLDER)/key-build" ]; then \
+		echo 'Copying new opkg keys to $(OPKG_KEY_FOLDER)'; \
+		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
+	fi
+ifndef GLUON_DEVICES
+	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
+	mkdir -p output/packages/$(PACKAGES_BRANCH)
+	rsync -a --exclude '*/base' --exclude '*/luci' --exclude '*/packages' --exclude '*/routing' --exclude '*/telephony' $(GLUON_BUILD_DIR)/openwrt/bin/packages/ output/packages/$(PACKAGES_BRANCH)/
+endif
 
-${GLUON_BUILD_DIR}:
-	git clone ${GLUON_GIT_URL} ${GLUON_BUILD_DIR}
+gluon-prepare: gluon-update ffac-patch | .modules
 
-gluon-prepare: output-clean ${GLUON_BUILD_DIR}
-	cd ${GLUON_BUILD_DIR} \
-		&& git remote set-url origin ${GLUON_GIT_URL} \
-		&& git fetch --tags origin ${GLUON_GIT_REF} \
-		&& rm -rf packages \
-		&& git checkout -q --force ${GLUON_GIT_REF} \
-		&& git clean -fd;
-	ln -sfT .. ${GLUON_BUILD_DIR}/site
-	${MAKE} gluon-patch
-	${GLUON_MAKE} -j1 update
-
-gluon-patch:
-	echo "Applying Patches ..."
-	(cd ${GLUON_BUILD_DIR})
-			if [ `git branch --list patched` ]; then \
-				(git branch -D patched) \
-			fi
-	(cd ${GLUON_BUILD_DIR}; git checkout -B patching)
-	if [ -d "gluon-build/site/patches" -a "gluon-build/site/patches/*.patch" ]; then \
-		(cd ${GLUON_BUILD_DIR}; git apply --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose site/patches/*.patch) || ( \
-			cd ${GLUON_BUILD_DIR}; \
-			git clean -fd; \
-			git checkout -B patched; \
-			git branch -D patching; \
+PATCH_FILES = $(shell find $(PATCH_DIR)/ -type f -name '*.patch')
+ffac-patch: gluon-update
+	@echo 'Applying patches…'
+	@if [ `$(GLUON_GIT) branch --list patched` ]; then \
+		$(GLUON_GIT) branch -D patched; \
+	fi
+	@$(GLUON_GIT) checkout -B patching
+	@if [ -d "$(PATCH_DIR)" -a "$(PATCH_DIR)/*.patch" ]; then \
+		(git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $(PATCH_FILES)) || ( \
+			$(GLUON_GIT) clean -fd; \
+			$(GLUON_GIT) checkout -B patched; \
+			$(GLUON_GIT) branch -D patching; \
 			exit 1 \
 		) \
 	fi
-	(cd ${GLUON_BUILD_DIR}; git branch -M patched)
+	@$(GLUON_GIT) branch -M patched
+
+.cmp-git-head: FORCE | ffac-patch
+	@$(GLUON_GIT) rev-parse @{0} | cmp -s '$@' || $(GLUON_GIT) rev-parse @{0} > '$@'
+
+.modules: release.mk modules .cmp-git-head $(PATCH_DIR) $(PATCH_FILES) | ffac-patch
+	@echo
+	@echo Updating Gluon modules…
+	@rm -f .modules
+	+$(GLUON_MAKE) update
+	@if [ -f "$(OPKG_KEY_FOLDER)/key-build" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/key-build" ]; then \
+		echo 'Installing your opkg keys'; \
+		cp $(OPKG_KEY_FOLDER)/key-build* $(GLUON_BUILD_DIR)/openwrt/; \
+	fi
+	@touch .modules
+
+
+## Patch system
+patch-prepare: gluon-update
+	@echo 'Updating Gluon modules…'
+	@rm -f .modules
+	+@$(GLUON_MAKE) update >/dev/null 2>&1
+
+patch:
+	@echo
+	@echo 'Creating a new patch from all changes found in $(GLUON_BUILD_DIR)'
+	@echo "Note: This will only create a correct patch, if you ran 'make patch-prepare' or 'make edit-patch' before you applied those changes."
+	@echo
+	@echo 'What should your new .patch file be called?'
+	+@$(GLUON_MAKE) update-patches >/dev/null 2>&1
+	@if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+		echo 'Found changes in Gluon modules and created new .patch files for them.'; \
+	fi
+	@$(GLUON_GIT) add --all
+	@read file; \
+	echo ''Creating $$file.patch containing these changes:''; \
+	$(GLUON_GIT) status -s; \
+	$(GLUON_GIT) diff --staged > $(PATCH_DIR)/$$file.patch; \
+	$(GLUON_GIT) commit --no-edit -m "$$file.patch" -q
+
+edit-patch: patch-prepare
+	@echo
+	@echo 'Available patches:'
+	@ls -1 $(PATCH_DIR) | grep -E '\.patch$'' | sed -e 's/\.patch$///'
+	@echo
+	@echo Which one do you want to edit?
+	+@read file; \
+	if [ ! -f "patches/$$file.patch" ]; then \
+		echo ''Couldn\'t find file: $$file.patch''; \
+		exit 1; \
+	else \
+		git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $(PATCH_DIR)/$$file.patch; \
+		if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+			echo 'Patch contained patches for Gluon modules. Applying said patches…'; \
+			$(GLUON_MAKE) refresh-patches >/dev/null; \
+		fi; \
+		echo "You may edit $(GLUON_BUILD_DIR) now. Run 'make patch' once you are finished."; \
+	fi
+
+update-patches: patch-prepare
+	@echo
+	@echo 'Updating our patches…'
+	@if [ `$(GLUON_GIT) branch --list refresh` ]; then \
+		$(GLUON_GIT) branch -D refresh; \
+	fi
+	@$(GLUON_GIT) checkout -B refreshing
+	@$(GLUON_GIT) commit --allow-empty -m "Patches" -q
+	+@for file in $(PATCH_FILES); do \
+		echo ''; \
+		(git apply --directory=$(GLUON_BUILD_DIR) --ignore-space-change --ignore-whitespace --whitespace=nowarn --verbose $$file) && true;\
+		EXIT_CODE=$$?; \
+		if [ $$EXIT_CODE -ne 0 ]; then \
+			echo ''Error applying patch $$file''; \
+			$(GLUON_GIT) clean -fdq; \
+			$(GLUON_GIT) checkout -B refresh; \
+			$(GLUON_GIT) branch -D refreshing; \
+			break; \
+		else \
+			if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+				echo 'Refreshing Gluon patches…'; \
+				$(GLUON_MAKE) refresh-patches >/dev/null; \
+			fi; \
+			echo ''Refreshing $$file''; \
+			$(GLUON_GIT) add --all; \
+			$(GLUON_GIT) diff --staged > $$file; \
+			$(GLUON_GIT) commit --amend --no-edit -q; \
+		fi; \
+	done; exit $$EXIT_CODE
+	@$(GLUON_GIT) branch -M refresh
+
+
+## Cleanup rules
+devices-clean:
+	mkdir -p devices/
+	rm -rf devices/*
 
 gluon-clean:
-	rm -rf ${GLUON_BUILD_DIR}
+	rm -f .modules
+	rm -rf $(GLUON_BUILD_DIR)
+	@echo
 
 output-clean:
+ifdef GLUON_DEVICES
+	mkdir -p devices/
+else
 	mkdir -p output/
 	rm -rf output/*
+endif
+	@echo
 
-clean: gluon-clean output-clean
+clean: gluon-clean output-clean devices-clean
+
+Makefile: ;
+
+FORCE: ;
+
+.SUFFIXES: ;
+
+.PHONY: all gluon-update sign manifest build gluon-prepare ffac-patch patch-prepare patch edit-patches update-patches gluon-clean output-clean
