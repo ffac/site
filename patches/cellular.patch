@@ -1,0 +1,24 @@
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
+index 0099d1d8..98a21365 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
+@@ -49,6 +49,7 @@ if platform.match('ath79', 'nand', {
+ 	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
+ elseif platform.match('ath79', 'nand', {
+ 	'zte,mf281',
++	'zte,mf286r',
+ }) then
+ 	setup_ncm_qmi('/dev/ttyACM0', 'ncm', 15)
+ elseif platform.match('ipq40xx', 'generic', {
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
+index ba4b5b48..40728360 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
+@@ -75,6 +75,7 @@ end
+ function M.is_cellular_device()
+ 	if M.match('ath79', 'nand', {
+ 		'zte,mf281',
++		'zte,mf286r',
+ 		'glinet,gl-xe300',
+ 	}) then
+ 		return true

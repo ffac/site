@@ -1,15 +1,5 @@
-From 62c19102406a12ad613cb813acbbce0f4641404f Mon Sep 17 00:00:00 2001
-From: Jan Niehusmann <jan@gondor.com>
-Date: Sun, 3 Mar 2019 23:36:57 +0100
-Subject: [PATCH] remove owner information from status page
-
----
- .../lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo   | 2 +-
- .../luasrc/lib/gluon/status-page/controller/status-page.lua     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
 diff --git a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
-index 3f149100..3f3ce8c0 100755
+index ffe3651f..ef203e53 100755
 --- a/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
 +++ b/package/gluon-status-page/files/lib/gluon/status-page/www/cgi-bin/dyn/neighbours-nodeinfo
 @@ -8,4 +8,4 @@ badrequest() {
