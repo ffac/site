@@ -891,10 +891,10 @@ index 00000000..a84b7335
 +++)";
 diff --git a/patches/openwrt/0007-add-Dlink-COVR-X1860.patch b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
 new file mode 100644
-index 00000000..a1913492
+index 00000000..9f40638e
 --- /dev/null
 +++ b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
-@@ -0,0 +1,328 @@
+@@ -0,0 +1,319 @@
 +From: Roland <75312877+RolandoMagico@users.noreply.github.com>
 +Date: Mon, 26 Jun 2023 18:03:51 +0200
 +Subject: add Dlink COVR-X1860
@@ -917,10 +917,10 @@ index 00000000..a1913492
 + 	@mv $@.new $@
 +diff --git a/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts b/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts
 +new file mode 100644
-+index 0000000000000000000000000000000000000000..10d5db829b5692e6cf29d82ee57120bdde438a12
++index 0000000000000000000000000000000000000000..c06c5e36baaedacaef339bf91a08dabbba732898
 +--- /dev/null
 ++++ b/target/linux/ramips/dts/mt7621_dlink_covr-x1860-a1.dts
-+@@ -0,0 +1,195 @@
++@@ -0,0 +1,186 @@
 ++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 ++
 ++#include "mt7621.dtsi"
@@ -999,15 +999,6 @@ index 00000000..a1913492
 ++
 ++&nand {
 ++	status = "okay";
-++
-++	mediatek,nmbm;
-++	/* rsvd = Remapping Range / NAND Erase-Size */
-++	/* rsvd = 0x800000 / 0x20000 */
-++	mediatek,bmt-max-reserved-blocks = <64>;
-++	/* Remapping should include raw-nand we operate upon without UBI layer. */
-++	/* This includes (at least) the kernel which has to be loaded by U-Boot.*/
-++	mediatek,bmt-remap-range =
-++		<0x0 0x9c0000>;
 ++
 ++	partitions {
 ++		compatible = "fixed-partitions";

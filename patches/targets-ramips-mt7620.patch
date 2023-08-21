@@ -1,18 +1,19 @@
 diff --git a/targets/ramips-mt7620 b/targets/ramips-mt7620
-index fbf57ba8..4c9a6367 100644
+index fbf57ba8..c9fd5627 100644
 --- a/targets/ramips-mt7620
 +++ b/targets/ramips-mt7620
-@@ -5,6 +5,13 @@ device('asus-rt-ac51u', 'asus_rt-ac51u', {
- })
+@@ -31,14 +31,6 @@ device('netgear-ex3700', 'netgear_ex3700', {
  
+ -- Nexx
  
-+-- EDIMAX
-+
-+device('edimax-br-6478ac-v2', 'edimax_br-6478ac-v2', {
-+	factory = false,
-+})
-+
-+
- -- GL.iNet
+-device('nexx-wt3020-8m', 'nexx_wt3020-8m', {
+-	aliases = {
+-		'nexx-wt3020ad',
+-		'nexx-wt3020f',
+-		'nexx-wt3020h',
+-	},
+-})
+-
+ -- TP-Link
  
- device('gl-mt300a', 'glinet_gl-mt300a', {
+ local tplink_region_suffix = ''

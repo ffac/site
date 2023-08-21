@@ -1,8 +1,19 @@
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index a4d67702..26f84c47 100644
+index 6f9fadbc..cb699c68 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
-@@ -55,6 +55,15 @@ device('gl.inet-gl-mt1300', 'glinet_gl-mt1300', {
+@@ -7,6 +7,10 @@ device('asus-rt-ac57u-v1', 'asus_rt-ac57u-v1', {
+ 	},
+ })
+ 
++device('asus-rt-ax53u', 'asus_rt-ax53u', {
++	factory = false,
++})
++
+ 
+ -- Cudy
+ 
+@@ -49,6 +59,15 @@ device('gl.inet-gl-mt1300', 'glinet_gl-mt1300', {
  device('mercusys-mr70x-v1', 'mercusys_mr70x-v1')
  
  
