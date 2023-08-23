@@ -108,6 +108,7 @@ $(GLUON_BUILD_DIR)/.git: | $(GLUON_BUILD_DIR)
 	@$(GLUON_GIT) remote add origin $(GLUON_GIT_URL)
 
 gluon-update: | $(GLUON_BUILD_DIR)/.git
+	@$(GLUON_GIT) remote set-url origin $(GLUON_GIT_URL)
 	@$(GLUON_GIT) fetch --tags origin $(GLUON_GIT_REF)
 	@$(GLUON_GIT) checkout master >/dev/null 2>&1 || exit 0
 	@$(GLUON_GIT) reset --hard FETCH_HEAD
@@ -119,9 +120,10 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 all: manifest
 
 sign: manifest | $(SECRET_KEY_FILE)
-ifndef GLUON_DEVICES
-	echo "make sign hasn't been designed to work while GLUON_DEVICES is set."
-	exit 1
+ifdef DEVICE_INFO
+	@echo
+	@echo "make sign hasn't been designed to work while GLUON_DEVICES is set."
+	@exit 1
 endif
 	@for branch in experimental beta stable; do \
 		echo ''; \
