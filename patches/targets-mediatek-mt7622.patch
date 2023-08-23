@@ -1,0 +1,19 @@
+diff --git a/targets/mediatek-mt7622 b/targets/mediatek-mt7622
+index 8376c397..e93f95f4 100644
+--- a/targets/mediatek-mt7622
++++ b/targets/mediatek-mt7622
+@@ -11,6 +11,14 @@ device('ubiquiti-unifi-6-lr-v1', 'ubnt_unifi-6-lr-v1', {
+ 	manifest_aliases = {'ubiquiti-unifi-6-lr'},
+ })
+ 
++
++-- Netgear
++
++device('netgear-wax206', 'netgear_wax206', {
++	factory_ext = '.img',
++})
++
++
+ -- Xiaomi
+ 
+ device('xiaomi-redmi-router-ax6s', 'xiaomi_redmi-router-ax6s', {
