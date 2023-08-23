@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0006-procd-add-Dlink-sge-image.patch b/patches/openwrt/0006-procd-add-Dlink-sge-image.patch
+diff --git a/patches/openwrt/0007-procd-add-Dlink-sge-image.patch b/patches/openwrt/0007-procd-add-Dlink-sge-image.patch
 new file mode 100644
 index 00000000..a84b7335
 --- /dev/null
-+++ b/patches/openwrt/0006-procd-add-Dlink-sge-image.patch
++++ b/patches/openwrt/0007-procd-add-Dlink-sge-image.patch
 @@ -0,0 +1,885 @@
 +From: Roland <75312877+RolandoMagico@users.noreply.github.com>
 +Date: Mon, 26 Jun 2023 18:03:51 +0200
@@ -889,11 +889,11 @@ index 00000000..a84b7335
 +++w1+nGS0KL2+sJGFlDvc7fHJmVFZBqWeSQWPJTHimLI9yaIVS5mEnuBjKZpdUB57T
 +++-----END RSA PRIVATE KEY-----
 +++)";
-diff --git a/patches/openwrt/0007-add-Dlink-COVR-X1860.patch b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
+diff --git a/patches/openwrt/0008-add-Dlink-COVR-X1860.patch b/patches/openwrt/0008-add-Dlink-COVR-X1860.patch
 new file mode 100644
 index 00000000..9f40638e
 --- /dev/null
-+++ b/patches/openwrt/0007-add-Dlink-COVR-X1860.patch
++++ b/patches/openwrt/0008-add-Dlink-COVR-X1860.patch
 @@ -0,0 +1,319 @@
 +From: Roland <75312877+RolandoMagico@users.noreply.github.com>
 +Date: Mon, 26 Jun 2023 18:03:51 +0200

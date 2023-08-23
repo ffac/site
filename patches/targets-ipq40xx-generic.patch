@@ -1,8 +1,8 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index a041130a..21bb3311 100644
+index b6a49ca7..96765dc1 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -92,6 +92,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -73,6 +73,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
