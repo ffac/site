@@ -1,18 +1,53 @@
 diff --git a/targets/ramips-mt7620 b/targets/ramips-mt7620
-index fbf57ba8..4c9a6367 100644
+index fbf57ba8..de1861a0 100644
 --- a/targets/ramips-mt7620
 +++ b/targets/ramips-mt7620
-@@ -5,6 +5,13 @@ device('asus-rt-ac51u', 'asus_rt-ac51u', {
+@@ -19,48 +19,6 @@ device('gl-mt750', 'glinet_gl-mt750', {
+ 	factory = false,
  })
  
+--- Netgear
+-
+-device('netgear-ex3700', 'netgear_ex3700', {
+-	aliases = {
+-		'netgear-ex3800',
+-	},
+-	manifest_aliases = {'netgear-ex3700-ex3800'},
+-	factory_ext = '.chk',
+-})
+-
+--- Nexx
+-
+-device('nexx-wt3020-8m', 'nexx_wt3020-8m', {
+-	aliases = {
+-		'nexx-wt3020ad',
+-		'nexx-wt3020f',
+-		'nexx-wt3020h',
+-	},
+-})
+-
+--- TP-Link
+-
+-local tplink_region_suffix = ''
+-if (env.GLUON_REGION or '') ~= '' then
+-	tplink_region_suffix = '-' .. env.GLUON_REGION
+-end
+-
+-device('tp-link-archer-c2-v1', 'tplink_archer-c2-v1', {
+-	factory = false,
+-})
+-
+-device('tp-link-archer-c20-v1', 'tplink_archer-c20-v1', {
+-	factory = false,
+-})
+-
+-device('tp-link-archer-c20i', 'tplink_archer-c20i')
+-
+-device('tp-link-archer-c50-v1', 'tplink_archer-c50-v1', {
+-	factory = '-squashfs-factory' .. tplink_region_suffix,
+-	manifest_aliases = {'tp-link-archer-c50'},
+-})
+-
  
-+-- EDIMAX
-+
-+device('edimax-br-6478ac-v2', 'edimax_br-6478ac-v2', {
-+	factory = false,
-+})
-+
-+
- -- GL.iNet
+ -- Xiaomi
  
- device('gl-mt300a', 'glinet_gl-mt300a', {

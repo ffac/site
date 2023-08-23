@@ -1,17 +1,15 @@
 diff --git a/targets/ramips-mt76x8 b/targets/ramips-mt76x8
-index 52fb71be..382c3dfa 100644
+index 1e27ac35..10ef9d65 100644
 --- a/targets/ramips-mt76x8
 +++ b/targets/ramips-mt76x8
-@@ -62,9 +62,9 @@ device('tp-link-re200-v2', 'tplink_re200-v2')
+@@ -20,10 +20,6 @@ device('gl.inet-vixmini', 'glinet_vixmini', {
  
- device('tp-link-re200-v3', 'tplink_re200-v3')
+ -- Netgear
  
--device('tp-link-re305', 'tplink_re305-v1', {
--	class = 'tiny', -- Only 6M of usable Firmware space
+-device('netgear-r6020', 'netgear_r6020', {
+-	factory_ext = '.img',
 -})
-+--device('tp-link-re305', 'tplink_re305-v1', {
-+--	class = 'tiny', -- Only 6M of usable Firmware space
-+--})
- 
- device('tp-link-tl-mr3020-v3', 'tplink_tl-mr3020-v3', {
- 	factory = false,
+-
+ device('netgear-r6120', 'netgear_r6120', {
+ 	factory_ext = '.img',
+ })
