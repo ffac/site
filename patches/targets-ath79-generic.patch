@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 56be6369..93970064 100644
+index aafcb22f..7db926b3 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -405,13 +405,6 @@ device('tp-link-archer-c58-v1', 'tplink_archer-c58-v1', {
