@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 56be6369..dd003630 100644
+index 56be6369..93970064 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -405,13 +405,6 @@ device('tp-link-archer-c58-v1', 'tplink_archer-c58-v1', {
@@ -16,7 +16,7 @@ index 56be6369..dd003630 100644
  device('tp-link-archer-c7-v2', 'tplink_archer-c7-v2', {
  	packages = ATH10K_PACKAGES_QCA9880,
  })
-@@ -434,40 +427,17 @@ device('tp-link-archer-d50-v1', 'tplink_archer-d50-v1', {
+@@ -434,33 +427,7 @@ device('tp-link-archer-d50-v1', 'tplink_archer-d50-v1', {
  	broken = true, -- 64M ath9k + ath10k & power LED not working
  })
  
@@ -47,10 +47,10 @@ index 56be6369..dd003630 100644
 -})
 -device('tp-link-cpe510-v2', 'tplink_cpe510-v2')
 -device('tp-link-cpe510-v3', 'tplink_cpe510-v3')
--
+ 
  device('tp-link-cpe710-v1', 'tplink_cpe710-v1')
  
- device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
+@@ -468,6 +435,10 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
@@ -61,7 +61,7 @@ index 56be6369..dd003630 100644
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
  device('tp-link-tl-wdr4300-v1', 'tplink_tl-wdr4300-v1')
-@@ -480,11 +450,11 @@ device('tp-link-tl-wr842n-v3', 'tplink_tl-wr842n-v3', {
+@@ -480,11 +451,11 @@ device('tp-link-tl-wr842n-v3', 'tplink_tl-wr842n-v3', {
  	},
  })
  
@@ -78,7 +78,7 @@ index 56be6369..dd003630 100644
  
  device('tp-link-tl-wr1043nd-v2', 'tplink_tl-wr1043nd-v2', {
  	manifest_aliases = {
-@@ -503,20 +473,6 @@ device('tp-link-tl-wr1043nd-v4', 'tplink_tl-wr1043nd-v4', {
+@@ -503,19 +474,6 @@ device('tp-link-tl-wr1043nd-v4', 'tplink_tl-wr1043nd-v4', {
  })
  device('tp-link-tl-wr1043n-v5', 'tplink_tl-wr1043n-v5')
  
@@ -95,11 +95,10 @@ index 56be6369..dd003630 100644
 -		'tp-link-wbs510-v1.20', -- upgrade from OpenWrt 19.07
 -	},
 -})
--
+ 
  -- Ubiquiti
  
- -- device('ubiquiti-nanostation-loco-m-xw', 'ubnt_nanostation-loco-m-xw', {
-@@ -581,3 +537,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -581,3 +539,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
