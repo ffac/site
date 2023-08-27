@@ -44,6 +44,11 @@ respondd-module-airtime
 endef
 GLUON_SITE_PACKAGES := $(GLUON_SITE_PACKAGES:\n= )
 
+define GLUON_SITE_PACKAGES_standard :=
+
+endef
+GLUON_SITE_PACKAGES_standard := $(GLUON_SITE_PACKAGES_standard:\n= )
+
 # Build everything by default
 ifeq ($(BROKEN),0)
     override BROKEN :=
