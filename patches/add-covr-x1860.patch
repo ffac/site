@@ -1215,10 +1215,10 @@ index 00000000..9f40638e
 + 	dlink,dir-1960-a1|\
 + 	dlink,dir-2640-a1|\
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index 6f9fadbc..a4d67702 100644
+index c5708838..01b9b94c 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
-@@ -32,6 +32,12 @@ device('cudy-x6-v2', 'cudy_x6-v2', {
+@@ -33,6 +33,12 @@ device('cudy-x6-v2', 'cudy_x6-v2', {
  
  -- D-Link
  

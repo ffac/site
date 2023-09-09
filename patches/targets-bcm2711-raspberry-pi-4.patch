@@ -14,10 +14,10 @@ index 00000000..90420dd0
 +	},
 +})
 diff --git a/targets/targets.mk b/targets/targets.mk
-index 346377ea..e9674f85 100644
+index 3a885f22..77940da5 100644
 --- a/targets/targets.mk
 +++ b/targets/targets.mk
-@@ -25,5 +25,6 @@ $(eval $(call GluonTarget,x86,64))
+@@ -26,5 +26,6 @@ $(eval $(call GluonTarget,x86,64))
  
  ifneq ($(BROKEN),)
  $(eval $(call GluonTarget,bcm27xx,bcm2710)) # BROKEN: Untested
