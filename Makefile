@@ -47,6 +47,9 @@ manifest: build
 		${GLUON_MAKE} manifest GLUON_AUTOUPDATER_BRANCH=$$branch;\
 	done
 	mv -f ${GLUON_BUILD_DIR}/output/* ./output/
+	mkdir -p ./output/modules
+	mv ./output/packages/* ./output/modules/
+	mv ./output/modules ./output/packages/
 
 sign: manifest
 	${GLUON_BUILD_DIR}/contrib/sign.sh ${SECRET_KEY_FILE} output/images/sysupgrade/${GLUON_AUTOUPDATER_BRANCH}.manifest
