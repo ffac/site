@@ -1,5 +1,5 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
-index e0b919f3..e56675e3 100755
+index 9f92b5b2..5e8c5c1b 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
 @@ -81,6 +81,8 @@ local primary_addrs = {

@@ -891,7 +891,7 @@ index 00000000..a84b7335
 +++)";
 diff --git a/patches/openwrt/0008-add-Dlink-COVR-X1860.patch b/patches/openwrt/0008-add-Dlink-COVR-X1860.patch
 new file mode 100644
-index 00000000..9f40638e
+index 00000000..263f2408
 --- /dev/null
 +++ b/patches/openwrt/0008-add-Dlink-COVR-X1860.patch
 @@ -0,0 +1,319 @@
@@ -1108,7 +1108,7 @@ index 00000000..9f40638e
 ++	};
 ++};
 +diff --git a/target/linux/ramips/image/mt7621.mk b/target/linux/ramips/image/mt7621.mk
-+index fa4c83dbe18db3c5978c755695caf519327e89f4..787b0fd6c647579459b5ac3af97d3b4d150fd571 100644
++index 962d7ef44017d1ead2a44eb67cac041220709ca4..e3799e9319404297bc1faf945dab83117b6d9499 100644
 +--- a/target/linux/ramips/image/mt7621.mk
 ++++ b/target/linux/ramips/image/mt7621.mk
 +@@ -9,6 +9,14 @@ DEFAULT_SOC := mt7621
@@ -1126,7 +1126,7 @@ index 00000000..9f40638e
 + define Build/arcadyan-trx
 + 	echo -ne "hsqs" > $@.hsqs
 + 	$(eval trx_magic=$(word 1,$(1)))
-+@@ -569,6 +577,31 @@ define Device/cudy_x6-v2
++@@ -581,6 +589,31 @@ define Device/cudy_x6-v2
 + endef
 + TARGET_DEVICES += cudy_x6-v2
 + 
@@ -1159,10 +1159,10 @@ index 00000000..9f40638e
 +   DEVICE_VENDOR := D-Link
 +   DEVICE_MODEL := DAP-1620
 +diff --git a/target/linux/ramips/mt7621/base-files/etc/board.d/02_network b/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
-+index 6057c171922e9861b0928b16352970eaadd54cb1..bc7a05e2fe7541eaa2d78b14f4b66b24e67ca72b 100644
++index 11a7c9465a333ee69b62f59f5e8fd6035c42f51b..feb2a196f582c7a49ae074ce2f387e40a3c8c102 100644
 +--- a/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
 ++++ b/target/linux/ramips/mt7621/base-files/etc/board.d/02_network
-+@@ -92,6 +92,9 @@ ramips_setup_interfaces()
++@@ -93,6 +93,9 @@ ramips_setup_interfaces()
 + 	zyxel,nt7101)
 + 		ucidef_set_interfaces_lan_wan "lan" "wan"
 + 		;;
@@ -1172,7 +1172,7 @@ index 00000000..9f40638e
 + 	gnubee,gb-pc1)
 + 		ucidef_set_interface_lan "ethblack ethblue"
 + 		;;
-+@@ -186,6 +189,11 @@ ramips_setup_macs()
++@@ -197,6 +200,11 @@ ramips_setup_macs()
 + 		lan_mac=$wan_mac
 + 		label_mac=$wan_mac
 + 		;;
