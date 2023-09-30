@@ -1,5 +1,15 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.1.0-4
+ - update to latest v2023.1.x
+ - fix for D-Link 860L
+ - revert x86-64 efi to allow upgrade from v2021.x
+ - update community-packages modules
+ - Makefile fixes
+
+## v2023.1.0-3
+ - revert x86-64 efi to allow upgrade from v2021.x
+
 ## v2023.1.0-2
  - release from gluon v2023.1 tags
  - Makefile changes
