@@ -49,15 +49,15 @@ GLUON_SITE_PACKAGES_standard := $(GLUON_SITE_PACKAGES_standard:\n= )
 
 # Build everything by default
 ifeq ($(BROKEN),0)
-    override BROKEN :=
+override BROKEN :=
 else
-    BROKEN := 1
+export BROKEN := 1
 endif
 GLUON_DEPRECATED := upgrade
 
 GLUON_OUTPUTDIR := ${GLUON_SITEDIR}/output
 ifdef GLUON_DEVICES
-    GLUON_OUTPUTDIR := $(GLUON_SITEDIR)/devices
+GLUON_OUTPUTDIR := $(GLUON_SITEDIR)/devices
 endif
 GLUON_PACKAGEDIR := $(GLUON_OUTPUTDIR)/packages/modules
 

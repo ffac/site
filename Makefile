@@ -152,6 +152,7 @@ build: gluon-prepare output-clean
 		echo 'Copying new opkg keys to $(OPKG_KEY_FOLDER)'; \
 		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
 	fi
+	cat $(GLUON_BUILD_DIR)/openwrt/bin/targets/*/*/profiles.json | jq -s > output/devices.json
 ifndef GLUON_DEVICES
 	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
 	mkdir -p output/packages/$(PACKAGES_BRANCH)
