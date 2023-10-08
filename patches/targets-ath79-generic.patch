@@ -1,56 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index aafcb22f..7db926b3 100644
+index aafcb22f..608057f5 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -405,13 +405,6 @@ device('tp-link-archer-c58-v1', 'tplink_archer-c58-v1', {
- 	class = 'tiny', -- 64M ath9k + ath10k
- })
- 
--device('tp-link-archer-c6-v2-eu-ru-jp', 'tplink_archer-c6-v2', {
--	packages = ATH10K_PACKAGES_QCA9888,
--	manifest_aliases = {
--		'tp-link-archer-c6-v2', -- Upgrade from OpenWrt 19.07
--	},
--})
--
- device('tp-link-archer-c7-v2', 'tplink_archer-c7-v2', {
- 	packages = ATH10K_PACKAGES_QCA9880,
- })
-@@ -434,33 +427,7 @@ device('tp-link-archer-d50-v1', 'tplink_archer-d50-v1', {
- 	broken = true, -- 64M ath9k + ath10k & power LED not working
- })
- 
--device('tp-link-cpe210-v1', 'tplink_cpe210-v1', {
--	manifest_aliases = {
--		'tp-link-cpe210-v1.0', -- Upgrade from OpenWrt 19.07
--		'tp-link-cpe210-v1.1', -- Upgrade from OpenWrt 19.07
--	},
--})
--device('tp-link-cpe210-v2', 'tplink_cpe210-v2', {
--	manifest_aliases = {
--		'tp-link-cpe210-v2.0', -- Upgrade from OpenWrt 19.07
--	},
--})
--device('tp-link-cpe210-v3', 'tplink_cpe210-v3', {
--	manifest_aliases = {
--		'tp-link-cpe210-v3.0', -- Upgrade from OpenWrt 19.07
--		'tp-link-cpe210-v3.1', -- Upgrade from OpenWrt 19.07
--		'tp-link-cpe210-v3.20', -- Upgrade from OpenWrt 19.07
--	},
--})
- device('tp-link-cpe220-v3', 'tplink_cpe220-v3')
--device('tp-link-cpe510-v1', 'tplink_cpe510-v1', {
--	manifest_aliases = {
--		'tp-link-cpe510-v1.0', -- upgrade from OpenWrt 19.07
--		'tp-link-cpe510-v1.1', -- upgrade from OpenWrt 19.07
--	},
--})
--device('tp-link-cpe510-v2', 'tplink_cpe510-v2')
--device('tp-link-cpe510-v3', 'tplink_cpe510-v3')
- 
- device('tp-link-cpe710-v1', 'tplink_cpe710-v1')
- 
-@@ -468,6 +435,10 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
+@@ -468,6 +468,10 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
@@ -61,44 +13,7 @@ index aafcb22f..7db926b3 100644
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
  device('tp-link-tl-wdr4300-v1', 'tplink_tl-wdr4300-v1')
-@@ -480,11 +451,11 @@ device('tp-link-tl-wr842n-v3', 'tplink_tl-wr842n-v3', {
- 	},
- })
- 
--device('tp-link-tl-wr902ac-v1', 'tplink_tl-wr902ac-v1', {
--	packages = ATH10K_PACKAGES_SMALLBUFFERS_QCA9887,
--	broken = true, -- OOM with 5GHz enabled in most environments
--	class = 'tiny', -- 64M ath9k + ath10k
--})
-+-- device('tp-link-tl-wr902ac-v1', 'tplink_tl-wr902ac-v1', {
-+--	packages = ATH10K_PACKAGES_SMALLBUFFERS_QCA9887,
-+--	broken = true, -- OOM with 5GHz enabled in most environments
-+--	class = 'tiny', -- 64M ath9k + ath10k
-+-- })
- 
- device('tp-link-tl-wr1043nd-v2', 'tplink_tl-wr1043nd-v2', {
- 	manifest_aliases = {
-@@ -503,19 +474,6 @@ device('tp-link-tl-wr1043nd-v4', 'tplink_tl-wr1043nd-v4', {
- })
- device('tp-link-tl-wr1043n-v5', 'tplink_tl-wr1043n-v5')
- 
--device('tp-link-wbs210-v1', 'tplink_wbs210-v1', {
--	manifest_aliases = {
--		'tp-link-wbs210-v1.20', -- upgrade from OpenWrt 19.07
--	},
--})
--
--device('tp-link-wbs210-v2', 'tplink_wbs210-v2')
--
--device('tp-link-wbs510-v1', 'tplink_wbs510-v1', {
--	manifest_aliases = {
--		'tp-link-wbs510-v1.20', -- upgrade from OpenWrt 19.07
--	},
--})
- 
- -- Ubiquiti
- 
-@@ -581,3 +539,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -581,3 +585,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')

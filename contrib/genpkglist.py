@@ -215,6 +215,18 @@ targets['ath79-generic']. \
 		'tp-link-archer-c58-v1',
 		'tp-link-archer-c25-v1',
 		'tp-link-archer-c2-v3',
+		'tp-link-archer-c6-v2-eu-ru-jp',
+		'tp-link-cpe210-v1',
+		'tp-link-cpe210-v2',
+		'tp-link-cpe210-v3',
+		'tp-link-cpe220-v3',
+		'tp-link-cpe510-v1',
+		'tp-link-cpe510-v2',
+		'tp-link-cpe510-v3',
+		'tp-link-tl-wr902ac-v1',
+		'tp-link-wbs210-v1',
+		'tp-link-wbs210-v2',
+		'tp-link-wbs510-v1',
 	], pkglists=[PKGS_TLS])
 
 for target in ['ath79-nand', 'ipq40xx-generic', 'ipq40xx-mikrotik', 'ipq806x-generic', 'lantiq-xway', 'mpc85xx-p1010', 'mpc85xx-p1020', 'mvebu-cortexa9', 'rockchip-armv8', 'sunxi-cortexa7', 'realtek-rtl838x', 'mediatek-filogic']:
@@ -275,7 +287,9 @@ targets['ramips-mt7620']. \
 	add_pkglist(PKGS_USB_STORAGE). \
 	add_pkglist(PKGS_TLS). \
 	exclude([  # devices without usb ports
-		'netgear-ex3700'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
+		'netgear-ex3700'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE]). \
+	exclude([  # low firmware space
+		'netgear-ex3700', 'nexx-wt3020-8m', 'tp-link-archer-c2-v1', 'tp-link-archer-c20-v1', 'tp-link-archer-c20i', 'tp-link-archer-c50-v1'], pkglists=[PKGS_TLS])
 
 targets['ramips-mt76x8']. \
 	add_pkglist(PKGS_TLS). \
@@ -283,7 +297,11 @@ targets['ramips-mt76x8']. \
 		'gl-mt300n-v2',
 		'gl.inet-microuter-n300',
 		'netgear-r6120',
-		'ravpower-rp-wd009'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
+		'ravpower-rp-wd009'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE]). \
+	exclude([  # low firmware space
+		'netgear-r6020'], pkglists=[PKGS_TLS])
+
+
 
 for target in ['x86-64', 'x86-generic', 'x86-geode']:
 	targets[target]. \
