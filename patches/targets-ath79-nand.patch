@@ -1,14 +1,15 @@
 diff --git a/targets/ath79-nand b/targets/ath79-nand
-index 68bffa4e..ecf712b2 100644
+index 68bffa4e..ed6907d0 100644
 --- a/targets/ath79-nand
 +++ b/targets/ath79-nand
-@@ -62,6 +62,11 @@ device('zte-mf281', 'zte_mf281', {
+@@ -62,6 +62,12 @@ device('zte-mf281', 'zte_mf281', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
 +device('zte-mf286r', 'zte_mf286r', {
 +	broken = true, -- case must be opened to install
 +	packages = ATH10K_PACKAGES_QCA9888,
++	factory = false,
 +})
 +
  
