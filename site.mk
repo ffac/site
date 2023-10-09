@@ -222,6 +222,7 @@ ifeq ($(GLUON_TARGET),ath79-generic)
     GLUON_tp-link-archer-c25-v1_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-archer-c2-v3_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-archer-c6-v2-eu-ru-jp_SITE_PACKAGES += $(EXCLUDE_TLS)
+    GLUON_tp-link-archer-d50-v1_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-cpe210-v1_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-cpe210-v2_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-cpe210-v3_SITE_PACKAGES += $(EXCLUDE_TLS)
@@ -233,6 +234,10 @@ ifeq ($(GLUON_TARGET),ath79-generic)
     GLUON_tp-link-wbs210-v1_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-wbs210-v2_SITE_PACKAGES += $(EXCLUDE_TLS)
     GLUON_tp-link-wbs510-v1_SITE_PACKAGES += $(EXCLUDE_TLS)
+    GLUON_ubiquiti-nanostation-m-xw_SITE_PACKAGES += $(EXCLUDE_TLS)
+    GLUON_ubiquiti-nanobeam-m5-xw_SITE_PACKAGES += $(EXCLUDE_TLS)
+    GLUON_ubiquiti-nanostation-loco-m-xw_SITE_PACKAGES += $(EXCLUDE_TLS)
+    GLUON_ubiquiti-unifi-ap_SITE_PACKAGES += $(EXCLUDE_TLS)
 endif
 
 # no pkglists for target ath79-mikrotik
