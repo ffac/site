@@ -1,0 +1,30 @@
+diff --git a/targets/ipq807x-generic b/targets/ipq807x-generic
+new file mode 100644
+index 00000000..28427b34
+--- /dev/null
++++ b/targets/ipq807x-generic
+@@ -0,0 +1,24 @@
++local ATH10K_PACKAGES_IPQ807X = {
++	-- default: candela tech driver
++}
++
++
++defaults {
++	packages = ATH10K_PACKAGES_IPQ807X,
++}
++
++
++-- Xiaomi
++
++device('xiaomi-ax3600', 'xiaomi_ax3600', {
++	packages = {
++		-- radio0 is monitoring radio - removed for now
++		'-ath10k-firmware-qca9887-ct',
++		'-ath10k-board-qca9887',
++		'-kmod-ath10k-ct-smallbuffers',
++		'-kmod-ath10k-smallbuffers',
++	},
++        broken = true,
++	-- 3rd WiFi radio not supported
++	-- 3rd radio comes with smallbuffers (512MB RAM is not enough next to ath11k)
++})

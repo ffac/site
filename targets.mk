@@ -29,6 +29,7 @@ define GLUON_TARGETS +=
 bcm27xx-bcm2710
 bcm27xx-bcm2711
 mvebu-cortexa9
+ipq807x-generic
 endef
 endif
 

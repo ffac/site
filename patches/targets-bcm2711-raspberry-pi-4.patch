@@ -13,14 +13,3 @@ index 00000000..90420dd0
 +		'raspberry-pi-4-model-b-rev-1.4',
 +	},
 +})
-diff --git a/targets/targets.mk b/targets/targets.mk
-index 3a885f22..77940da5 100644
---- a/targets/targets.mk
-+++ b/targets/targets.mk
-@@ -26,5 +26,6 @@ $(eval $(call GluonTarget,x86,64))
- 
- ifneq ($(BROKEN),)
- $(eval $(call GluonTarget,bcm27xx,bcm2710)) # BROKEN: Untested
-+$(eval $(call GluonTarget,bcm27xx,bcm2711)) # BROKEN: Untested
- $(eval $(call GluonTarget,mvebu,cortexa9)) # BROKEN: No 11s support
- endif
