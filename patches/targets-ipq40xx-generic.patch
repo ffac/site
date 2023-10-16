@@ -1,8 +1,20 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index b6a49ca7..96765dc1 100644
+index b6a49ca7..cf281a4b 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -73,6 +73,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -57,6 +57,11 @@ device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
+ 	factory = false,
+ })
+ 
++device('avm-fritz-repeater-3000', 'avm_fritzrepeater-3000', {
++	factory = false,
++})
++
++
+ 
+ -- GL.iNet
+ 
+@@ -73,6 +78,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
