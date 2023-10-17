@@ -1,5 +1,5 @@
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index 01b9b94c..c9dd2e65 100644
+index c5708838..3a2c1cd2 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
 @@ -22,6 +22,10 @@ device('cudy-wr2100', 'cudy_wr2100', {
@@ -13,7 +13,27 @@ index 01b9b94c..c9dd2e65 100644
  device('cudy-x6-v1', 'cudy_x6-v1', {
  	factory = false,
  })
-@@ -162,6 +166,15 @@ device('zyxel-wsm20', 'zyxel_wsm20', {
+@@ -83,6 +87,8 @@ device('netgear-wndr3700-v5', 'netgear_wndr3700-v5', {
+ 
+ -- TP-Link
+ 
++device('tp-link-archer-ax23-v1', 'tplink_archer-ax23-v1')
++
+ device('tp-link-archer-c6-v3', 'tplink_archer-c6-v3', {
+ 	broken = true, -- LAN LED not working - review after resolving #2756
+ })
+@@ -100,6 +106,10 @@ device('ubiquiti-unifi-6-lite', 'ubnt_unifi-6-lite', {
+ 	factory = false,
+ })
+ 
++device('ubiquiti-unifi-nanohd', 'ubnt_unifi-nanohd', {
++	factory = false,
++})
++
+ 
+ -- Wavlink
+ 
+@@ -156,6 +166,15 @@ device('zyxel-wsm20', 'zyxel_wsm20', {
  
  -- Devices without WLAN
  

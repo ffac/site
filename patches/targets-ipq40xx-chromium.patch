@@ -1,0 +1,25 @@
+diff --git a/targets/ipq40xx-chromium b/targets/ipq40xx-chromium
+new file mode 100644
+index 00000000..7dfa219b
+--- /dev/null
++++ b/targets/ipq40xx-chromium
+@@ -0,0 +1,19 @@
++local ATH10K_PACKAGES_IPQ40XX = {
++	'kmod-ath10k',
++	'-kmod-ath10k-ct',
++	'-kmod-ath10k-ct-smallbuffers',
++	'ath10k-firmware-qca4019',
++	'-ath10k-firmware-qca4019-ct',
++}
++
++
++defaults {
++	packages = ATH10K_PACKAGES_IPQ40XX,
++}
++
++
++-- Google
++
++device('google-wifi-gale', 'google_wifi', {
++	broken = true, -- can only be flashed by opening the device, to enter devmode
++})

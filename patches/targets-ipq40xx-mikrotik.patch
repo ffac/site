@@ -1,0 +1,56 @@
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
+index ba4b5b48..52d9f1b1 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
+@@ -26,6 +26,8 @@ function M.is_outdoor_device()
+ 	if M.match('ath79', 'generic', {
+ 		'devolo,dvl1750x',
+ 		'librerouter,librerouter-v1',
++		'mikrotik,routerboard-wap-g-5hact2hnd',
++		'mikrotik,wap-ac',
+ 		'plasmacloud,pa300',
+ 		'plasmacloud,pa300e',
+ 		'tplink,cpe210-v1',
+diff --git a/targets/ipq40xx-mikrotik b/targets/ipq40xx-mikrotik
+index aed02b2a..eb08ef45 100644
+--- a/targets/ipq40xx-mikrotik
++++ b/targets/ipq40xx-mikrotik
+@@ -1,6 +1,27 @@
+ include 'mikrotik.inc'
+ 
+-local ATH10K_PACKAGES_IPQ40XX_SMALLBUFFERS = {}
++local ATH10K_PACKAGES_IPQ40XX = {
++	'kmod-ath10k',
++	'-kmod-ath10k-ct',
++	'-kmod-ath10k-ct-smallbuffers',
++	'ath10k-firmware-qca4019',
++	'-ath10k-firmware-qca4019-ct',
++}
++
++-- enforce mainline ath10k-smallbuffers kmod, fixes 5GHz-OOM for low memory devices
++
++local ATH10K_PACKAGES_IPQ40XX_SMALLBUFFERS = {
++	'kmod-ath10k-smallbuffers',
++	'-kmod-ath10k-ct',
++	'-kmod-ath10k-ct-smallbuffers',
++	'ath10k-firmware-qca4019',
++	'-ath10k-firmware-qca4019-ct',
++}
++
++defaults {
++	packages = ATH10K_PACKAGES_IPQ40XX,
++}
++
+ 
+ device('mikrotik-hap-ac2', 'mikrotik_hap-ac2', {
+ 	packages = ATH10K_PACKAGES_IPQ40XX_SMALLBUFFERS,
+@@ -10,3 +31,9 @@ device('mikrotik-sxtsq-5-ac-rbsxtsqg-5acd', 'mikrotik_sxtsq-5-ac', {
+ 	factory = false,
+ 	aliases = {'mikrotik-discg-5acd'},
+ })
++
++device('mikrotik-wap-ac', 'mikrotik_wap-ac', {
++	aliases = {'mikrotik-routerboard-wap-g-5hacd2hnd'},
++	aliases = {'mikrotik-routerboard-wap-ac-d2'},
++	factory = false,
++})

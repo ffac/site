@@ -1,9 +1,9 @@
 diff --git a/targets/ipq807x-generic b/targets/ipq807x-generic
 new file mode 100644
-index 00000000..28427b34
+index 00000000..aebb8dd9
 --- /dev/null
 +++ b/targets/ipq807x-generic
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,29 @@
 +local ATH10K_PACKAGES_IPQ807X = {
 +	-- default: candela tech driver
 +}
@@ -12,6 +12,11 @@ index 00000000..28427b34
 +defaults {
 +	packages = ATH10K_PACKAGES_IPQ807X,
 +}
++
++
++-- Netgear
++
++device('netgear-wax218', 'netgear_wax218')
 +
 +
 +-- Xiaomi
