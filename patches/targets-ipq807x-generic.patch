@@ -1,9 +1,9 @@
 diff --git a/targets/ipq807x-generic b/targets/ipq807x-generic
 new file mode 100644
-index 00000000..aebb8dd9
+index 00000000..08c5ab5f
 --- /dev/null
 +++ b/targets/ipq807x-generic
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,32 @@
 +local ATH10K_PACKAGES_IPQ807X = {
 +	-- default: candela tech driver
 +}
@@ -16,7 +16,9 @@ index 00000000..aebb8dd9
 +
 +-- Netgear
 +
-+device('netgear-wax218', 'netgear_wax218')
++device('netgear-wax218', 'netgear_wax218', {
++	factory = false,
++})
 +
 +
 +-- Xiaomi
@@ -32,4 +34,5 @@ index 00000000..aebb8dd9
 +        broken = true,
 +	-- 3rd WiFi radio not supported
 +	-- 3rd radio comes with smallbuffers (512MB RAM is not enough next to ath11k)
++	factory = false,
 +})

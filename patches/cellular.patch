@@ -16,10 +16,10 @@ index 0099d1d8..7301eff2 100755
  	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
  elseif platform.match('ramips', 'mt7621', {
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-index ba4b5b48..78b51e05 100644
+index 52d9f1b1..6b4b14ed 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-@@ -75,11 +75,13 @@ end
+@@ -77,11 +77,13 @@ end
  function M.is_cellular_device()
  	if M.match('ath79', 'nand', {
  		'zte,mf281',

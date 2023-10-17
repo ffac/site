@@ -28,6 +28,18 @@ index 00000000..dad7e10b
 + 		partitions {
 + 			compatible = "fixed-partitions";
 + 			#address-cells = <1>;
+diff --git a/patches/openwrt/0007-procd-add-Dlink-sge-image.patch b/patches/openwrt/0008-procd-add-Dlink-sge-image.patch
+similarity index 100%
+rename from patches/openwrt/0007-procd-add-Dlink-sge-image.patch
+rename to patches/openwrt/0008-procd-add-Dlink-sge-image.patch
+diff --git a/patches/openwrt/0008-add-Dlink-COVR-X1860.patch b/patches/openwrt/0009-add-Dlink-COVR-X1860.patch
+similarity index 100%
+rename from patches/openwrt/0008-add-Dlink-COVR-X1860.patch
+rename to patches/openwrt/0009-add-Dlink-COVR-X1860.patch
+diff --git a/patches/openwrt/0009-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0010-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+similarity index 100%
+rename from patches/openwrt/0009-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+rename to patches/openwrt/0010-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
 index b6a49ca7..68cb4d55 100644
 --- a/targets/ipq40xx-generic
