@@ -10,15 +10,15 @@ index 00000000..08c5ab5f
 +
 +
 +defaults {
-+	packages = ATH10K_PACKAGES_IPQ807X,
++	packages = ATH10K_PACKAGES_IPQ807X
 +}
 +
 +
 +-- Netgear
 +
-+device('netgear-wax218', 'netgear_wax218', {
-+	factory = false,
-+})
++--device('netgear-wax218', 'netgear_wax218', {
++--	factory = false,
++--})
 +
 +
 +-- Xiaomi
