@@ -149,8 +149,9 @@ build: gluon-prepare output-clean
 		echo ''Building target $$target''; \
 		$(GLUON_MAKE) download all GLUON_TARGET=$$target CONFIG_JSON_ADD_IMAGE_INFO=1; \
 	done
-	@if [ ! -f "$(OPKG_KEY_FOLDER)/key-build" ]; then \
+	@if [ ! -f "$(OPKG_KEY_FOLDER)/key-build" ] && [ -f "$(GLUON_BUILD_DIR)/openwrt/key-build" ]; then \
 		echo 'Copying new opkg keys to $(OPKG_KEY_FOLDER)'; \
+		mkdir -p $(OPKG_KEY_FOLDER); \
 		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
 	fi
 ifndef GLUON_DEVICES
