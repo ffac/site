@@ -202,6 +202,12 @@ EXCLUDE_TLS := \
     -libustream-openssl \
     -openssh-sftp-server
 
+INCLUDE_NSM := \
+    ffda-network-setup-mode
+
+EXCLUDE_NSM := \
+    -ffda-network-setup-mode
+
 ifeq ($(GLUON_TARGET),ath79-generic)
     GLUON_SITE_PACKAGES += $(INCLUDE_TLS)
 
@@ -308,9 +314,11 @@ endif
 ifeq ($(GLUON_TARGET),ramips-mt7621)
     GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE)
 
+    GLUON_zyxel-nwa55axe_SITE_PACKAGES += $(INCLUDE_NSM)
     GLUON_netgear-ex6150_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
     GLUON_ubiquiti-edgerouter-x_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
     GLUON_ubiquiti-edgerouter-x-sfp_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
+    GLUON_zyxel-nwa55axe_SITE_PACKAGES += $(EXCLUDE_USB) $(EXCLUDE_USB_NET) $(EXCLUDE_USB_SERIAL) $(EXCLUDE_USB_STORAGE)
 endif
 
 ifeq ($(GLUON_TARGET),ramips-mt76x8)
@@ -322,6 +330,9 @@ ifeq ($(GLUON_TARGET),ramips-mt76x8)
     GLUON_ravpower-rp-wd009_SITE_PACKAGES += $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE)
     GLUON_tp-link-re305_SITE_PACKAGES += $(EXCLUDE_TLS)
 endif
+
+# no pkglists for target realtek-rtl838x
+
 
 ifeq ($(GLUON_TARGET),rockchip-armv8)
     GLUON_SITE_PACKAGES += $(INCLUDE_TLS) $(INCLUDE_USB) $(INCLUDE_USB_NET) $(INCLUDE_USB_SERIAL) $(INCLUDE_USB_STORAGE)

@@ -188,11 +188,16 @@ PKGS_TLS = PackageList('TLS', [
 ])
 pkglists.append(PKGS_TLS)
 
+PKGS_NSM = PackageList('NSM', [
+	'ffda-network-setup-mode',
+])
+pkglists.append(PKGS_NSM)
+
 #
 # package assignment
 #
 
-targets.get('ath79-generic'). \
+targets['ath79-generic']. \
 	add_pkglist(PKGS_TLS). \
 	include([ # 7M usable firmware space + USB port
 		'devolo-wifi-pro-1750e',
@@ -217,14 +222,14 @@ targets.get('ath79-generic'). \
 	], pkglists=[PKGS_TLS])
 
 for target in ['ath79-nand', 'ipq40xx-generic', 'ipq806x-generic', 'lantiq-xway', 'mpc85xx-p1010', 'mpc85xx-p1020', 'mvebu-cortexa9', 'rockchip-armv8', 'sunxi-cortexa7']:
-	targets.get(target). \
+	targets[target]. \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
 		add_pkglist(PKGS_TLS)
 
-targets.get('lantiq-xrx200'). \
+targets['lantiq-xrx200']. \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
@@ -236,10 +241,10 @@ targets.get('lantiq-xrx200'). \
 			'tp-link-td-w8980'
 		], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-targets.get('mpc85xx-p1020').add_pkglist(PKGS_TLS)
+targets['mpc85xx-p1020'].add_pkglist(PKGS_TLS)
 
 for target in ['bcm27xx-bcm2708', 'bcm27xx-bcm2709', 'bcm27xx-bcm2710', 'bcm27xx-bcm2711']:
-	targets.get(target). \
+	targets[target]. \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
@@ -247,7 +252,7 @@ for target in ['bcm27xx-bcm2708', 'bcm27xx-bcm2709', 'bcm27xx-bcm2710', 'bcm27xx
 		add_pkglist(PKGS_USB_HID). \
 		add_pkglist(PKGS_TLS)
 
-targets.get('mediatek-mt7622'). \
+targets['mediatek-mt7622']. \
 	add_pkglist(PKGS_USB). \
 	add_pkglist(PKGS_USB_NET). \
 	add_pkglist(PKGS_USB_SERIAL). \
@@ -256,18 +261,20 @@ targets.get('mediatek-mt7622'). \
 	exclude([  # devices without usb ports
 		'ubiquiti-unifi-6-lr-v1'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-targets.get('ramips-mt7621'). \
+targets['ramips-mt7621']. \
 	add_pkglist(PKGS_USB). \
 	add_pkglist(PKGS_USB_NET). \
 	add_pkglist(PKGS_USB_SERIAL). \
 	add_pkglist(PKGS_USB_STORAGE). \
 	add_pkglist(PKGS_TLS). \
+	include(['zyxel-nwa55axe'], pkglists=[PKGS_NSM]). \
 	exclude([  # devices without usb ports
 		'netgear-ex6150',
 		'ubiquiti-edgerouter-x',
-		'ubiquiti-edgerouter-x-sfp'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
+		'ubiquiti-edgerouter-x-sfp',
+		'zyxel-nwa55axe'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-targets.get('ramips-mt7620'). \
+targets['ramips-mt7620']. \
 	add_pkglist(PKGS_USB). \
 	add_pkglist(PKGS_USB_NET). \
 	add_pkglist(PKGS_USB_SERIAL). \
@@ -276,7 +283,7 @@ targets.get('ramips-mt7620'). \
 	exclude([  # devices without usb ports
 		'netgear-ex3700'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
-targets.get('ramips-mt76x8'). \
+targets['ramips-mt76x8']. \
 	add_pkglist(PKGS_TLS). \
 	include([ # 7M usable firmware space + USB port
 		'gl-mt300n-v2',
@@ -288,18 +295,17 @@ targets.get('ramips-mt76x8'). \
 	], pkglists=[PKGS_TLS])
 
 for target in ['x86-64', 'x86-generic', 'x86-geode']:
-	targets.get(target). \
+	targets[target]. \
 		add_pkglist(PKGS_USB). \
 		add_pkglist(PKGS_USB_NET). \
 		add_pkglist(PKGS_USB_SERIAL). \
 		add_pkglist(PKGS_USB_STORAGE). \
 		add_pkglist(PKGS_PCI). \
 		add_pkglist(PKGS_PCI_NET). \
-		add_pkglist(PKGS_VIRT). \
 		add_pkglist(PKGS_TLS)
 
-targets.get('x86-64').add_pkglist(PKGS_VIRT)
-targets.get('x86-legacy').add_pkglist(PKGS_TLS)
+targets['x86-64'].add_pkglist(PKGS_VIRT)
+targets['x86-legacy'].add_pkglist(PKGS_TLS)
 
 if __name__ == '__main__':
 	for pkglist in pkglists:
