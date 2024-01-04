@@ -1,22 +1,8 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index aafcb22f..71457772 100644
+index 626b6520..9c0f12fd 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -57,6 +57,13 @@ device('avm-fritz-wlan-repeater-450e', 'avm_fritz450e', {
- 	factory = false,
- })
- 
-+device('avm-fritz-wlan-repeater-1750e', 'avm_fritz1750e', {
-+	packages = ATH10K_PACKAGES_SMALLBUFFERS_QCA9880,
-+	factory = false,
-+	broken = true, -- OOM with 5GHz enabled in most environments
-+	class = 'tiny', -- 64M ath9k + ath10k
-+})
-+
- -- Buffalo
- 
- device('buffalo-wzr-hp-ag300h', 'buffalo_wzr-hp-ag300h')
-@@ -468,6 +475,15 @@ device('tp-link-eap225-outdoor-v1', 'tplink_eap225-outdoor-v1', {
+@@ -506,6 +506,15 @@ device('tp-link-eap225-outdoor-v3', 'tplink_eap225-outdoor-v3', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
@@ -32,7 +18,7 @@ index aafcb22f..71457772 100644
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
  device('tp-link-tl-wdr4300-v1', 'tplink_tl-wdr4300-v1')
-@@ -581,3 +597,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -604,3 +613,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
  })
  
  device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')

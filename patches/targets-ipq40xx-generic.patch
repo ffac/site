@@ -1,47 +1,5 @@
-diff --git a/patches/openwrt/0007-ipq4019-fix-support-for-AVM-FRITZ-Repeater-3000.patch b/patches/openwrt/0007-ipq4019-fix-support-for-AVM-FRITZ-Repeater-3000.patch
-new file mode 100644
-index 00000000..dad7e10b
---- /dev/null
-+++ b/patches/openwrt/0007-ipq4019-fix-support-for-AVM-FRITZ-Repeater-3000.patch
-@@ -0,0 +1,24 @@
-+From: Alexander Friese <af944580@googlemail.com>
-+Date: Wed, 12 Jul 2023 16:46:01 +0200
-+Subject: ipq4019: fix support for AVM FRITZ!Repeater 3000
-+
-+new versions of the device have NAND with 8bit ECC
-+which was not yet supported before. This change removes
-+ECC restrictions.
-+
-+Signed-off-by: Alexander Friese <af944580@googlemail.com>
-+
-+diff --git a/target/linux/ipq40xx/files/arch/arm/boot/dts/qcom-ipq4019-fritzrepeater-3000.dts b/target/linux/ipq40xx/files/arch/arm/boot/dts/qcom-ipq4019-fritzrepeater-3000.dts
-+index 41dec72542421d8b2228e3f0432460e75bbcc329..8d88bc1521109f5469a0a7ce893af4b92b4f39ed 100644
-+--- a/target/linux/ipq40xx/files/arch/arm/boot/dts/qcom-ipq4019-fritzrepeater-3000.dts
-++++ b/target/linux/ipq40xx/files/arch/arm/boot/dts/qcom-ipq4019-fritzrepeater-3000.dts
-+@@ -121,9 +121,6 @@
-+ 	status = "okay";
-+ 
-+ 	nand@0 {
-+-		/delete-property/ nand-ecc-strength;
-+-		/delete-property/ nand-ecc-step-size;
-+-
-+ 		partitions {
-+ 			compatible = "fixed-partitions";
-+ 			#address-cells = <1>;
-diff --git a/patches/openwrt/0007-procd-add-Dlink-sge-image.patch b/patches/openwrt/0008-procd-add-Dlink-sge-image.patch
-similarity index 100%
-rename from patches/openwrt/0007-procd-add-Dlink-sge-image.patch
-rename to patches/openwrt/0008-procd-add-Dlink-sge-image.patch
-diff --git a/patches/openwrt/0008-add-Dlink-COVR-X1860.patch b/patches/openwrt/0009-add-Dlink-COVR-X1860.patch
-similarity index 100%
-rename from patches/openwrt/0008-add-Dlink-COVR-X1860.patch
-rename to patches/openwrt/0009-add-Dlink-COVR-X1860.patch
-diff --git a/patches/openwrt/0009-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0010-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
-similarity index 100%
-rename from patches/openwrt/0009-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
-rename to patches/openwrt/0010-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index b6a49ca7..68cb4d55 100644
+index 068f538b..6e7c8bd4 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
 @@ -14,6 +14,15 @@ local ATH10K_PACKAGES_IPQ40XX_QCA9888 = {
@@ -133,20 +91,11 @@ index b6a49ca7..68cb4d55 100644
  		'-ath10k-firmware-qca9887-ct',
  		'-ath10k-board-qca9887',
  	},
-@@ -120,6 +181,16 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
- })
+@@ -123,6 +184,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
+ -- ZTE
  
- 
-+-- ZTE
-+
-+device('zte-mf289f', 'zte_mf289f', {
+ device('zte-mf289f', 'zte_mf289f', {
 +	packages = ATH10K_PACKAGES_IPQ40XX_QCA9984,
-+	broken = true,	-- case must be opened to install
-+	-- only hw rev T2 was tested, hw rev T1 wasn't (implication: 5GHz was never verified for T1, everything else should be working)
-+	factory = false,
-+})
-+
-+
- -- ZyXEL
- 
- device('zyxel-nbg6617', 'zyxel_nbg6617')
+ 	broken = true,	-- case must be opened to install
+ 	factory = false,
+ })
