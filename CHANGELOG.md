@@ -1,5 +1,16 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.1.1-2
+  - fix opkg key folder creation (when initializing firmware repo)
+  - add ffda-network-setup-mode for zyxel-nwa55axe
+  - readd FB 7520/7530
+  - fix raspi names
+  - update gluon to v2023.1.x
+
+## v2023.1.1-1
+ - build from v2023.1.1
+ - this did break FB 7520/7530
+
 ## v2023.1.0-4
  - update to latest v2023.1.x
  - fix for D-Link 860L
