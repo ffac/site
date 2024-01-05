@@ -19,6 +19,7 @@ packages {
 	'iwinfo',
 	'ffac-ssid-changer',
 	'ffac-wg-registration',
+	'ff-web-ap-timer',
 	'respondd-module-airtime',
 }
 
@@ -100,12 +101,6 @@ pkgs_pci = {
 	'kmod-bnx2', -- Broadcom NetExtreme BCM5706/5708/5709/5716
 }
 
-pkgs_tls = {
-	'ca-bundle',
-	'libustream-openssl',
-	'openssh-sftp-server'
-}
-
 include_tls = not device({
 	'd-link-dir825b1',
 	'tp-link-archer-c58-v1',
@@ -135,12 +130,14 @@ include_tls = not device({
 	'tp-link-archer-c20-v1',
 	'tp-link-archer-c20i',
 	'tp-link-archer-c50-v1',
+	'tp-link-archer-c60-v1',
 
 	'netgear-r6020'
 })
 
 if include_tls then
-	packages(pkgs_tls)
+	features {'tls'}
+	packages {'openssh-sftp-server'}
 end
 
 include_usb = true
