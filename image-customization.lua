@@ -37,8 +37,10 @@ if device({
 end
 
 if not device_class('tiny') then
+	features {'tls'}
 	packages {
-		'ffac-autoupdater-wifi-fallback'
+		'ffac-autoupdater-wifi-fallback',
+		'openssh-sftp-server'
 	}
 end
 
@@ -100,45 +102,6 @@ pkgs_pci = {
 	'pciutils',
 	'kmod-bnx2', -- Broadcom NetExtreme BCM5706/5708/5709/5716
 }
-
-include_tls = not device({
-	'd-link-dir825b1',
-	'tp-link-archer-c58-v1',
-	'tp-link-archer-c25-v1',
-	'tp-link-archer-c2-v3',
-	'tp-link-archer-c6-v2-eu-ru-jp',
-	'tp-link-archer-d50-v1',
-	'tp-link-cpe210-v1',
-	'tp-link-cpe210-v2',
-	'tp-link-cpe210-v3',
-	'tp-link-cpe220-v3',
-	'tp-link-cpe510-v1',
-	'tp-link-cpe510-v2',
-	'tp-link-cpe510-v3',
-	'tp-link-tl-wr902ac-v1',
-	'tp-link-wbs210-v1',
-	'tp-link-wbs210-v2',
-	'tp-link-wbs510-v1',
-	'ubiquiti-nanostation-m-xw',
-	'ubiquiti-nanobeam-m5-xw',
-	'ubiquiti-nanostation-loco-m-xw',
-	'ubiquiti-unifi-ap',
-
-	'netgear-ex3700',
-	'nexx-wt3020-8m',
-	'tp-link-archer-c2-v1',
-	'tp-link-archer-c20-v1',
-	'tp-link-archer-c20i',
-	'tp-link-archer-c50-v1',
-	'tp-link-archer-c60-v1',
-
-	'netgear-r6020'
-})
-
-if include_tls then
-	features {'tls'}
-	packages {'openssh-sftp-server'}
-end
 
 include_usb = true
 
@@ -204,6 +167,7 @@ end
 
 if target('x86') and not target('x86', 'legacy') then
 	packages(pkgs_pci)
+	packages(pkgs_hid)
 end
 
 if target('bcm27xx') then
