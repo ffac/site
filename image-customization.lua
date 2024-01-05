@@ -23,24 +23,27 @@ packages {
     'respondd-module-airtime',
 }
 
-if device({
-    'zte,mf281',
-    'glinet,gl-xe300',
-    'glinet,gl-ap1300',
-    'zte,mf289f',
-    'wavlink,ws-wn572hp3-4g',
-    'tplink,tl-mr6400-v5',
-}) then
+if not device_class('tiny') then
     features {
-        'web-cellular'
+        'tls',
+        'wireless-encryption-wpa3',
+    }
+    packages {
+        'openssh-sftp-server',
+        'ffac-autoupdater-wifi-fallback',
     }
 end
 
-if not device_class('tiny') then
-    features {'tls'}
-    packages {
-        'ffac-autoupdater-wifi-fallback',
-        'openssh-sftp-server'
+if device({
+        'zte,mf281',
+        'glinet,gl-xe300',
+        'glinet,gl-ap1300',
+        'zte,mf289f',
+        'wavlink,ws-wn572hp3-4g',
+        'tplink,tl-mr6400-v5',
+    }) then
+    features {
+        'web-cellular',
     }
 end
 
@@ -105,6 +108,11 @@ pkgs_pci = {
 
 include_usb = true
 
+-- rtl838x has no USB support as of Gluon v2023.2
+if target('realtek', 'rtl838x') then
+    include_usb = false
+end
+
 -- 7M usable firmware space + USB port
 if target('ath79', 'generic') and not device({
     'devolo-wifi-pro-1750e',
@@ -134,19 +142,28 @@ if target('ramips', 'mt76x8') and not device({
     include_usb = false
 end
 
-if target('realtek','rtl838x') then
+-- 7M usable firmware space + USB port
+if device({
+    'avm-fritz-box-7412',
+    'tp-link-td-w8970',
+    'tp-link-td-w8980',
+    'gl-mt300n-v2',
+    'gl.inet-microuter-n300',
+    'netgear-r6120',
+    'ravpower-rp-wd009'
+}) then
     include_usb = false
 end
 
+-- devices without usb ports
 if device({
-        'avm-fritz-box-7412',
-        'tp-link-td-w8970',
-        'tp-link-td-w8980',
-        'ubiquiti-unifi-6-lr-v1',
-        'netgear-ex6150',
-        'ubiquiti-edgerouter-x',
-        'ubiquiti-edgerouter-x-sfp',
-        'zyxel-nwa55axe'}) then
+    'ubiquiti-unifi-6-lr-v1',
+    'netgear-ex6150',
+    'netgear-ex3700',
+    'ubiquiti-edgerouter-x',
+    'ubiquiti-edgerouter-x-sfp',
+    'zyxel-nwa55axe',
+}) then
     include_usb = false
 end
 
