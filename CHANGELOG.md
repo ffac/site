@@ -1,7 +1,19 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2021.1.2-15
+  - add time.freifunk-aachen.de as ntp server
+  - remove servers with closed ntp port
 
-## v2021.1.2-x
+## v2021.1.2-14
+  - update community-packages to fix NTP issue
+
+## v2021.1.2-13
+  - update community-packages
+  - remove test update server
+
+## v2021.1.2-12
+  - add sn01
+  - fix opkg openwrt repo 
 
 ## v2021.1.2-11
   - fix mesh_vpn
