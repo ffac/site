@@ -17,16 +17,6 @@ A single target can be built using:
 ## CHANGELOG
 The [CHANGELOG](./CHANGELOG.md) can be found [here](./CHANGELOG.md)
 
-## Update site.mk packages
-
-To update the site.mk packages, the `genpkglist.py` can be executed from the build server like:
-
-```console
-~/site-ffac$ ./contrib/genpkglist.py
-```
-
-The output must then be appended to the end of the `site.mk`
-
 Currently outdated further information can be found in the Freifunk Wiki[^wiki]
 
 

@@ -1,5 +1,21 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.2.0-8
+  - package configuration with image-customization.lua
+  - switch to maurerle/covr-x1860-gluon openwrt base
+  - remove obsolete patches
+  - switch from openssl to mbedtls (gluon-tls)
+  - add ff-web-ap-timer
+  - update to latest community-packages
+  - update gluon release to v2023.2
+  - add ffda-network-setup-mode for zyxel-nwa55axe
+  - fix opkg key folder creation
+
+## v2023.2.0-7
+  - fix building wax218
+  - add FR3000, FR1750e, Xiaomi AX3600, EAP225v3
+  - add ZTE MF289F, TP-Link Archer AX23, Ubiquiti UniFi nanoHD, Mikrotik WAP AC (D2), Netgear WAX218, Google WiFi (Gale)
+
 ## v2023.2.0-6
   - update openwrt to nearly v23.05.0-rc4
   - update community-packages
