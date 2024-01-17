@@ -183,7 +183,11 @@ if device({
 end
 
 if target('x86', '64') then
-    packages {'qemu-ga'}
+    -- add guest agent for qemu and vmware
+    packages {
+        'qemu-ga',
+        'open-vm-tools',
+    }
 end
 
 if target('x86') and not target('x86', 'legacy') then
