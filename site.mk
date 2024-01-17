@@ -187,10 +187,12 @@ EXCLUDE_PCI_NET := \
     -kmod-bnx2
 
 INCLUDE_VIRT := \
-    qemu-ga
+    qemu-ga \
+    open-vm-tools
 
 EXCLUDE_VIRT := \
-    -qemu-ga
+    -qemu-ga \
+    -open-vm-tools
 
 INCLUDE_TLS := \
     ca-bundle \
