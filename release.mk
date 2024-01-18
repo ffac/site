@@ -1,2 +1,2 @@
 GLUON_GIT_URL := https://github.com/freifunk-gluon/gluon.git
-GLUON_GIT_REF := 13a6617f2a90a1b15febe23674a8f4c7092e00a1 #v2023.1.x
+GLUON_GIT_REF := 1b3b12103cdca576ed263f3e2163b3539f293612 #v2023.1.x
