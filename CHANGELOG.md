@@ -1,5 +1,11 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.2.0-9
+  - add open-vm-tools to x86-64
+  - update to latest gluon v2023.2.x
+  - fixes WDR3600 and WDR4300 hang on reboot issue
+  - fixes 40MHz operation with highest 5GHz channel
+
 ## v2023.2.0-8
   - package configuration with image-customization.lua
   - switch to maurerle/covr-x1860-gluon openwrt base
