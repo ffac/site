@@ -1,5 +1,11 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.1.1-3
+  - add open-vm-tools to x86-64
+  - update to latest gluon v2023.1.x
+  - fixes WDR3600 and WDR4300 hang on reboot issue
+  - fixes 40MHz operation with highest 5GHz channel
+
 ## v2023.1.1-2
   - fix opkg key folder creation (when initializing firmware repo)
   - add ffda-network-setup-mode for zyxel-nwa55axe
