@@ -11,10 +11,10 @@ index 27294c4d..7301eff2 100755
  	setup_ncm_qmi('/dev/ttyACM0', 'ncm', 15)
  elseif platform.match('ipq40xx', 'generic', {
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-index 7ba3103f..37b25bb0 100644
+index 931363b5..5dd3980c 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-@@ -76,6 +76,7 @@ end
+@@ -79,6 +79,7 @@ end
  function M.is_cellular_device()
  	if M.match('ath79', 'nand', {
  		'zte,mf281',

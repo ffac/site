@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 626b6520..9c0f12fd 100644
+index af23bf6a..8b0ae548 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
 @@ -506,6 +506,15 @@ device('tp-link-eap225-outdoor-v3', 'tplink_eap225-outdoor-v3', {
@@ -18,10 +18,10 @@ index 626b6520..9c0f12fd 100644
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
  device('tp-link-tl-wdr4300-v1', 'tplink_tl-wdr4300-v1')
-@@ -604,3 +613,14 @@ device('ubiquiti-unifi-ap-outdoor+', 'ubnt_unifi-ap-outdoor-plus', {
+@@ -610,3 +619,14 @@ device('ubiquiti-unifi-swiss-army-knife-ultra', 'ubnt_uk-ultra', {
+ 	factory = false,
+ 	packages = ATH10K_PACKAGES_QCA9880,
  })
- 
- device('ubiquiti-unifi-ap-pro', 'ubnt_unifi-ap-pro')
 +
 +-- device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite', {
 +--	packages = ATH10K_PACKAGES_QCA9880,
