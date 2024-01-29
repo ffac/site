@@ -17,10 +17,6 @@ ramips-mt7620
 ramips-mt7621
 ramips-mt76x8
 rockchip-armv8
-sunxi-cortexa7
-x86-generic
-x86-geode
-x86-legacy
 x86-64
 endef
 
