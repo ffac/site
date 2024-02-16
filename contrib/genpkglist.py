@@ -170,6 +170,7 @@ PKGS_TLS = PackageList('TLS', [
 pkglists.append(PKGS_TLS)
 
 PKGS_EOL = PackageList('EOL', [])
+#pkglists.append(PKGS_EOL) # disabled for now since empty
 
 #
 # package assignment
@@ -269,6 +270,18 @@ targets.get('ramips-mt7620'). \
 		'netgear-ex3700'], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
 targets.get('mpc85xx-p1020').add_pkglist(PKGS_TLS)
+
+targets['lantiq-xrx200']. \
+	add_pkglist(PKGS_USB). \
+	add_pkglist(PKGS_USB_NET). \
+	add_pkglist(PKGS_USB_SERIAL). \
+	add_pkglist(PKGS_USB_STORAGE). \
+	add_pkglist(PKGS_TLS). \
+	exclude([ # 7M usable firmware space + USB port
+		'avm-fritz-box-7412',
+		'tp-link-td-w8970',
+		'tp-link-td-w8980'
+	], pkglists=[PKGS_USB, PKGS_USB_NET, PKGS_USB_SERIAL, PKGS_USB_STORAGE])
 
 for target in ['ar71xx-tiny', 'ramips-rt305x']:
     targets.get(target). \
