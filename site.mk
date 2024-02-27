@@ -5,6 +5,7 @@
 #       Gluon will automatically enable a set of packages
 #       depending on the combination of features listed
 define GLUON_FEATURES :=
+authorized-keys
 autoupdater
 config-mode-geo-location-osm
 ebtables-filter-multicast
