@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+diff --git a/patches/openwrt/0007-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0007-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 new file mode 100644
 index 00000000..9b7a21f9
 --- /dev/null
-+++ b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
++++ b/patches/openwrt/0007-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 @@ -0,0 +1,53 @@
 +From: Felix Baumann <felix.bau@gmx.de>
 +Date: Tue, 28 Feb 2023 04:21:07 +0100
