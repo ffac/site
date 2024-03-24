@@ -1,11 +1,7 @@
 ﻿##  gluon site.mk Freifunk Regio Aachen
 
 # Build everything by default
-ifeq ($(BROKEN),0)
-override BROKEN :=
-else
-export BROKEN := 1
-endif
+export BROKEN ?= 1
 GLUON_DEPRECATED := upgrade
 
 GLUON_OUTPUTDIR := ${GLUON_SITEDIR}/output
