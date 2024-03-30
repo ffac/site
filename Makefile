@@ -256,6 +256,9 @@ update-patches: patch-prepare
 			break; \
 		else \
 			if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+				for file_rename in `$(GLUON_GIT) status -s -u patches | cut -c4-`; do \
+					mv ''$(GLUON_BUILD_DIR)/$$file_rename'' ''$(GLUON_BUILD_DIR)/$$(dirname "$$file_rename")/x$$(basename "$$file_rename")''; \
+				done; \
 				echo 'Refreshing Gluon patches…'; \
 				$(GLUON_MAKE) refresh-patches >/dev/null; \
 			fi; \
