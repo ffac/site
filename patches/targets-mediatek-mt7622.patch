@@ -1,9 +1,9 @@
 diff --git a/targets/mediatek-mt7622 b/targets/mediatek-mt7622
-index 8376c397..5c75ac21 100644
+index 81440d50..389c77a9 100644
 --- a/targets/mediatek-mt7622
 +++ b/targets/mediatek-mt7622
-@@ -11,6 +11,22 @@ device('ubiquiti-unifi-6-lr-v1', 'ubnt_unifi-6-lr-v1', {
- 	manifest_aliases = {'ubiquiti-unifi-6-lr'},
+@@ -13,3 +13,18 @@ device('ubiquiti-unifi-6-lr-v1', 'ubnt_unifi-6-lr-v1', {
+ 	manifest_aliases = {'ubiquiti-unifi-6-lr'}, -- Upgrade from OpenWrt 22.03
  })
  
 +device('ubiquiti-unifi-6-lr-v2', 'ubnt_unifi-6-lr-v2', {
@@ -21,7 +21,3 @@ index 8376c397..5c75ac21 100644
 +	factory_ext = '.img',
 +})
 +
-+
- -- Xiaomi
- 
- device('xiaomi-redmi-router-ax6s', 'xiaomi_redmi-router-ax6s', {

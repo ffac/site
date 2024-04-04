@@ -1,35 +1,26 @@
 diff --git a/targets/ath79-generic b/targets/ath79-generic
-index 11d78ba2..b53e3d7b 100644
+index c41bf0db..17ee5e70 100644
 --- a/targets/ath79-generic
 +++ b/targets/ath79-generic
-@@ -512,6 +512,15 @@ device('tp-link-eap225-outdoor-v3', 'tplink_eap225-outdoor-v3', {
+@@ -471,6 +471,10 @@ device('tp-link-eap225-outdoor-v3', 'tplink_eap225-outdoor-v3', {
  	packages = ATH10K_PACKAGES_QCA9888,
  })
  
-+device('tp-link-eap225-outdoor-v3', 'tplink_eap225-outdoor-v3', {
-+	factory = false,
-+	packages = ATH10K_PACKAGES_QCA9888,
-+})
-+
 +device('tp-link-eap225-wall-v2', 'tplink_eap225-wall-v2', {
 +	packages = ATH10K_PACKAGES_QCA9888,
 +})
 +
  device('tp-link-tl-wdr3500-v1', 'tplink_tl-wdr3500-v1')
+ 
  device('tp-link-tl-wdr3600-v1', 'tplink_tl-wdr3600-v1')
- device('tp-link-tl-wdr4300-v1', 'tplink_tl-wdr4300-v1')
-@@ -616,3 +625,14 @@ device('ubiquiti-unifi-swiss-army-knife-ultra', 'ubnt_uk-ultra', {
+@@ -548,3 +552,9 @@ device('ubiquiti-unifi-swiss-army-knife-ultra', 'ubnt_uk-ultra', {
  	factory = false,
  	packages = ATH10K_PACKAGES_QCA9880,
  })
-+
-+-- device('ubiquiti-rocket-5ac-lite', 'ubnt_rocket-5ac-lite', {
-+--	packages = ATH10K_PACKAGES_QCA9880,
-+-- })
-+
 +
 +-- Zyxel
 +
 +device('zyxel-nbg6616', 'zyxel_nbg6616', {
 +	packages = ATH10K_PACKAGES_QCA9880,
 +})
+\ No newline at end of file
