@@ -27,12 +27,11 @@ if not device_class('tiny') then
     features {
         'tls',
         'wireless-encryption-wpa3',
-        'mesh-wireless-sae',
     }
     packages {
         'openssh-sftp-server',
-        'ffac-autoupdater-wifi-fallback',
         'ffda-gluon-usteer',
+        'ffac-autoupdater-wifi-fallback',
     }
 end
 
