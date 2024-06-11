@@ -23,7 +23,7 @@ packages {
     'respondd-module-airtime',
 }
 
-if not device_class('tiny') then
+if not device_class('tiny') and not target('ramips', 'mt7620') then
     features {
         'tls',
         'wireless-encryption-wpa3',
