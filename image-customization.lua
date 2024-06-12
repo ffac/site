@@ -21,6 +21,8 @@ packages {
     'ffac-wg-registration',
     'ff-web-ap-timer',
     'respondd-module-airtime',
+    'tecff-general-workaround',
+    'tecff-broken-wifi-workaround',
 }
 
 if not device_class('tiny') and not target('ramips', 'mt7620') then
