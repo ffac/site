@@ -21,9 +21,11 @@ packages {
     'ffac-wg-registration',
     'ff-web-ap-timer',
     'respondd-module-airtime',
+    'tecff-general-workaround',
+    'tecff-broken-wifi-workaround',
 }
 
-if not device_class('tiny') then
+if not device_class('tiny') and not target('ramips', 'mt7620') then
     features {
         'tls',
         'wireless-encryption-wpa3',
@@ -35,13 +37,13 @@ if not device_class('tiny') then
 end
 
 if device({
-        'zte,mf281',
-        'glinet,gl-xe300',
-        'glinet,gl-ap1300',
-        'zte,mf289f',
-        'zte,mf286r',
-        'wavlink,ws-wn572hp3-4g',
-        'tplink,tl-mr6400-v5',
+        'zte-mf281',
+        'glinet-gl-xe300',
+        'glinet-gl-ap1300',
+        'zte-mf289f',
+        'zte-mf286r',
+        'wavlink-ws-wn572hp3-4g',
+        'tp-link-tl-mr6400-v5',
     }) then
     features {
         'web-cellular',
@@ -198,4 +200,18 @@ end
 
 if target('bcm27xx') then
     packages(pkgs_hid)
+end
+
+if target('ramips', 'mt7621') then
+    -- reload wifi firmware twice a day
+    packages {
+        'ffac-mt7915-hotfix',
+    }
+end
+
+if target('mediatek', 'filogic') then
+    -- reboot target three times a day
+    packages {
+        'ffac-threetime-reboot',
+    }
 end
