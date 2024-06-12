@@ -22,7 +22,7 @@ packages {
     'ff-web-ap-timer',
     'respondd-module-airtime',
     'tecff-general-workaround',
-    'tecff-broken-wifi-workaround',
+    'tecff-broken-wlan-workaround',
 }
 
 if not device_class('tiny') and not target('ramips', 'mt7620') then
