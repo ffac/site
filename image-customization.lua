@@ -48,6 +48,9 @@ if device({
     features {
         'web-cellular',
     }
+    packages {
+        'ffac-private-wan-dhcp',
+    }
 end
 
 pkgs_usb = {

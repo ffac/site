@@ -1,5 +1,9 @@
-GLUON_SITE_FEEDS="community"
+GLUON_SITE_FEEDS="ffac community"
 
-PACKAGES_COMMUNITY_REPO=https://github.com/ffac/community-packages.git
-PACKAGES_COMMUNITY_COMMIT=e9707a77773e5251de7581a3e10944c2671cd67b
+PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-packages.git
+PACKAGES_FFAC_COMMIT=f4e3b14750b58c74c661de89286e9e5c5ba2a677
+PACKAGES_FFAC_BRANCH=main
+
+PACKAGES_COMMUNITY_REPO=https://github.com/freifunk-gluon/community-packages.git
+PACKAGES_COMMUNITY_COMMIT=ed68c7060e6122537038ece7de920d199aeed9b0
 PACKAGES_COMMUNITY_BRANCH=dev
