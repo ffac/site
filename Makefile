@@ -93,6 +93,8 @@ ifneq (,$(filter-out gluon-clean output-clean clean,$(MAKECMDGOALS)))
 $(info $(INFO))
 endif
 
+## Default target
+all: manifest
 
 ## Prepare folders
 $(GLUON_BUILD_DIR):
@@ -117,7 +119,6 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 
 
 ## Build rules
-all: manifest
 
 sign: manifest | $(SECRET_KEY_FILE)
 ifdef DEVICE_INFO
