@@ -33,6 +33,7 @@ if not device_class('tiny') and not target('ramips', 'mt7620') then
     packages {
         'openssh-sftp-server',
         'ffac-autoupdater-wifi-fallback',
+        'ffmuc-custom-banner',
     }
 end
 
