@@ -1,3 +1,5 @@
+ifndef GLUON_TARGETS
+
 define GLUON_TARGETS :=
 ath79-generic
 ath79-nand
@@ -31,3 +33,5 @@ endef
 endif
 
 GLUON_TARGETS := $(GLUON_TARGETS:\n= )
+
+endif
