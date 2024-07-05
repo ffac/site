@@ -206,9 +206,9 @@ if target('bcm27xx') then
     packages(pkgs_hid)
 end
 
-if target('mediatek', 'filogic') then
-    -- reboot target three times a day
-    packages {
-        'ffac-threetime-reboot',
-    }
+if target('ramips', 'mt7621') or target('mediatek', 'filogic') then
+	-- reload wifi firmware twice a day
+	packages {
+		'ffac-mt7915-hotfix',
+	}
 end
