@@ -25,7 +25,18 @@ packages {
     'tecff-broken-wlan-workaround',
 }
 
-if not device_class('tiny') then
+small_size = device({
+    'openmesh-om2p-v1',
+    'openmesh-om2p-v2',
+    'openmesh-om2p-v4',
+    'openmesh-om2p-hs-v1',
+    'openmesh-om2p-hs-v2',
+    'openmesh-om2p-hs-v3',
+    'openmesh-om2p-hs-v4',
+    'openmesh-om2p-lc',
+})
+
+if not device_class('tiny') and not small_size then
     features {
         'tls',
         'wireless-encryption-wpa3',
