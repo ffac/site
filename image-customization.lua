@@ -187,6 +187,7 @@ if device({
     'zyxel-nwa55axe',
 }) then
     packages {'ffda-network-setup-mode'}
+    broken(false)
 end
 
 if target('x86', '64') then
