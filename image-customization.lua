@@ -189,6 +189,18 @@ if device({
     packages {'ffda-network-setup-mode'}
 end
 
+-- OOM, high load without CT Firmware. Tested on AC Mesh Pro. Suspected also AC Mesh affected.
+if device({'ubiquiti-unifi-ac-mesh', 'ubiquiti-unifi-ac-mesh-pro'}) then
+	packages({
+		'-kmod-ath10k',
+		'kmod-ath10k-ct-smallbuffers',
+		'-ath10k-firmware-qca988x-ct',
+		'-ath10k-firmware-qca988x',
+		'ath10k-firmware-qca988x-ct-full-htt',
+	})
+end
+
+
 if target('x86', '64') then
     -- add guest agent for qemu and vmware
     packages {
