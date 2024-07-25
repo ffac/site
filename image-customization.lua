@@ -25,7 +25,7 @@ packages {
     'tecff-broken-wlan-workaround',
 }
 
-if not device_class('tiny') and not target('ramips', 'mt7620') then
+if not device_class('tiny') then
     features {
         'tls',
         'wireless-encryption-wpa3',
@@ -33,6 +33,7 @@ if not device_class('tiny') and not target('ramips', 'mt7620') then
     packages {
         'openssh-sftp-server',
         'ffac-autoupdater-wifi-fallback',
+        'ffmuc-custom-banner',
     }
 end
 
@@ -47,6 +48,9 @@ if device({
     }) then
     features {
         'web-cellular',
+    }
+    packages {
+        'ffac-web-private-wan-dhcp',
     }
 end
 
@@ -112,7 +116,7 @@ pkgs_pci = {
 include_usb = true
 
 -- rtl838x has no USB support as of Gluon v2023.2
-if target('realtek', 'rtl838x') then
+if target('realtek', 'rtl838x') or target('ramips', 'mt7620') then
     include_usb = false
 end
 
@@ -175,6 +179,7 @@ if include_usb then
     packages(pkgs_usb_net)
     packages(pkgs_usb_serial)
     packages(pkgs_usb_storage)
+    packages {'ffka-gluon-web-usb-wan-hotplug', 'ffac-update-location-gps'}
 end
 
 -- device has no reset button and requires a special package to go into setup mode
@@ -183,6 +188,7 @@ if device({
     'zyxel-nwa55axe',
 }) then
     packages {'ffda-network-setup-mode'}
+    broken(false)
 end
 
 if target('x86', '64') then
@@ -202,16 +208,9 @@ if target('bcm27xx') then
     packages(pkgs_hid)
 end
 
-if target('ramips', 'mt7621') then
-    -- reload wifi firmware twice a day
-    packages {
-        'ffac-mt7915-hotfix',
-    }
-end
-
-if target('mediatek', 'filogic') then
-    -- reboot target three times a day
-    packages {
-        'ffac-threetime-reboot',
-    }
+if target('ramips', 'mt7621') or target('mediatek', 'filogic') then
+	-- reload wifi firmware twice a day
+	packages {
+		'ffac-mt7915-hotfix',
+	}
 end

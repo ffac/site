@@ -1,5 +1,31 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.2.3-1
+  - update gluon to v2023.2.2
+  - add driver error based workaround for mt7915
+
+## v2023.2.2-3
+  - add general-workaround if mesh connection is lost
+  - add tecff-broken-wlan-workaround
+  - reduce mtu by 70 on mesh-vpn interface
+  - set gw_sel_class to 20 to improve switching
+  - fix device names which include cellular package
+  - remove autoupdater-wifi-fallback from mt7620 due to size
+  - update gluon and community-packages
+
+## v2023.2.2-2
+  - debug firmware with sae gluon-usteer and owe
+  - not released with signatures
+
+## v2023.2.2-1
+  - update gluon to v2023.2.2
+  - add time-based workaround for mt7915
+  - makefile fix issue when upstream adds new patches
+
+## v2023.2.1-1
+  - update gluon to v2023.2.1
+  - remove old unused x86 targets and sunxi-cortexa7
+
 ## v2023.2.0-9
   - add open-vm-tools to x86-64
   - update to latest gluon v2023.2.x
