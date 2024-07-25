@@ -1,9 +1,9 @@
-GLUON_SITE_FEEDS="ffac community"
-
-PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-packages.git
-PACKAGES_FFAC_COMMIT=e3e0b5aac4ed0d610eb06161061b907b5bb2117d
-PACKAGES_FFAC_BRANCH=main
+GLUON_SITE_FEEDS="community ffac"
 
 PACKAGES_COMMUNITY_REPO=https://github.com/freifunk-gluon/community-packages.git
-PACKAGES_COMMUNITY_COMMIT=ed68c7060e6122537038ece7de920d199aeed9b0
-PACKAGES_COMMUNITY_BRANCH=master
+PACKAGES_COMMUNITY_COMMIT=106ff0544832fcc5573a1bea504c0b0a536cb1cd
+PACKAGES_COMMUNITY_BRANCH=update-location-gps
+
+PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-packages.git
+PACKAGES_FFAC_COMMIT=b7ccdae873eebaa01aa555ec2a356d370e8d3908
+PACKAGES_FFAC_BRANCH=private-wan-dhcp-web
