@@ -50,7 +50,7 @@ if device({
         'web-cellular',
     }
     packages {
-        'ffac-private-wan-dhcp',
+        'ffac-web-private-wan-dhcp',
     }
 end
 
@@ -179,6 +179,7 @@ if include_usb then
     packages(pkgs_usb_net)
     packages(pkgs_usb_serial)
     packages(pkgs_usb_storage)
+    packages {'ffka-gluon-web-usb-wan-hotplug', 'ffac-update-location-gps'}
 end
 
 -- device has no reset button and requires a special package to go into setup mode
