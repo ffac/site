@@ -17,15 +17,22 @@ features {
 
 packages {
     'iwinfo',
-    'ffac-ssid-changer',
     'ffac-wg-registration',
-    'ff-web-ap-timer',
     'respondd-module-airtime',
     'tecff-general-workaround',
     'tecff-broken-wlan-workaround',
 }
 
-if not device_class('tiny') then
+include_usb = false
+
+tiny_like = device({
+    'tp-link-archer-c6-v2-eu-ru-jp',
+    'tp-link-archer-c60-v1',
+    'tp-link-td-w8970',
+    'tp-link-td-w8980',
+})
+
+if not device_class('tiny') and not tiny_like then
     features {
         'tls',
         'wireless-encryption-wpa3',
@@ -34,7 +41,11 @@ if not device_class('tiny') then
         'openssh-sftp-server',
         'ffac-autoupdater-wifi-fallback',
         'ffmuc-custom-banner',
+        'ffac-ssid-changer',
+        'ff-web-ap-timer',
     }
+    -- usb is only default available for non-tiny devices
+    include_usb = true
 end
 
 if device({
@@ -112,8 +123,6 @@ pkgs_pci = {
     'pciutils',
     'kmod-bnx2', -- Broadcom NetExtreme BCM5706/5708/5709/5716
 }
-
-include_usb = true
 
 -- rtl838x has no USB support as of Gluon v2023.2
 if target('realtek', 'rtl838x') or target('ramips', 'mt7620') then
