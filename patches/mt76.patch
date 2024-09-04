@@ -1,0 +1,32 @@
+diff --git a/patches/openwrt/0014-test-change-mt76.patch b/patches/openwrt/0014-test-change-mt76.patch
+new file mode 100644
+index 00000000..3a1e5912
+--- /dev/null
++++ b/patches/openwrt/0014-test-change-mt76.patch
+@@ -0,0 +1,26 @@
++From 51457449d7d17725a46db83aef627b222b1de31f Mon Sep 17 00:00:00 2001
++From: FFAC <technik@freifunk-aachen.de>
++Date: Wed, 4 Sep 2024 14:30:16 +0000
++Subject: [PATCH] test change mt76
++
++---
++ package/kernel/mt76/Makefile | 3 +--
++ 1 file changed, 1 insertion(+), 2 deletions(-)
++
++diff --git a/package/kernel/mt76/Makefile b/package/kernel/mt76/Makefile
++index cb71d9eeae..f8b1e0c24d 100644
++--- a/package/kernel/mt76/Makefile
+++++ b/package/kernel/mt76/Makefile
++@@ -9,8 +9,7 @@ PKG_LICENSE_FILES:=
++ PKG_SOURCE_URL:=https://github.com/openwrt/mt76
++ PKG_SOURCE_PROTO:=git
++ PKG_SOURCE_DATE:=2024-03-18
++-PKG_SOURCE_VERSION:=2135e201e7a9339e018d4e2d4a33c73266e674d7
++-PKG_MIRROR_HASH:=810f636c60c86e6a426c676c3bf7aaea2f711feb31f4a66889d485112b612745
+++PKG_SOURCE_VERSION:=a897606f7c26f380c26fdfecf855a96b14c601fb
++ 
++ PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
++ PKG_USE_NINJA:=0
++-- 
++2.39.2
++
