@@ -1,0 +1,13 @@
+diff --git a/modules b/modules
+index 6a9d20ca..95a07319 100644
+--- a/modules
++++ b/modules
+@@ -2,7 +2,7 @@ GLUON_FEEDS='gluon packages routing'
+ 
+ OPENWRT_REPO=https://github.com/openwrt/openwrt.git
+ OPENWRT_BRANCH=main
+-OPENWRT_COMMIT=a544b9252bbda2643704e01c8085cdde2d3f1362
++OPENWRT_COMMIT=51e083426b8b9343a253597baa286b76e9232194
+ 
+ PACKAGES_GLUON_REPO=https://github.com/freifunk-gluon/packages.git
+ PACKAGES_GLUON_COMMIT=3d08b0fee8dc5d96d8bcdb985fad1d5564de4022

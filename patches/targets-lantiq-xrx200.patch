@@ -1,0 +1,26 @@
+diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
+index 744fdea4..16672c91 100644
+--- a/targets/lantiq-xrx200
++++ b/targets/lantiq-xrx200
+@@ -33,6 +33,10 @@ device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {
+ 	broken = true, -- no button for setup mode; hw revision not visible on device
+ })
+ 
++device('avm-fritz-box-3390', 'avm_fritz3390', {
++	factory = false,
++})
++
+ device('avm-fritz-box-7360-sl', 'avm_fritz7360sl', {
+ 	factory = false,
+ 	aliases = {'avm-fritz-box-7360-v1'},
+@@ -50,6 +54,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
+ 	factory = false,
+ })
+ 
++device('avm-fritz-box-7430', 'avm_fritz7430', {
++	factory = false,
++})
++
+ device('arcadyan-vgv7510kw22', 'arcadyan_vgv7510kw22-nor', {
+ 	factory = false,
+ 	aliases = {'o2-box-6431'},

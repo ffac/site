@@ -1,31 +1,435 @@
 diff --git a/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 new file mode 100644
-index 00000000..9b7a21f9
+index 00000000..13dde2ca
 --- /dev/null
 +++ b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
-@@ -0,0 +1,53 @@
-+From: Felix Baumann <felix.bau@gmx.de>
-+Date: Tue, 28 Feb 2023 04:21:07 +0100
-+Subject: lantiq: fix ath9k-eeprom for AVM Fritz!Box 7430
+@@ -0,0 +1,442 @@
++From 05b3eef88fd08eaf03c7c289ff641cf4deaeb493 Mon Sep 17 00:00:00 2001
++From: Dustin Gathmann <dzsoftware@posteo.org>
++Date: Mon, 9 Sep 2024 16:35:38 +0200
++Subject: [PATCH] lantiq: fritz_cal_extract with reverse option for AVM
++ FritzBox 7430
 +
-+@grische noticed that the extracted wifi calibration data (ath9k-eeprom)
-+is incorrect.
-+Symptoms included:
-+- wrong mac address
-+- radio was detected like dbdc (2.4GHz and 5GHz support at the same time)
++This implementation of fritz_cal_extract can also retrieve firmware
++data stored in reverse byte order, as found in the AVM 7430 device.
 +
-+This patch fixes this by also reversing the order of bytes and throwing
-+away the last 4 Bytes.
-+Unlike caldata.sh the fritz_cal_extract.c doesn't support reversing.
-+So this patch combines both methods.
++This is done by intermediate storage in a buffer presumably large enough
++to hold the complete data set. Currently, this buffer size is 128kB + 1kB
++(some extra space for skipped data).
 +
-+Signed-off-by: Felix Baumann <felix.bau@gmx.de>
++In the usual case of "forward" data, this implementation should behave
++like the original implementation in all common cases. limit [-l] will
++determine the amount of data read and size of buffer allocated.
 +
++However, if you are reading reversed data or didn't set a limit, the buffer
++may be too small to hold all data. In this case, you can choose a higher
++limit [-l] to enforce a sufficient buffer size.
++
++Signed-off-by: Dustin Gathmann <dzsoftware@posteo.org>
++---
++ .../utils/fritz-tools/src/fritz_cal_extract.c | 324 +++++++++++-------
++ .../etc/hotplug.d/firmware/12-ath9k-eeprom    |   7 +-
++ 2 files changed, 203 insertions(+), 128 deletions(-)
++
++diff --git a/package/utils/fritz-tools/src/fritz_cal_extract.c b/package/utils/fritz-tools/src/fritz_cal_extract.c
++index 2978d86e0cc48..dab08c6c08d95 100644
++--- a/package/utils/fritz-tools/src/fritz_cal_extract.c
+++++ b/package/utils/fritz-tools/src/fritz_cal_extract.c
++@@ -8,6 +8,9 @@
++  * that is Not copyrighted -- provided to the public domain
++  * Version 1.4  11 December 2005  Mark Adler
++  *
+++ * Modifications to also handle calibration data in reversed byte order
+++ * (c) 2024 by <dzsoftware@posteo.org>.
+++ *
++  * This program is free software; you can redistribute it and/or modify
++  * it under the terms of the GNU General Public License as published by
++  * the Free Software Foundation; either version 2 of the License, or
++@@ -28,106 +31,126 @@
++ #include <assert.h>
++ #include <unistd.h>
++ #include <stdint.h>
+++#include <stdbool.h>
++ #include <stdlib.h>
++ #include <endian.h>
++ #include <errno.h>
++ #include "zlib.h"
++ 
++ #define CHUNK 1024
+++#define DEFAULT_BUFFERSIZE (129 * 1024)
+++
+++#define MIN(a,b) (((a)<(b))?(a):(b))
++ 
++-static inline size_t special_min(size_t a, size_t b)
+++/* Reverse byte order in data buffer.
+++ * 'top' is position of last valid data byte = (datasize - 1)
+++ */
+++static void buffer_reverse(unsigned char *data, unsigned int top)
++ {
++-	return a == 0 ? b : (a < b ? a : b);
+++	register unsigned char swapbyte;
+++	const unsigned int center = top / 2;
+++
+++	for (unsigned int bottom = 0; bottom < center; ++bottom, --top) {
+++		swapbyte = data[bottom];
+++		data[bottom] = data[top];
+++		data[top] = swapbyte;
+++	}
++ }
++ 
++-/* Decompress from file source to file dest until stream ends or EOF.
++-   inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
++-   allocated for processing, Z_DATA_ERROR if the deflate data is
++-   invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
++-   the version of the library linked do not match, or Z_ERRNO if there
++-   is an error reading or writing the files. */
++-static int inf(FILE *source, FILE *dest, size_t limit, size_t skip)
+++/* Decompress from file source to data buffer until stream ends
+++ * or *limit bytes have been written to buffer.
+++ *
+++ * On call, 'limit' must reference a variable containing the intended
+++ * number of bytes to retrieve (must be <= allocated buffer size).
+++ *
+++ * Return values (success):
+++ * Z_END_STREAM if complete data was retrieved (*limit == size of complete data),
+++ * or Z_OK if data was retrieved up to limit (*limit == original value).
+++ *
+++ * Return values (failure):
+++ * Z_MEM_ERROR if memory could not be allocated for processing, 
+++ * Z_DATA_ERROR if the deflate data is invalid or incomplete, 
+++ * Z_VERSION_ERROR if the version of zlib.h and the version of the 
+++ * library linked do not match, or 
+++ * Z_ERRNO if there is an error reading or writing the files.
+++ */
+++static int inflate_to_buffer(FILE *source, unsigned char *buf, size_t *limit)
++ {
++-    int ret;
++-    size_t have;
++-    z_stream strm;
++-    unsigned char in[CHUNK];
++-    unsigned char out[CHUNK];
++-
++-    /* allocate inflate state */
++-    strm.zalloc = Z_NULL;
++-    strm.zfree = Z_NULL;
++-    strm.opaque = Z_NULL;
++-    strm.avail_in = 0;
++-    strm.next_in = Z_NULL;
++-    ret = inflateInit(&strm);
++-    if (ret != Z_OK)
++-        return ret;
++-
++-    /* decompress until deflate stream ends or end of file */
++-    do {
++-        strm.avail_in = fread(in, 1, CHUNK, source);
++-        if (ferror(source)) {
++-            (void)inflateEnd(&strm);
++-            return Z_ERRNO;
++-        }
++-        if (strm.avail_in == 0)
++-            break;
++-        strm.next_in = in;
++-
++-        /* run inflate() on input until output buffer not full */
++-        do {
++-            strm.avail_out = CHUNK;
++-            strm.next_out = out;
++-            ret = inflate(&strm, Z_NO_FLUSH);
++-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
++-            switch (ret) {
++-            case Z_NEED_DICT:
++-                ret = Z_DATA_ERROR;     /* and fall through */
++-            case Z_DATA_ERROR:
++-            case Z_MEM_ERROR:
++-                (void)inflateEnd(&strm);
++-                return ret;
++-            }
++-            have = special_min(limit, CHUNK - strm.avail_out) - skip;
++-            if (fwrite(&out[skip], have, 1, dest) != 1 || ferror(dest)) {
++-                (void)inflateEnd(&strm);
++-                return Z_ERRNO;
++-            }
++-	    skip = 0;
++-	    limit -= have;
++-        } while (strm.avail_out == 0 && limit > 0);
++-
++-        /* done when inflate() says it's done */
++-    } while (ret != Z_STREAM_END && limit > 0);
++-
++-    /* clean up and return */
++-    (void)inflateEnd(&strm);
++-    return (limit == 0 ? Z_OK : (ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR));
+++	int ret;
+++	z_stream strm;
+++	unsigned char in[CHUNK];
+++
+++	/* allocate inflate state */
+++	strm.zalloc = Z_NULL;
+++	strm.zfree = Z_NULL;
+++	strm.opaque = Z_NULL;
+++	strm.avail_in = 0;
+++	strm.next_in = Z_NULL;
+++	ret = inflateInit(&strm);
+++	if (ret != Z_OK)
+++		return ret;
+++
+++	/* set data buffer as stream output */
+++	strm.avail_out = *limit;
+++	strm.next_out = buf;
+++
+++	/* decompress until deflate stream ends or end of file */
+++	do {
+++		strm.avail_in = fread(in, 1, CHUNK, source);
+++		if (ferror(source)) {
+++			(void)inflateEnd(&strm);
+++			return Z_ERRNO;
+++		}
+++		if (strm.avail_in == 0)
+++			break;
+++		strm.next_in = in;
+++
+++		/* run inflate(), fill data buffer with all available output */
+++		ret = inflate(&strm, Z_FINISH);
+++		assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+++
+++		switch (ret) {
+++			case Z_NEED_DICT:
+++				ret = Z_DATA_ERROR;     /* and fall through */
+++			case Z_DATA_ERROR:
+++			case Z_MEM_ERROR:
+++				(void)inflateEnd(&strm);
+++				return ret;
+++		}
+++		/* done when inflate() says it's done or limit reached */
+++	} while (ret != Z_STREAM_END && strm.avail_out > 0);
+++
+++	/* set limit to end of retrieved data */
+++	assert(strm.total_out <= *limit);
+++	*limit = strm.total_out;
+++
+++	/* clean up and return */
+++	(void)inflateEnd(&strm);
+++	return (ret == Z_STREAM_END ? Z_STREAM_END : (strm.avail_out == 0 ? Z_OK : Z_DATA_ERROR));
++ }
++ 
++ /* report a zlib or i/o error */
++ static void zerr(int ret)
++ {
++-    switch (ret) {
++-    case Z_ERRNO:
++-        if (ferror(stdin))
++-            fputs("error reading stdin\n", stderr);
++-        if (ferror(stdout))
++-            fputs("error writing stdout\n", stderr);
++-        break;
++-    case Z_STREAM_ERROR:
++-        fputs("invalid compression level\n", stderr);
++-        break;
++-    case Z_DATA_ERROR:
++-        fputs("invalid or incomplete deflate data\n", stderr);
++-        break;
++-    case Z_MEM_ERROR:
++-        fputs("out of memory\n", stderr);
++-        break;
++-    case Z_VERSION_ERROR:
++-        fputs("zlib version mismatch!\n", stderr);
++-    }
+++	switch (ret) {
+++		case Z_ERRNO:
+++			if (ferror(stdin))
+++				fputs("error reading stdin\n", stderr);
+++			if (ferror(stdout))
+++				fputs("error writing stdout\n", stderr);
+++			break;
+++		case Z_STREAM_ERROR:
+++			fputs("invalid compression level\n", stderr);
+++			break;
+++		case Z_DATA_ERROR:
+++			fputs("invalid or incomplete deflate data\n", stderr);
+++			break;
+++		case Z_MEM_ERROR:
+++			fputs("out of memory\n", stderr);
+++			break;
+++		case Z_VERSION_ERROR:
+++			fputs("zlib version mismatch!\n", stderr);
+++	}
++ }
++ 
++ static unsigned int get_num(char *str)
++@@ -140,7 +163,8 @@ static unsigned int get_num(char *str)
++ 
++ static void usage(void)
++ {
++-	fprintf(stderr, "Usage: fritz_cal_extract [-s seek offset] [-i skip] [-o output file] [-l limit] [infile] -e entry_id\n"
+++	fprintf(stderr, "Usage: fritz_cal_extract -e entry_id [-s seek offset] [-l limit]\n"
+++			"\t[-r reverse extracted data] [-i skip n bytes] [-o output file] [infile]\n"
++ 			"Finds and extracts zlib compressed calibration data in the EVA loader\n");
++ 	exit(EXIT_FAILURE);
++ }
++@@ -154,53 +178,59 @@ struct cal_entry {
++ int main(int argc, char **argv)
++ {
++ 	struct cal_entry cal = { .len = 0 };
+++	unsigned char *buf = NULL;
++ 	FILE *in = stdin;
++ 	FILE *out = stdout;
+++	size_t datasize = DEFAULT_BUFFERSIZE;
++ 	size_t limit = 0, skip = 0;
++ 	int initial_offset = 0;
++ 	int entry = -1;
+++	bool reversed = false, limit_was_set = true;
++ 	int ret;
++ 	int opt;
++ 
++-	while ((opt = getopt(argc, argv, "s:e:o:l:i:")) != -1) {
+++	while ((opt = getopt(argc, argv, "s:e:o:l:i:r")) != -1) {
++ 		switch (opt) {
++-		case 's':
++-			initial_offset = (int)get_num(optarg);
++-			if (errno) {
++-				perror("Failed to parse seek offset");
++-				goto out_bad;
++-			}
++-			break;
++-		case 'e':
++-			entry = (int) htobe16(get_num(optarg));
++-			if (errno) {
++-				perror("Failed to entry id");
++-				goto out_bad;
++-			}
++-			break;
++-		case 'o':
++-			out = fopen(optarg, "w");
++-			if (!out) {
++-				perror("Failed to create output file");
++-				goto out_bad;
++-			}
++-			break;
++-		case 'l':
++-			limit = (size_t)get_num(optarg);
++-			if (errno) {
++-				perror("Failed to parse limit");
++-				goto out_bad;
++-			}
++-			break;
++-		case 'i':
++-			skip = (size_t)get_num(optarg);
++-			if (errno) {
++-				perror("Failed to parse skip");
++-				goto out_bad;
++-			}
++-			break;
++-		default: /* '?' */
++-			usage();
+++			case 's':
+++				initial_offset = (int)get_num(optarg);
+++				if (errno) {
+++					perror("Failed to parse seek offset");
+++					goto out_bad;
+++				}
+++				break;
+++			case 'e':
+++				entry = (int) htobe16(get_num(optarg));
+++				if (errno) {
+++					perror("Failed to entry id");
+++					goto out_bad;
+++				}
+++				break;
+++			case 'o':
+++				out = fopen(optarg, "w");
+++				if (!out) {
+++					perror("Failed to create output file");
+++					goto out_bad;
+++				}
+++				break;
+++			case 'l':
+++				limit = (size_t)get_num(optarg);
+++				if (errno) {
+++					perror("Failed to parse limit");
+++					goto out_bad;
+++				}
+++				break;
+++			case 'i':
+++				skip = (size_t)get_num(optarg);
+++				if (errno) {
+++					perror("Failed to parse skip");
+++					goto out_bad;
+++				}
+++				break;
+++			case 'r':
+++				reversed = true;
+++				break;
+++			default: /* '?' */
+++				usage();
++ 		}
++ 	}
++ 
++@@ -243,9 +273,50 @@ int main(int argc, char **argv)
++ 		goto out_bad;
++ 	}
++ 
++-	ret = inf(in, out, limit, skip);
++-	if (ret == Z_OK)
++-		goto out;
+++	/* Set boundaries. Only keep default datasize if we need complete data
+++	 * for reversal and didn't set a higher limit. */
+++	if (!limit) {
+++		limit_was_set = false;
+++		limit = datasize - skip;
+++	}
+++	datasize = (reversed && datasize >= limit + skip) ? datasize : (limit + skip);
+++
+++	/* Create data buffer. */
+++	buf = malloc(datasize);
+++	assert(buf != NULL);
+++
+++	ret = inflate_to_buffer(in, buf, &datasize);
+++
+++	if ((reversed || !limit_was_set) && ret != Z_STREAM_END) { /* didn't read to stream end */
+++		fprintf(stderr, "Failed: Data exceeds buffer size of %u. Refusing to reverse"
+++				" or store incomplete data."
+++				" Use a higher limit [-l] to increase buffer size.\n",
+++				(unsigned int) datasize);
+++		goto out_bad;
+++	}
+++
+++	ret = (ret == Z_STREAM_END) ? Z_OK : ret; /* normalize return value */
+++	if (ret != Z_OK) {
+++		zerr(ret);
+++		goto out_bad;
+++	}
+++
+++	if (reversed)
+++		buffer_reverse(buf, datasize - 1);
+++
+++	if (datasize <= skip) {
+++		fprintf(stderr, "Failed to skip %u bytes, total data size is %u!\n", 
+++				(unsigned int)skip, (unsigned int)datasize);
+++		goto out_bad;
+++	}
+++
+++	limit = MIN(limit, datasize - skip);
+++	if (fwrite(&buf[skip], limit, 1, out) != 1 || ferror(out)) {
+++		fprintf(stderr, "Failed to write data buffer to output file");
+++		goto out_bad;
+++	}
+++
+++	goto out;
++ 
++ 	zerr(ret);
++ 
++@@ -257,5 +328,6 @@ int main(int argc, char **argv)
++ 		fclose(in);
++ 	if (out)
++ 		fclose(out);
+++	free(buf);
++ 	return ret;
++ }
 +diff --git a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+index eefc39b30b463e431eecc46fb0bd6f5c4bab4a43..c8d7783f1933769d7cc737502bd233638ee80935 100644
++index eefc39b30b463..2e5bf10bf92d4 100644
 +--- a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
 ++++ b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+@@ -22,11 +22,29 @@ case "$FIRMWARE" in
++@@ -22,11 +22,14 @@ case "$FIRMWARE" in
 + 			avm,fritz7360sl)
 + 				caldata_extract "urlader" 0x985 0x1000
 + 				;;
@@ -36,50 +440,9 @@ index 00000000..9b7a21f9
 + 				/usr/bin/fritz_cal_extract -i 1 -s 0x1e800 -e 0x207 -l 5120 -o /lib/firmware/$FIRMWARE $(find_mtd_chardev "urlader")
 + 				;;
 ++			avm,fritz7430)
-++				reversed=$( \
-++				/usr/bin/fritz_cal_extract -i 1 -s 0x1e000 -e 0x207 -l 5120 $(find_mtd_chardev "urlader") || \
-++				/usr/bin/fritz_cal_extract -i 1 -s 0x1e800 -e 0x207 -l 5120 $(find_mtd_chardev "urlader") | \
-++				hexdump -v -e '/1 "%02x "')
-++
-++				caldata=""
-++				i=0
-++				count=$((${#reversed} / 3 - 4))
-++				for byte in $reversed; do
-++					i=$(($i+1))
-++					if [ "$i" -gt "$count" ]; then
-++						break
-++					fi
-++					caldata="\x${byte}${caldata}"
-++				done
-++
-++				printf "%b" "$caldata" > /lib/firmware/$FIRMWARE
+++				/usr/bin/fritz_cal_extract -r -i 4 -s 0x1e000 -e 0x207 -l 5120 -o /lib/firmware/$FIRMWARE $(find_mtd_chardev "urlader") || \
+++				/usr/bin/fritz_cal_extract -r -i 4 -s 0x1e800 -e 0x207 -l 5120 -o /lib/firmware/$FIRMWARE $(find_mtd_chardev "urlader")
 ++				;;
 + 			bt,homehub-v5a)
 + 				caldata_extract_ubi "caldata" 0x1000 0x1000
 + 				ath9k_patch_mac_crc $(macaddr_add $(mtd_get_mac_binary_ubi caldata 0x110c) 2) 0x10c
-diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
-index 744fdea4..16672c91 100644
---- a/targets/lantiq-xrx200
-+++ b/targets/lantiq-xrx200
-@@ -33,6 +33,10 @@ device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {
- 	broken = true, -- no button for setup mode; hw revision not visible on device
- })
- 
-+device('avm-fritz-box-3390', 'avm_fritz3390', {
-+	factory = false,
-+})
-+
- device('avm-fritz-box-7360-sl', 'avm_fritz7360sl', {
- 	factory = false,
- 	aliases = {'avm-fritz-box-7360-v1'},
-@@ -50,6 +54,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
- 	factory = false,
- })
- 
-+device('avm-fritz-box-7430', 'avm_fritz7430', {
-+	factory = false,
-+})
-+
- device('arcadyan-vgv7510kw22', 'arcadyan_vgv7510kw22-nor', {
- 	factory = false,
- 	aliases = {'o2-box-6431'},

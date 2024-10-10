@@ -1,5 +1,5 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 85509de7..b26de7ca 100644
+index 85509de7..b1e8de8f 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
 @@ -14,6 +14,15 @@ local ATH10K_PACKAGES_IPQ40XX_QCA9888 = {
@@ -18,7 +18,29 @@ index 85509de7..b26de7ca 100644
  
  
  defaults {
-@@ -73,6 +82,23 @@ device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
+@@ -51,28 +60,29 @@ device('avm-fritz-box-4040', 'avm_fritzbox-4040', {
+ device('avm-fritz-box-7530', 'avm_fritzbox-7530', {
+ 	factory = false,
+ 	aliases = {'avm-fritz-box-7520'},
+-	packages = {
+-		-- same as ATH10K_PACKAGES_IPQ40XX
+-		'kmod-ath10k',
+-		'-kmod-ath10k-ct',
+-		'-kmod-ath10k-ct-smallbuffers',
+-		'ath10k-firmware-qca4019',
+-		'-ath10k-firmware-qca4019-ct',
+-
+-		-- VDSL modem
+-		'-kmod-ltq-vdsl-vr11',
+-		'-kmod-ltq-vdsl-vr11-mei',
+-		'-ltq-vdsl-vr11-app',
+-		'-ltq-dsl-base',
+-		'-kmod-atm',
+-		'-linux-atm',
+-	},
+ })
+ 
+ device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
  	factory = false,
  })
  
@@ -42,7 +64,7 @@ index 85509de7..b26de7ca 100644
  
  -- GL.iNet
  
-@@ -89,6 +115,36 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -89,6 +99,36 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
@@ -79,7 +101,7 @@ index 85509de7..b26de7ca 100644
  
  -- Meraki
  
-@@ -96,6 +152,11 @@ device('meraki-mr33-access-point', 'meraki_mr33', {
+@@ -96,6 +136,11 @@ device('meraki-mr33-access-point', 'meraki_mr33', {
  	packages = {
  		-- radio0 is monitoring radio - removed for now
  		-- the -ct firmware does not have working mesh
@@ -91,7 +113,7 @@ index 85509de7..b26de7ca 100644
  		'-ath10k-firmware-qca9887-ct',
  		'-ath10k-board-qca9887',
  	},
-@@ -139,6 +200,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
+@@ -139,6 +184,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
  -- ZTE
  
  device('zte-mf289f', 'zte_mf289f', {
