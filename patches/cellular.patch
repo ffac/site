@@ -1,8 +1,8 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
-index 27294c4d..7301eff2 100755
+index 300347e3..94e0737e 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
-@@ -49,6 +49,7 @@ if platform.match('ath79', 'nand', {
+@@ -51,6 +51,7 @@ if platform.match('ath79', 'nand', {
  	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
  elseif platform.match('ath79', 'nand', {
  	'zte,mf281',
