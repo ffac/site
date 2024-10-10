@@ -21,6 +21,8 @@ packages {
     'ffac-wg-registration',
     'ff-web-ap-timer',
     'respondd-module-airtime',
+    'tecff-general-workaround',
+    'tecff-broken-wlan-workaround',
 }
 
 if not device_class('tiny') then
@@ -31,20 +33,24 @@ if not device_class('tiny') then
     packages {
         'openssh-sftp-server',
         'ffac-autoupdater-wifi-fallback',
+        'ffmuc-custom-banner',
     }
 end
 
 if device({
-        'zte,mf281',
-        'glinet,gl-xe300',
-        'glinet,gl-ap1300',
-        'zte,mf289f',
-        'zte,mf286r',
-        'wavlink,ws-wn572hp3-4g',
-        'tplink,tl-mr6400-v5',
+        'zte-mf281',
+        'glinet-gl-xe300',
+        'glinet-gl-ap1300',
+        'zte-mf289f',
+        'zte-mf286r',
+        'wavlink-ws-wn572hp3-4g',
+        'tp-link-tl-mr6400-v5',
     }) then
     features {
         'web-cellular',
+    }
+    packages {
+        'ffac-web-private-wan-dhcp',
     }
 end
 
@@ -110,7 +116,7 @@ pkgs_pci = {
 include_usb = true
 
 -- rtl838x has no USB support as of Gluon v2023.2
-if target('realtek', 'rtl838x') then
+if target('realtek', 'rtl838x') or target('ramips', 'mt7620') then
     include_usb = false
 end
 
@@ -173,6 +179,7 @@ if include_usb then
     packages(pkgs_usb_net)
     packages(pkgs_usb_serial)
     packages(pkgs_usb_storage)
+    packages {'ffka-gluon-web-usb-wan-hotplug', 'ffac-update-location-gps'}
 end
 
 -- device has no reset button and requires a special package to go into setup mode
@@ -181,6 +188,7 @@ if device({
     'zyxel-nwa55axe',
 }) then
     packages {'ffda-network-setup-mode'}
+    broken(false)
 end
 
 if target('x86', '64') then
@@ -198,4 +206,11 @@ end
 
 if target('bcm27xx') then
     packages(pkgs_hid)
+end
+
+if target('ramips', 'mt7621') or target('ramips', 'mt7622') or target('mediatek', 'filogic') then
+	-- restart device if mt7915e driver shows known failure symptom
+	packages {
+		'ffac-mt7915-hotfix',
+	}
 end

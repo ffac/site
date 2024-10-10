@@ -89,10 +89,12 @@ define INFO :=
 
 endef
 # show info section for all make calls except the filtered ones
-ifneq (,$(filter-out gluon-clean output-clean clean,$(MAKECMDGOALS)))
+ifneq (,$(filter-out gluon-clean output-clean clean print-targets,$(MAKECMDGOALS)))
 $(info $(INFO))
 endif
 
+## Default target
+all: manifest
 
 ## Prepare folders
 $(GLUON_BUILD_DIR):
@@ -117,7 +119,6 @@ gluon-update: | $(GLUON_BUILD_DIR)/.git
 
 
 ## Build rules
-all: manifest
 
 sign: manifest | $(SECRET_KEY_FILE)
 ifdef DEVICE_INFO
@@ -153,8 +154,8 @@ build: gluon-prepare output-clean
 		mkdir -p $(OPKG_KEY_FOLDER); \
 		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
 	fi
-	cat $(GLUON_BUILD_DIR)/openwrt/bin/targets/*/*/profiles.json | jq -s > output/devices.json
 ifndef GLUON_DEVICES
+	cat $(GLUON_BUILD_DIR)/openwrt/bin/targets/*/*/profiles.json | jq -s > output/devices.json
 	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
 	mkdir -p output/packages/$(PACKAGES_BRANCH)
 	rsync -a --exclude '*/base' --exclude '*/luci' --exclude '*/packages' --exclude '*/routing' --exclude '*/telephony' $(GLUON_BUILD_DIR)/openwrt/bin/packages/ output/packages/$(PACKAGES_BRANCH)/
@@ -256,6 +257,9 @@ update-patches: patch-prepare
 			break; \
 		else \
 			if [ `$(GLUON_GIT) status -s patches | head -c1 | grep -E '.'` ]; then \
+				for file_rename in `$(GLUON_GIT) status -s -u patches | cut -c4-`; do \
+					mv ''$(GLUON_BUILD_DIR)/$$file_rename'' ''$(GLUON_BUILD_DIR)/$$(dirname "$$file_rename")/x$$(basename "$$file_rename")''; \
+				done; \
 				echo 'Refreshing Gluon patches…'; \
 				$(GLUON_MAKE) refresh-patches >/dev/null; \
 			fi; \
@@ -288,6 +292,9 @@ endif
 	@echo
 
 clean: gluon-clean output-clean devices-clean
+
+print-targets:
+	@echo "$(GLUON_TARGETS)" | tr ' ' '\n'
 
 Makefile: ;
 
