@@ -1,0 +1,1464 @@
+From 7c5cf5fa1dc0039b55c4b3e259dd666394a7aea4 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Thu, 3 Jul 2025 23:18:17 +0200
+Subject: [PATCH 1/3] add image customization generation script
+
+this script creates the helper lua from the openwrt toh to be included in the image-customization.lua
+---
+ contrib/generate-image-customization.py | 129 +++++++++++
+ contrib/image-customization-helper.lua  | 287 ++++++++++++++++++++++++
+ 2 files changed, 416 insertions(+)
+ create mode 100755 contrib/generate-image-customization.py
+ create mode 100644 contrib/image-customization-helper.lua
+
+diff --git a/contrib/generate-image-customization.py b/contrib/generate-image-customization.py
+new file mode 100755
+index 0000000000..52e8acd8ad
+--- /dev/null
++++ b/contrib/generate-image-customization.py
+@@ -0,0 +1,129 @@
++#!/usr/bin/env python3
++
++import requests
++from pathlib import Path
++
++toh = requests.get("https://openwrt.org/toh.json").json()
++
++entries = toh["entries"]
++captions = toh["captions"]
++columns = toh["columns"]
++
++
++def get_devices_from_gluon():
++    devices = []
++    for path in Path("../targets").glob("*"):
++        file = path.read_text()
++        for line in file.splitlines():
++            if line.startswith("device('"):
++                devices.append(line.split("('")[1].split("',")[0])
++    return devices
++
++# the name of some devices in the openwrt deviceid does not match
++# the gluon identifier from the device name
++device_mappings = {
++    "ubiquiti-unifi-uk-ultra": "ubiquiti-unifi-swiss-army-knife-ultra",
++    "ubiquiti-unifi-outdoorplus": "ubiquiti-unifi-ap-outdoor+",
++    "ubiquiti-unifi-ac-mesh-pro" : "",
++    "ubiquiti-unifi-ac-mesh": "ubiquiti-unifi-ac-mesh-pro",
++    "openwrt-one-1": "openwrt-one",
++    "linksys-e8450": "linksys-e8450-ubi",
++    "zyxel-nbg6716-a01": "zyxel-nbg6716",
++    "cudy-x6": "cudy-x6-v1",
++    "sophos-ap100-rev-1": "sophos-ap100",
++    "sophos-ap100c-rev-1": "sophos-ap100c",
++    "sophos-ap55-rev-1": "sophos-ap55",
++    "sophos-ap55c-rev-1": "sophos-ap55c",
++}
++
++def create_caption_dict(columns, entries):
++    result = {}
++    for entry in entries:
++        result_entry = {}
++        for index, column in enumerate(columns):
++            result_entry[column] = entry[index]
++        device = result_entry["deviceid"].split(":")[1]
++        device = device.lower().replace("_", "-").replace(" ", "-").replace("!", "-")
++        device = device.replace("open-mesh", "openmesh")
++        device = device_mappings.get(device, device)
++        result[device] = result_entry
++    return result
++
++
++result = create_caption_dict(columns, entries)
++devices = get_devices_from_gluon()
++has_gluon = {k: v for k, v in result.items() if k in devices}
++# sort dictionary
++has_gluon = {k: has_gluon[k] for k in sorted(has_gluon)}
++
++# to check which elements are missing
++# missing_from_results = [d for d in devices if d not in result.keys()]
++
++has_lte = {
++    k: v for k, v in has_gluon.items() if v["modem"] and v["modem"].lower() == "lte"
++}
++is_outdoor = {
++    k: v for k, v in has_gluon.items() if v["outdoor"] and v["outdoor"].lower() == "yes"
++}
++has_usb = {
++    k: v for k, v in has_gluon.items() if v["usbports"] and v["usbports"] != ["-"]
++}
++no_wifi24 = {
++    k: v for k, v in has_gluon.items() if not v["wlan24ghz"] or v["wlan24ghz"][0] == "-"
++}
++no_wifi50 = {
++    k: v for k, v in has_gluon.items() if not v["wlan50ghz"] or v["wlan50ghz"][0] == "-"
++}
++atmost_64mb_ram = {k: v for k, v in has_gluon.items() if int(v["rammb"]) <= 64}
++
++with open("image-customization-helper.lua", "w") as f:
++    usb_devices = "',\n'".join([device for device in has_usb])
++    lte_devices = "',\n'".join([device for device in has_lte])
++    outdoor_devices = "',\n'".join([device for device in is_outdoor])
++    no_wifi24_devices = "',\n'".join([device for device in no_wifi24])
++    no_wifi50_devices = "',\n'".join([device for device in no_wifi50])
++    atmost_64mb_ram_devices = "',\n'".join([device for device in atmost_64mb_ram])
++    lines = f"""#!/usr/bin/lua
++has_usb = false
++if device(
++'{usb_devices}'
++) then
++    has_usb = true
++end
++
++has_lte = false
++if device(
++'{lte_devices}'
++) then
++    has_lte = true
++end
++
++is_outdoor = false
++if device(
++'{outdoor_devices}'
++) then
++    is_outdoor = true
++end
++
++no_wifi24 = false
++if device(
++'{no_wifi24_devices}'
++) then
++    no_wifi24 = true
++end
++
++no_wifi50 = false
++if device(
++'{no_wifi50_devices}'
++) then
++    no_wifi50 = true
++end
++
++atmost_64mb_ram = false
++if device(
++'{atmost_64mb_ram_devices}'
++) then
++    atmost_64mb_ram = true
++end
++"""
++    f.writelines(lines)
+diff --git a/contrib/image-customization-helper.lua b/contrib/image-customization-helper.lua
+new file mode 100644
+index 0000000000..5788b11e22
+--- /dev/null
++++ b/contrib/image-customization-helper.lua
+@@ -0,0 +1,287 @@
++#!/usr/bin/lua
++has_usb = false
++if device(
++'8devices-jalapeno',
++'aerohive-hiveap-330',
++'aruba-ap-303h',
++'aruba-ap-365',
++'asus-rt-ac51u',
++'asus-rt-ax53u',
++'asus-tuf-ax4200',
++'asus-tuf-ax6000',
++'avm-fritz-box-4020',
++'avm-fritz-box-4040',
++'avm-fritz-box-7360-v2',
++'avm-fritz-box-7530',
++'buffalo-wzr-600dhp',
++'cudy-tr1200-v1',
++'cudy-tr3000-v1',
++'cudy-wr1300-v1',
++'d-link-dir-505',
++'d-link-dir-860l-b1',
++'d-link-dir-882-a1',
++'devolo-wifi-pro-1750e',
++'enterasys-ws-ap3715i',
++'extreme-networks-ws-ap3825i',
++'friendlyelec-nanopi-r3s',
++'genexis-pulse-ex400',
++'gl.inet-gl-ar150',
++'gl.inet-gl-ar300m-lite',
++'gl.inet-gl-ar750',
++'gl.inet-gl-b1300',
++'gl.inet-gl-e750',
++'gl.inet-gl-mt1300',
++'gl.inet-gl-mt3000',
++'gl.inet-gl-usb150',
++'gl.inet-gl-xe300',
++'gl.inet-vixmini',
++'lemaker-banana-pro',
++'linksys-e8450-ubi',
++'linksys-wrt1200ac',
++'netgear-dgn3500b',
++'netgear-r6120',
++'netgear-r6220',
++'netgear-r6260',
++'netgear-wndr3700-v2',
++'netgear-wndr3700-v4',
++'netgear-wndr3700-v5',
++'netgear-wndr3800',
++'netgear-wndrmac-v2',
++'ocedo-panda',
++'onion-omega',
++'openmesh-a40',
++'openmesh-a42',
++'openmesh-a60',
++'openmesh-a62',
++'openwrt-one',
++'plasma-cloud-pa1200',
++'ravpower-rp-wd009',
++'sophos-ap100',
++'sophos-ap100c',
++'sophos-ap55',
++'sophos-ap55c',
++'tp-link-archer-a7-v5',
++'tp-link-archer-c2600',
++'tp-link-archer-c50-v3',
++'tp-link-archer-c59-v1',
++'tp-link-archer-c7-v4',
++'tp-link-archer-c7-v5',
++'tp-link-archer-d50-v1',
++'tp-link-td-w8980',
++'tp-link-tl-mr3020-v3',
++'tp-link-tl-mr3420-v5',
++'tp-link-tl-wdr3500-v1',
++'tp-link-tl-wdr3600-v1',
++'tp-link-tl-wdr4900-v1',
++'tp-link-tl-wr1043nd-v2',
++'tp-link-tl-wr1043nd-v3',
++'tp-link-tl-wr1043nd-v4',
++'tp-link-tl-wr842n-v3',
++'tp-link-tl-wr902ac-v1',
++'tp-link-tl-wr902ac-v3',
++'tp-link-tl-wr902ac-v4',
++'ubiquiti-unifi-ac-hd',
++'xiaomi-mi-router-4c',
++'zyxel-nbg6617',
++'zyxel-nbg6716'
++) then
++	has_usb = true
++end
++
++has_lte = false
++if device(
++'gl.inet-gl-e750',
++'gl.inet-gl-xe300',
++'tp-link-tl-mr6400-v5',
++'wavlink-ws-wn572hp3-4g',
++'zte-mf281',
++'zte-mf289f'
++) then
++	has_lte = true
++end
++
++is_outdoor = false
++if device(
++'aruba-ap-365',
++'cudy-ap3000-outdoor-v1',
++'devolo-wifi-pro-1750x',
++'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
++'openmesh-a40',
++'openmesh-a42',
++'openmesh-a60',
++'openmesh-a62',
++'plasma-cloud-pa1200',
++'plasma-cloud-pa300',
++'plasma-cloud-pa300e',
++'tp-link-cpe210-v1',
++'tp-link-cpe210-v2',
++'tp-link-cpe210-v3',
++'tp-link-cpe220-v3',
++'tp-link-cpe510-v1',
++'tp-link-cpe510-v2',
++'tp-link-cpe510-v3',
++'tp-link-cpe710-v1',
++'tp-link-eap225-outdoor-v1',
++'tp-link-eap225-outdoor-v3',
++'tp-link-wbs210-v1',
++'tp-link-wbs210-v2',
++'tp-link-wbs510-v1',
++'ubiquiti-unifi-ac-mesh-pro',
++'ubiquiti-unifi-ap-outdoor+',
++'ubiquiti-unifi-swiss-army-knife-ultra',
++'wavlink-wl-wn573hx3',
++'wavlink-ws-wn572hp3-4g',
++'zyxel-nwa55axe'
++) then
++	is_outdoor = true
++end
++
++no_wifi24 = false
++if device(
++'friendlyelec-nanopi-r3s',
++'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
++'openmesh-om5p',
++'tp-link-cpe510-v1',
++'tp-link-cpe510-v2',
++'tp-link-cpe510-v3',
++'tp-link-cpe710-v1',
++'tp-link-wbs510-v1',
++'ubiquiti-edgerouter-x',
++'ubiquiti-edgerouter-x-sfp'
++) then
++	no_wifi24 = true
++end
++
++no_wifi50 = false
++if device(
++'alfa-network-ap121f',
++'avm-fritz-box-4020',
++'avm-fritz-box-7312',
++'avm-fritz-box-7360-v2',
++'avm-fritz-box-7412',
++'avm-fritz-wlan-repeater-450e',
++'d-link-dap-1330-a1',
++'d-link-dap-1365-a1',
++'d-link-dir-505',
++'friendlyelec-nanopi-r3s',
++'gl.inet-gl-ar150',
++'gl.inet-gl-ar300m-lite',
++'gl.inet-gl-usb150',
++'gl.inet-gl-xe300',
++'gl.inet-microuter-n300',
++'gl.inet-vixmini',
++'lemaker-banana-pro',
++'netgear-dgn3500b',
++'onion-omega',
++'openmesh-om2p-hs-v1',
++'openmesh-om2p-hs-v2',
++'openmesh-om2p-hs-v3',
++'openmesh-om2p-hs-v4',
++'openmesh-om2p-lc',
++'openmesh-om2p-v2',
++'openmesh-om2p-v4',
++'plasma-cloud-pa300',
++'plasma-cloud-pa300e',
++'sophos-ap15',
++'sophos-ap15c',
++'tp-link-cpe210-v1',
++'tp-link-cpe210-v2',
++'tp-link-cpe210-v3',
++'tp-link-cpe220-v3',
++'tp-link-tl-mr3020-v3',
++'tp-link-tl-mr3420-v5',
++'tp-link-tl-mr6400-v5',
++'tp-link-tl-wa801nd-v5',
++'tp-link-tl-wr1043n-v5',
++'tp-link-tl-wr1043nd-v2',
++'tp-link-tl-wr1043nd-v3',
++'tp-link-tl-wr1043nd-v4',
++'tp-link-tl-wr841n-v13',
++'tp-link-tl-wr842n-v3',
++'tp-link-wbs210-v1',
++'tp-link-wbs210-v2',
++'ubiquiti-edgerouter-x',
++'ubiquiti-edgerouter-x-sfp',
++'ubiquiti-unifi-ap',
++'ubiquiti-unifi-ap-outdoor+',
++'xiaomi-mi-router-4c'
++) then
++	no_wifi50 = true
++end
++
++atmost_64mb_ram = false
++if device(
++'alfa-network-ap121f',
++'asus-rt-ac51u',
++'avm-fritz-box-7312',
++'avm-fritz-wlan-repeater-1750e',
++'avm-fritz-wlan-repeater-300e',
++'avm-fritz-wlan-repeater-450e',
++'d-link-dap-1330-a1',
++'d-link-dap-1365-a1',
++'d-link-dir-505',
++'gl.inet-gl-ar150',
++'gl.inet-gl-usb150',
++'gl.inet-vixmini',
++'netgear-dgn3500b',
++'netgear-ex3700',
++'netgear-ex6130',
++'netgear-ex6150',
++'netgear-r6020',
++'netgear-r6120',
++'netgear-wndr3700-v2',
++'onion-omega',
++'openmesh-om2p-hs-v1',
++'openmesh-om2p-hs-v2',
++'openmesh-om2p-hs-v3',
++'openmesh-om2p-hs-v4',
++'openmesh-om2p-lc',
++'openmesh-om2p-v2',
++'openmesh-om2p-v4',
++'openmesh-om5p',
++'openmesh-om5p-an',
++'plasma-cloud-pa300',
++'plasma-cloud-pa300e',
++'ravpower-rp-wd009',
++'tp-link-archer-c2-v3',
++'tp-link-archer-c20-v5',
++'tp-link-archer-c25-v1',
++'tp-link-archer-c50-v1',
++'tp-link-archer-c50-v3',
++'tp-link-archer-c50-v4',
++'tp-link-archer-c58-v1',
++'tp-link-archer-c60-v1',
++'tp-link-archer-d50-v1',
++'tp-link-cpe210-v1',
++'tp-link-cpe210-v2',
++'tp-link-cpe210-v3',
++'tp-link-cpe220-v3',
++'tp-link-cpe510-v1',
++'tp-link-cpe510-v2',
++'tp-link-cpe510-v3',
++'tp-link-re200-v2',
++'tp-link-re200-v3',
++'tp-link-re200-v4',
++'tp-link-td-w8980',
++'tp-link-tl-mr3020-v3',
++'tp-link-tl-mr3420-v5',
++'tp-link-tl-mr6400-v5',
++'tp-link-tl-wa801nd-v5',
++'tp-link-tl-wr1043n-v5',
++'tp-link-tl-wr1043nd-v2',
++'tp-link-tl-wr1043nd-v3',
++'tp-link-tl-wr1043nd-v4',
++'tp-link-tl-wr841n-v13',
++'tp-link-tl-wr842n-v3',
++'tp-link-tl-wr902ac-v1',
++'tp-link-tl-wr902ac-v3',
++'tp-link-tl-wr902ac-v4',
++'tp-link-wbs210-v1',
++'tp-link-wbs210-v2',
++'tp-link-wbs510-v1',
++'ubiquiti-unifi-ap',
++'ubiquiti-unifi-ap-outdoor+',
++'xiaomi-mi-router-4c'
++) then
++	atmost_64mb_ram = true
++end
+
+From c706ddeb3ce398bc39879273ef6adbaaba5336d7 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sun, 6 Jul 2025 22:46:54 +0200
+Subject: [PATCH 2/3] contrib: generate-image-customization: add alias from
+ openwrt for all missing devices
+
+This adds a mapping of the device names from the openwrt toh name to the gluon names.
+Now all devices supported in gluon are correctly mapped to the toh entry.
+---
+ contrib/generate-image-customization.py | 175 +++++--
+ contrib/image-customization-helper.lua  | 630 ++++++++++++++----------
+ 2 files changed, 519 insertions(+), 286 deletions(-)
+
+diff --git a/contrib/generate-image-customization.py b/contrib/generate-image-customization.py
+index 52e8acd8ad..6c15b2bd36 100755
+--- a/contrib/generate-image-customization.py
++++ b/contrib/generate-image-customization.py
+@@ -5,10 +5,6 @@
+ 
+ toh = requests.get("https://openwrt.org/toh.json").json()
+ 
+-entries = toh["entries"]
+-captions = toh["captions"]
+-columns = toh["columns"]
+-
+ 
+ def get_devices_from_gluon():
+     devices = []
+@@ -19,24 +15,123 @@ def get_devices_from_gluon():
+                 devices.append(line.split("('")[1].split("',")[0])
+     return devices
+ 
++
+ # the name of some devices in the openwrt deviceid does not match
+ # the gluon identifier from the device name
+-device_mappings = {
+-    "ubiquiti-unifi-uk-ultra": "ubiquiti-unifi-swiss-army-knife-ultra",
+-    "ubiquiti-unifi-outdoorplus": "ubiquiti-unifi-ap-outdoor+",
+-    "ubiquiti-unifi-ac-mesh-pro" : "",
+-    "ubiquiti-unifi-ac-mesh": "ubiquiti-unifi-ac-mesh-pro",
+-    "openwrt-one-1": "openwrt-one",
+-    "linksys-e8450": "linksys-e8450-ubi",
+-    "zyxel-nbg6716-a01": "zyxel-nbg6716",
++map_openwrt_to_gluon = {
++    "aerohive-ap121": "aerohive-hiveap-121",
++    "arcadyanastoria-vgv7510kw22o2box6431": "arcadyan-vgv7510kw22",
++    "asus-rt-ac57u": "asus-rt-ac57u-v1",
++    "avm-fritz-box-7360sl": "avm-fritz-box-7360-sl",
++    "avm-fritz-box-7362sl": "avm-fritz-box-7362-sl",
++    "avm-fritz-box-wlan-3370": [
++        "avm-fritz-box-3370-rev-2-micron-nand",
++        "avm-fritz-box-3370-rev-2-hynix-nand",
++    ],
++    "buffalo-wzr-hp-ag300h-v1": "buffalo-wzr-hp-ag300h",
++    "buffalo-wzr-hp-g300nh-v1": "buffalo-wzr-hp-g300nh-rtl8366s",
++    "cudy-wr1000-v1": "cudy-wr1000",
+     "cudy-x6": "cudy-x6-v1",
++    "d-link-aquila-pro-ai-m30": "d-link-aquila-pro-ai-m30-a1",
++    "d-link-dir-825": "d-link-dir825b1",
++    "devolo-dlan-pro-1200-wifi-ac": "devolo-dlan-pro-1200+-wifi-ac",
++    "extreme-networks-ws-ap3935i": "extreme-networks-ap3935",
++    "friendlyarm-nanopi-r2s": "friendlyelec-nanopi-r2s",
++    "friendlyarm-nanopi-r4s": "friendlyelec-nanopi-r4s",
++    "gl.inet-6416a": "gl.inet-6416",
++    "gl.inet-gl-ar300m": "gl.inet-gl-ar300m-nor",
++    "gl.inet-gl-ar750s": "gl.inet-gl-ar750s-nor",
++    "gl.inet-gl-mt2500-gl-mt2500a": "gl.inet-gl-mt2500",
++    "gl.inet-gl-mt300a": "gl-mt300a",
++    "gl.inet-gl-mt300n-v1": "gl-mt300n",
++    "gl.inet-gl-mt300n-v2": "gl-mt300n-v2",
++    "gl.inet-gl-mt750": "gl-mt750",
++    "gl.inet-gl-mv1000-brume": "gl.inet-gl-mv1000",
++    "google-wifi": "google-wifi-gale",
++    "hpe-msm460": "hewlett-packard-msm460",
++    "lamobo-bananapi-r1": "lamobo-r1",
++    "lemaker-bananapi": "lemaker-banana-pi",
++    "librerouter-librerouter-v1": "librerouter-v1",
++    "linksys-e4200-v2": "linksys-e4200-v2-viper",
++    "linksys-e8450": "linksys-e8450-ubi",
++    "linksys-ea4500-v1": "linksys-ea4500-viper",
++    "linksys-ea6350-v3": "linksys-ea6350v3",
++    "meraki-mr33": "meraki-mr33-access-point",
++    "mikrotik-rb951ui-2nd": "mikrotik-routerboard-951ui-2nd-hap",
++    "mikrotik-rbd52g-5hacd2hnd-tc-hap-ac2": "mikrotik-hap-ac2",
++    "mikrotik-rbwapr-2nd-wap-r": "mikrotik-routerboard-wapr-2nd",
++    "netgear-ex6100-v2": "netgear-ex6100v2",
++    "netgear-ex6150-v2": "netgear-ex6150v2",
++    "netgear-r7800": "netgear-nighthawk-x4s-r7800",
++    "netgear-wndr3700-v1": "netgear-wndr3700",
++    "netgear-wndr3800-ch": "netgear-wndr3800ch",
++    "netgear-wndr3800ch": "netgear-wndr3800",
++    "netgear-wndr4300-v1": "netgear-wndr4300",
++    "netgear-wnr2200-16mb-ru": "netgear-wnr2200-16m",
++    "netgear-wnr2200-8mb-eu": "netgear-wnr2200-8m",
++    "nexx-wt3020h": "nexx-wt3020-8m",
++    "openmesh-om2p": "openmesh-om2p-v1",
++    "openmesh-om5p-ac": "openmesh-om5p-ac-v1",
++    "openwrt-one-1": "openwrt-one",
++    "qemu-arm": ["armsr-armv7", "armsr-armv8"],
++    "qemu-i386": ["x86-legacy", "x86-geode", "x86-generic"],
++    "qemu-x86-64": "x86-64",
++    "raspberry-pi-2-b": "raspberrypi-2-model-b",
++    "raspberry-pi-3-b": "raspberrypi-3-model-b",
++    "raspberry-pi-b": "raspberrypi-model-b",
++    "raspberry-pi-foundation-raspberry-pi-4-b": "raspberrypi-4-model-b",
+     "sophos-ap100-rev-1": "sophos-ap100",
+     "sophos-ap100c-rev-1": "sophos-ap100c",
+     "sophos-ap55-rev-1": "sophos-ap55",
+     "sophos-ap55c-rev-1": "sophos-ap55c",
++    "sophos-red-15w-rev.-1": "sophos-red-15w-rev.1",
++    "teltonika-rut230": "teltonika-rut230-v1",
++    "tp-link-archer-c2-ac750": "tp-link-archer-c2-v1",
++    "tp-link-archer-c20-ac750-v1": "tp-link-archer-c20-v1",
++    "tp-link-archer-c20-ac750-v4": "tp-link-archer-c20-v4",
++    "tp-link-archer-c20i-ac750-v1": "tp-link-archer-c20i",
++    "tp-link-archer-c5-ac1200-v1": "tp-link-archer-c5-v1",
++    "tp-link-archer-c6-v2-eu": "tp-link-archer-c6-v2-eu-ru-jp",
++    "tp-link-archer-c7-ac1750-v2.0": "tp-link-archer-c7-v2",
++    "tp-link-ax23-v1": "tp-link-archer-ax23-v1",
++    "tp-link-eap615-wall": "tp-link-eap615-wall-v1",
++    "tp-link-td-w8970-v1": "tp-link-td-w8970",
++    "tp-link-tl-wdr4300": "tp-link-tl-wdr4300-v1",
++    "tp-link-tl-wr2543nd-v1": "tp-link-tl-wr2543n-nd",
++    "tp-link-tl-wr810n-v1.1-eu": "tp-link-tl-wr810n-v1",
++    "ubiquiti-unifi-6-lr": "ubiquiti-unifi-6-lr-v1",
++    "ubiquiti-unifi-apac": "ubiquiti-unifi-ac-mesh",
++    "ubiquiti-unifi-apac-lite": "ubiquiti-unifi-ac-lite",
++    "ubiquiti-unifi-apac-lr": "ubiquiti-unifi-ac-lr",
++    "ubiquiti-unifi-apac-pro": "ubiquiti-unifi-ac-pro",
++    "ubiquiti-unifi-outdoorplus": "ubiquiti-unifi-ap-outdoor+",
++    "ubiquiti-unifi-uk-ultra": "ubiquiti-unifi-swiss-army-knife-ultra",
++    "vocore-vocore2": "vocore2",
++    "xiaomi-mi-router-4a-100m": [
++        "xiaomi-mi-router-4a-100m-edition",
++        "xiaomi-mi-router-4a-100m-international-edition",
++        "xiaomi-mi-router-4a-100m-international-edition-v2",
++    ],
++    "xiaomi-mi-router-4a-gbit": [
++        "xiaomi-mi-router-4a-gigabit-edition",
++        "xiaomi-mi-router-4a-gigabit-edition-v2",
++    ],
++    "xiaomi-mi-wifi-range-extender-ac1200-ra75": "xiaomi-mi-ra75",
++    "xiaomi-mini-v1": "xiaomi-miwifi-mini",
++    "xiaomi-miwifi-3g": "xiaomi-mi-router-3g",
++    "xiaomi-miwifi-3g-v2": "xiaomi-mi-router-3g-v2",
++    "zbt-wg3526-16m": "zbtlink-zbt-wg3526-16m",
++    "zbt-wg3526-32m": "zbtlink-zbt-wg3526-32m",
++    "zyxel-nbg6716-a01": "zyxel-nbg6716",
+ }
+ 
+-def create_caption_dict(columns, entries):
++entries = toh["entries"]
++captions = toh["captions"]
++columns = toh["columns"]
++
++
++def create_caption_dict(columns: list, entries: dict):
++    # entries are openwrt toh entries
+     result = {}
+     for entry in entries:
+         result_entry = {}
+@@ -45,19 +140,27 @@ def create_caption_dict(columns, entries):
+         device = result_entry["deviceid"].split(":")[1]
+         device = device.lower().replace("_", "-").replace(" ", "-").replace("!", "-")
+         device = device.replace("open-mesh", "openmesh")
+-        device = device_mappings.get(device, device)
+-        result[device] = result_entry
++        remap_devices = map_openwrt_to_gluon.get(device, device)
++        if isinstance(remap_devices, list):
++            for device in remap_devices:
++                result[device] = result_entry
++        else:
++            result[remap_devices] = result_entry
+     return result
+ 
+ 
+ result = create_caption_dict(columns, entries)
++
+ devices = get_devices_from_gluon()
+ has_gluon = {k: v for k, v in result.items() if k in devices}
+ # sort dictionary
+ has_gluon = {k: has_gluon[k] for k in sorted(has_gluon)}
+ 
+ # to check which elements are missing
+-# missing_from_results = [d for d in devices if d not in result.keys()]
++gluon_missing_from_openwrt = [d for d in devices if d not in result.keys()]
++
++if gluon_missing_from_openwrt:
++    print("Following devices are missing", gluon_missing_from_openwrt)
+ 
+ has_lte = {
+     k: v for k, v in has_gluon.items() if v["modem"] and v["modem"].lower() == "lte"
+@@ -74,56 +177,58 @@ def create_caption_dict(columns, entries):
+ no_wifi50 = {
+     k: v for k, v in has_gluon.items() if not v["wlan50ghz"] or v["wlan50ghz"][0] == "-"
+ }
+-atmost_64mb_ram = {k: v for k, v in has_gluon.items() if int(v["rammb"]) <= 64}
++atmost_64mb_ram = {
++    k: v for k, v in has_gluon.items() if v["rammb"] and int(v["rammb"]) <= 64
++}
+ 
+ with open("image-customization-helper.lua", "w") as f:
+-    usb_devices = "',\n'".join([device for device in has_usb])
+-    lte_devices = "',\n'".join([device for device in has_lte])
+-    outdoor_devices = "',\n'".join([device for device in is_outdoor])
+-    no_wifi24_devices = "',\n'".join([device for device in no_wifi24])
+-    no_wifi50_devices = "',\n'".join([device for device in no_wifi50])
+-    atmost_64mb_ram_devices = "',\n'".join([device for device in atmost_64mb_ram])
++    usb_devices = "',\n\t'".join([device for device in has_usb])
++    lte_devices = "',\n\t'".join([device for device in has_lte])
++    outdoor_devices = "',\n\t'".join([device for device in is_outdoor])
++    no_wifi24_devices = "',\n\t'".join([device for device in no_wifi24])
++    no_wifi50_devices = "',\n\t'".join([device for device in no_wifi50])
++    atmost_64mb_ram_devices = "',\n\t'".join([device for device in atmost_64mb_ram])
+     lines = f"""#!/usr/bin/lua
+ has_usb = false
+ if device(
+-'{usb_devices}'
++\t'{usb_devices}'
+ ) then
+-    has_usb = true
++\thas_usb = true
+ end
+ 
+ has_lte = false
+ if device(
+-'{lte_devices}'
++\t'{lte_devices}'
+ ) then
+-    has_lte = true
++\thas_lte = true
+ end
+ 
+ is_outdoor = false
+ if device(
+-'{outdoor_devices}'
++\t'{outdoor_devices}'
+ ) then
+-    is_outdoor = true
++\tis_outdoor = true
+ end
+ 
+ no_wifi24 = false
+ if device(
+-'{no_wifi24_devices}'
++\t'{no_wifi24_devices}'
+ ) then
+-    no_wifi24 = true
++\tno_wifi24 = true
+ end
+ 
+ no_wifi50 = false
+ if device(
+-'{no_wifi50_devices}'
++\t'{no_wifi50_devices}'
+ ) then
+-    no_wifi50 = true
++\tno_wifi50 = true
+ end
+ 
+ atmost_64mb_ram = false
+ if device(
+-'{atmost_64mb_ram_devices}'
++\t'{atmost_64mb_ram_devices}'
+ ) then
+-    atmost_64mb_ram = true
++\tatmost_64mb_ram = true
+ end
+ """
+     f.writelines(lines)
+diff --git a/contrib/image-customization-helper.lua b/contrib/image-customization-helper.lua
+index 5788b11e22..5c9071efaa 100644
+--- a/contrib/image-customization-helper.lua
++++ b/contrib/image-customization-helper.lua
+@@ -1,287 +1,415 @@
+ #!/usr/bin/lua
+ has_usb = false
+ if device(
+-'8devices-jalapeno',
+-'aerohive-hiveap-330',
+-'aruba-ap-303h',
+-'aruba-ap-365',
+-'asus-rt-ac51u',
+-'asus-rt-ax53u',
+-'asus-tuf-ax4200',
+-'asus-tuf-ax6000',
+-'avm-fritz-box-4020',
+-'avm-fritz-box-4040',
+-'avm-fritz-box-7360-v2',
+-'avm-fritz-box-7530',
+-'buffalo-wzr-600dhp',
+-'cudy-tr1200-v1',
+-'cudy-tr3000-v1',
+-'cudy-wr1300-v1',
+-'d-link-dir-505',
+-'d-link-dir-860l-b1',
+-'d-link-dir-882-a1',
+-'devolo-wifi-pro-1750e',
+-'enterasys-ws-ap3715i',
+-'extreme-networks-ws-ap3825i',
+-'friendlyelec-nanopi-r3s',
+-'genexis-pulse-ex400',
+-'gl.inet-gl-ar150',
+-'gl.inet-gl-ar300m-lite',
+-'gl.inet-gl-ar750',
+-'gl.inet-gl-b1300',
+-'gl.inet-gl-e750',
+-'gl.inet-gl-mt1300',
+-'gl.inet-gl-mt3000',
+-'gl.inet-gl-usb150',
+-'gl.inet-gl-xe300',
+-'gl.inet-vixmini',
+-'lemaker-banana-pro',
+-'linksys-e8450-ubi',
+-'linksys-wrt1200ac',
+-'netgear-dgn3500b',
+-'netgear-r6120',
+-'netgear-r6220',
+-'netgear-r6260',
+-'netgear-wndr3700-v2',
+-'netgear-wndr3700-v4',
+-'netgear-wndr3700-v5',
+-'netgear-wndr3800',
+-'netgear-wndrmac-v2',
+-'ocedo-panda',
+-'onion-omega',
+-'openmesh-a40',
+-'openmesh-a42',
+-'openmesh-a60',
+-'openmesh-a62',
+-'openwrt-one',
+-'plasma-cloud-pa1200',
+-'ravpower-rp-wd009',
+-'sophos-ap100',
+-'sophos-ap100c',
+-'sophos-ap55',
+-'sophos-ap55c',
+-'tp-link-archer-a7-v5',
+-'tp-link-archer-c2600',
+-'tp-link-archer-c50-v3',
+-'tp-link-archer-c59-v1',
+-'tp-link-archer-c7-v4',
+-'tp-link-archer-c7-v5',
+-'tp-link-archer-d50-v1',
+-'tp-link-td-w8980',
+-'tp-link-tl-mr3020-v3',
+-'tp-link-tl-mr3420-v5',
+-'tp-link-tl-wdr3500-v1',
+-'tp-link-tl-wdr3600-v1',
+-'tp-link-tl-wdr4900-v1',
+-'tp-link-tl-wr1043nd-v2',
+-'tp-link-tl-wr1043nd-v3',
+-'tp-link-tl-wr1043nd-v4',
+-'tp-link-tl-wr842n-v3',
+-'tp-link-tl-wr902ac-v1',
+-'tp-link-tl-wr902ac-v3',
+-'tp-link-tl-wr902ac-v4',
+-'ubiquiti-unifi-ac-hd',
+-'xiaomi-mi-router-4c',
+-'zyxel-nbg6617',
+-'zyxel-nbg6716'
++	'8devices-jalapeno',
++	'aerohive-hiveap-121',
++	'aerohive-hiveap-330',
++	'arcadyan-vgv7510kw22',
++	'aruba-ap-303h',
++	'aruba-ap-365',
++	'asus-rt-ac51u',
++	'asus-rt-ac57u-v1',
++	'asus-rt-ax53u',
++	'asus-tuf-ax4200',
++	'asus-tuf-ax6000',
++	'avm-fritz-box-3370-rev-2-hynix-nand',
++	'avm-fritz-box-3370-rev-2-micron-nand',
++	'avm-fritz-box-4020',
++	'avm-fritz-box-4040',
++	'avm-fritz-box-7360-sl',
++	'avm-fritz-box-7360-v2',
++	'avm-fritz-box-7362-sl',
++	'avm-fritz-box-7530',
++	'buffalo-wzr-600dhp',
++	'buffalo-wzr-hp-ag300h',
++	'buffalo-wzr-hp-g300nh-rtl8366s',
++	'cudy-tr1200-v1',
++	'cudy-tr3000-v1',
++	'cudy-wr1300-v1',
++	'd-link-dir-505',
++	'd-link-dir-860l-b1',
++	'd-link-dir-882-a1',
++	'd-link-dir825b1',
++	'devolo-wifi-pro-1750e',
++	'enterasys-ws-ap3715i',
++	'extreme-networks-ws-ap3825i',
++	'friendlyelec-nanopi-r2s',
++	'friendlyelec-nanopi-r3s',
++	'friendlyelec-nanopi-r4s',
++	'genexis-pulse-ex400',
++	'gl-mt300a',
++	'gl-mt300n',
++	'gl-mt300n-v2',
++	'gl-mt750',
++	'gl.inet-6416',
++	'gl.inet-gl-ar150',
++	'gl.inet-gl-ar300m-lite',
++	'gl.inet-gl-ar300m-nor',
++	'gl.inet-gl-ar750',
++	'gl.inet-gl-ar750s-nor',
++	'gl.inet-gl-b1300',
++	'gl.inet-gl-e750',
++	'gl.inet-gl-mt1300',
++	'gl.inet-gl-mt2500',
++	'gl.inet-gl-mt3000',
++	'gl.inet-gl-usb150',
++	'gl.inet-gl-xe300',
++	'gl.inet-vixmini',
++	'lamobo-r1',
++	'lemaker-banana-pi',
++	'lemaker-banana-pro',
++	'librerouter-v1',
++	'linksys-e4200-v2-viper',
++	'linksys-e8450-ubi',
++	'linksys-ea4500-viper',
++	'linksys-ea6350v3',
++	'linksys-wrt1200ac',
++	'mikrotik-hap-ac2',
++	'mikrotik-routerboard-951ui-2nd-hap',
++	'mikrotik-routerboard-wapr-2nd',
++	'netgear-dgn3500b',
++	'netgear-nighthawk-x4s-r7800',
++	'netgear-r6120',
++	'netgear-r6220',
++	'netgear-r6260',
++	'netgear-wndr3700',
++	'netgear-wndr3700-v2',
++	'netgear-wndr3700-v4',
++	'netgear-wndr3700-v5',
++	'netgear-wndr3800',
++	'netgear-wndr3800ch',
++	'netgear-wndr4300',
++	'netgear-wndrmac-v2',
++	'netgear-wnr2200-16m',
++	'netgear-wnr2200-8m',
++	'nexx-wt3020-8m',
++	'ocedo-panda',
++	'onion-omega',
++	'openmesh-a40',
++	'openmesh-a42',
++	'openmesh-a60',
++	'openmesh-a62',
++	'openwrt-one',
++	'plasma-cloud-pa1200',
++	'raspberrypi-2-model-b',
++	'raspberrypi-3-model-b',
++	'raspberrypi-4-model-b',
++	'raspberrypi-model-b',
++	'ravpower-rp-wd009',
++	'sophos-ap100',
++	'sophos-ap100c',
++	'sophos-ap55',
++	'sophos-ap55c',
++	'sophos-red-15w-rev.1',
++	'tp-link-archer-a7-v5',
++	'tp-link-archer-c2-v1',
++	'tp-link-archer-c20-v1',
++	'tp-link-archer-c20i',
++	'tp-link-archer-c2600',
++	'tp-link-archer-c5-v1',
++	'tp-link-archer-c50-v3',
++	'tp-link-archer-c59-v1',
++	'tp-link-archer-c7-v2',
++	'tp-link-archer-c7-v4',
++	'tp-link-archer-c7-v5',
++	'tp-link-archer-d50-v1',
++	'tp-link-td-w8970',
++	'tp-link-td-w8980',
++	'tp-link-tl-mr3020-v3',
++	'tp-link-tl-mr3420-v5',
++	'tp-link-tl-wdr3500-v1',
++	'tp-link-tl-wdr3600-v1',
++	'tp-link-tl-wdr4300-v1',
++	'tp-link-tl-wdr4900-v1',
++	'tp-link-tl-wr1043nd-v2',
++	'tp-link-tl-wr1043nd-v3',
++	'tp-link-tl-wr1043nd-v4',
++	'tp-link-tl-wr2543n-nd',
++	'tp-link-tl-wr810n-v1',
++	'tp-link-tl-wr842n-v3',
++	'tp-link-tl-wr902ac-v1',
++	'tp-link-tl-wr902ac-v3',
++	'tp-link-tl-wr902ac-v4',
++	'ubiquiti-unifi-ac-hd',
++	'ubiquiti-unifi-ac-pro',
++	'vocore2',
++	'xiaomi-mi-router-3g',
++	'xiaomi-mi-router-4c',
++	'xiaomi-miwifi-mini',
++	'zbtlink-zbt-wg3526-16m',
++	'zbtlink-zbt-wg3526-32m',
++	'zyxel-nbg6617',
++	'zyxel-nbg6716'
+ ) then
+ 	has_usb = true
+ end
+ 
+ has_lte = false
+ if device(
+-'gl.inet-gl-e750',
+-'gl.inet-gl-xe300',
+-'tp-link-tl-mr6400-v5',
+-'wavlink-ws-wn572hp3-4g',
+-'zte-mf281',
+-'zte-mf289f'
++	'gl.inet-gl-e750',
++	'gl.inet-gl-xe300',
++	'tp-link-tl-mr6400-v5',
++	'wavlink-ws-wn572hp3-4g',
++	'zte-mf281',
++	'zte-mf289f'
+ ) then
+ 	has_lte = true
+ end
+ 
+ is_outdoor = false
+ if device(
+-'aruba-ap-365',
+-'cudy-ap3000-outdoor-v1',
+-'devolo-wifi-pro-1750x',
+-'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
+-'openmesh-a40',
+-'openmesh-a42',
+-'openmesh-a60',
+-'openmesh-a62',
+-'plasma-cloud-pa1200',
+-'plasma-cloud-pa300',
+-'plasma-cloud-pa300e',
+-'tp-link-cpe210-v1',
+-'tp-link-cpe210-v2',
+-'tp-link-cpe210-v3',
+-'tp-link-cpe220-v3',
+-'tp-link-cpe510-v1',
+-'tp-link-cpe510-v2',
+-'tp-link-cpe510-v3',
+-'tp-link-cpe710-v1',
+-'tp-link-eap225-outdoor-v1',
+-'tp-link-eap225-outdoor-v3',
+-'tp-link-wbs210-v1',
+-'tp-link-wbs210-v2',
+-'tp-link-wbs510-v1',
+-'ubiquiti-unifi-ac-mesh-pro',
+-'ubiquiti-unifi-ap-outdoor+',
+-'ubiquiti-unifi-swiss-army-knife-ultra',
+-'wavlink-wl-wn573hx3',
+-'wavlink-ws-wn572hp3-4g',
+-'zyxel-nwa55axe'
++	'aruba-ap-365',
++	'cudy-ap3000-outdoor-v1',
++	'devolo-wifi-pro-1750x',
++	'librerouter-v1',
++	'mikrotik-routerboard-wapr-2nd',
++	'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
++	'openmesh-a40',
++	'openmesh-a42',
++	'openmesh-a60',
++	'openmesh-a62',
++	'plasma-cloud-pa1200',
++	'plasma-cloud-pa300',
++	'plasma-cloud-pa300e',
++	'tp-link-cpe210-v1',
++	'tp-link-cpe210-v2',
++	'tp-link-cpe210-v3',
++	'tp-link-cpe220-v3',
++	'tp-link-cpe510-v1',
++	'tp-link-cpe510-v2',
++	'tp-link-cpe510-v3',
++	'tp-link-cpe710-v1',
++	'tp-link-eap225-outdoor-v1',
++	'tp-link-eap225-outdoor-v3',
++	'tp-link-wbs210-v1',
++	'tp-link-wbs210-v2',
++	'tp-link-wbs510-v1',
++	'ubiquiti-unifi-ac-mesh-pro',
++	'ubiquiti-unifi-ap-outdoor+',
++	'ubiquiti-unifi-swiss-army-knife-ultra',
++	'wavlink-wl-wn573hx3',
++	'wavlink-ws-wn572hp3-4g',
++	'zyxel-nwa55axe'
+ ) then
+ 	is_outdoor = true
+ end
+ 
+ no_wifi24 = false
+ if device(
+-'friendlyelec-nanopi-r3s',
+-'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
+-'openmesh-om5p',
+-'tp-link-cpe510-v1',
+-'tp-link-cpe510-v2',
+-'tp-link-cpe510-v3',
+-'tp-link-cpe710-v1',
+-'tp-link-wbs510-v1',
+-'ubiquiti-edgerouter-x',
+-'ubiquiti-edgerouter-x-sfp'
++	'armsr-armv7',
++	'armsr-armv8',
++	'friendlyelec-nanopi-r2s',
++	'friendlyelec-nanopi-r3s',
++	'friendlyelec-nanopi-r4s',
++	'gl.inet-gl-mt2500',
++	'lemaker-banana-pi',
++	'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
++	'openmesh-om5p',
++	'raspberrypi-2-model-b',
++	'raspberrypi-model-b',
++	'tp-link-cpe510-v1',
++	'tp-link-cpe510-v2',
++	'tp-link-cpe510-v3',
++	'tp-link-cpe710-v1',
++	'tp-link-wbs510-v1',
++	'ubiquiti-edgerouter-x',
++	'ubiquiti-edgerouter-x-sfp',
++	'x86-64',
++	'x86-generic',
++	'x86-geode',
++	'x86-legacy'
+ ) then
+ 	no_wifi24 = true
+ end
+ 
+ no_wifi50 = false
+ if device(
+-'alfa-network-ap121f',
+-'avm-fritz-box-4020',
+-'avm-fritz-box-7312',
+-'avm-fritz-box-7360-v2',
+-'avm-fritz-box-7412',
+-'avm-fritz-wlan-repeater-450e',
+-'d-link-dap-1330-a1',
+-'d-link-dap-1365-a1',
+-'d-link-dir-505',
+-'friendlyelec-nanopi-r3s',
+-'gl.inet-gl-ar150',
+-'gl.inet-gl-ar300m-lite',
+-'gl.inet-gl-usb150',
+-'gl.inet-gl-xe300',
+-'gl.inet-microuter-n300',
+-'gl.inet-vixmini',
+-'lemaker-banana-pro',
+-'netgear-dgn3500b',
+-'onion-omega',
+-'openmesh-om2p-hs-v1',
+-'openmesh-om2p-hs-v2',
+-'openmesh-om2p-hs-v3',
+-'openmesh-om2p-hs-v4',
+-'openmesh-om2p-lc',
+-'openmesh-om2p-v2',
+-'openmesh-om2p-v4',
+-'plasma-cloud-pa300',
+-'plasma-cloud-pa300e',
+-'sophos-ap15',
+-'sophos-ap15c',
+-'tp-link-cpe210-v1',
+-'tp-link-cpe210-v2',
+-'tp-link-cpe210-v3',
+-'tp-link-cpe220-v3',
+-'tp-link-tl-mr3020-v3',
+-'tp-link-tl-mr3420-v5',
+-'tp-link-tl-mr6400-v5',
+-'tp-link-tl-wa801nd-v5',
+-'tp-link-tl-wr1043n-v5',
+-'tp-link-tl-wr1043nd-v2',
+-'tp-link-tl-wr1043nd-v3',
+-'tp-link-tl-wr1043nd-v4',
+-'tp-link-tl-wr841n-v13',
+-'tp-link-tl-wr842n-v3',
+-'tp-link-wbs210-v1',
+-'tp-link-wbs210-v2',
+-'ubiquiti-edgerouter-x',
+-'ubiquiti-edgerouter-x-sfp',
+-'ubiquiti-unifi-ap',
+-'ubiquiti-unifi-ap-outdoor+',
+-'xiaomi-mi-router-4c'
++	'alfa-network-ap121f',
++	'arcadyan-vgv7510kw22',
++	'armsr-armv7',
++	'armsr-armv8',
++	'avm-fritz-box-4020',
++	'avm-fritz-box-7312',
++	'avm-fritz-box-7360-sl',
++	'avm-fritz-box-7360-v2',
++	'avm-fritz-box-7362-sl',
++	'avm-fritz-box-7412',
++	'avm-fritz-wlan-repeater-450e',
++	'buffalo-wzr-hp-g300nh-rtl8366s',
++	'd-link-dap-1330-a1',
++	'd-link-dap-1365-a1',
++	'd-link-dir-505',
++	'friendlyelec-nanopi-r2s',
++	'friendlyelec-nanopi-r3s',
++	'friendlyelec-nanopi-r4s',
++	'gl-mt300a',
++	'gl-mt300n',
++	'gl-mt300n-v2',
++	'gl.inet-6416',
++	'gl.inet-gl-ar150',
++	'gl.inet-gl-ar300m-lite',
++	'gl.inet-gl-ar300m-nor',
++	'gl.inet-gl-mt2500',
++	'gl.inet-gl-usb150',
++	'gl.inet-gl-xe300',
++	'gl.inet-microuter-n300',
++	'gl.inet-vixmini',
++	'lamobo-r1',
++	'lemaker-banana-pi',
++	'lemaker-banana-pro',
++	'mikrotik-routerboard-951ui-2nd-hap',
++	'mikrotik-routerboard-wapr-2nd',
++	'netgear-dgn3500b',
++	'netgear-wnr2200-16m',
++	'netgear-wnr2200-8m',
++	'nexx-wt3020-8m',
++	'onion-omega',
++	'openmesh-om2p-hs-v1',
++	'openmesh-om2p-hs-v2',
++	'openmesh-om2p-hs-v3',
++	'openmesh-om2p-hs-v4',
++	'openmesh-om2p-lc',
++	'openmesh-om2p-v1',
++	'openmesh-om2p-v2',
++	'openmesh-om2p-v4',
++	'plasma-cloud-pa300',
++	'plasma-cloud-pa300e',
++	'raspberrypi-2-model-b',
++	'raspberrypi-3-model-b',
++	'raspberrypi-model-b',
++	'sophos-ap15',
++	'sophos-ap15c',
++	'teltonika-rut230-v1',
++	'tp-link-cpe210-v1',
++	'tp-link-cpe210-v2',
++	'tp-link-cpe210-v3',
++	'tp-link-cpe220-v3',
++	'tp-link-td-w8970',
++	'tp-link-tl-mr3020-v3',
++	'tp-link-tl-mr3420-v5',
++	'tp-link-tl-mr6400-v5',
++	'tp-link-tl-wa801nd-v5',
++	'tp-link-tl-wr1043n-v5',
++	'tp-link-tl-wr1043nd-v2',
++	'tp-link-tl-wr1043nd-v3',
++	'tp-link-tl-wr1043nd-v4',
++	'tp-link-tl-wr810n-v1',
++	'tp-link-tl-wr841n-v13',
++	'tp-link-tl-wr842n-v3',
++	'tp-link-wbs210-v1',
++	'tp-link-wbs210-v2',
++	'ubiquiti-edgerouter-x',
++	'ubiquiti-edgerouter-x-sfp',
++	'ubiquiti-unifi-ap',
++	'ubiquiti-unifi-ap-outdoor+',
++	'vocore2',
++	'x86-64',
++	'x86-generic',
++	'x86-geode',
++	'x86-legacy',
++	'xiaomi-mi-router-4c'
+ ) then
+ 	no_wifi50 = true
+ end
+ 
+ atmost_64mb_ram = false
+ if device(
+-'alfa-network-ap121f',
+-'asus-rt-ac51u',
+-'avm-fritz-box-7312',
+-'avm-fritz-wlan-repeater-1750e',
+-'avm-fritz-wlan-repeater-300e',
+-'avm-fritz-wlan-repeater-450e',
+-'d-link-dap-1330-a1',
+-'d-link-dap-1365-a1',
+-'d-link-dir-505',
+-'gl.inet-gl-ar150',
+-'gl.inet-gl-usb150',
+-'gl.inet-vixmini',
+-'netgear-dgn3500b',
+-'netgear-ex3700',
+-'netgear-ex6130',
+-'netgear-ex6150',
+-'netgear-r6020',
+-'netgear-r6120',
+-'netgear-wndr3700-v2',
+-'onion-omega',
+-'openmesh-om2p-hs-v1',
+-'openmesh-om2p-hs-v2',
+-'openmesh-om2p-hs-v3',
+-'openmesh-om2p-hs-v4',
+-'openmesh-om2p-lc',
+-'openmesh-om2p-v2',
+-'openmesh-om2p-v4',
+-'openmesh-om5p',
+-'openmesh-om5p-an',
+-'plasma-cloud-pa300',
+-'plasma-cloud-pa300e',
+-'ravpower-rp-wd009',
+-'tp-link-archer-c2-v3',
+-'tp-link-archer-c20-v5',
+-'tp-link-archer-c25-v1',
+-'tp-link-archer-c50-v1',
+-'tp-link-archer-c50-v3',
+-'tp-link-archer-c50-v4',
+-'tp-link-archer-c58-v1',
+-'tp-link-archer-c60-v1',
+-'tp-link-archer-d50-v1',
+-'tp-link-cpe210-v1',
+-'tp-link-cpe210-v2',
+-'tp-link-cpe210-v3',
+-'tp-link-cpe220-v3',
+-'tp-link-cpe510-v1',
+-'tp-link-cpe510-v2',
+-'tp-link-cpe510-v3',
+-'tp-link-re200-v2',
+-'tp-link-re200-v3',
+-'tp-link-re200-v4',
+-'tp-link-td-w8980',
+-'tp-link-tl-mr3020-v3',
+-'tp-link-tl-mr3420-v5',
+-'tp-link-tl-mr6400-v5',
+-'tp-link-tl-wa801nd-v5',
+-'tp-link-tl-wr1043n-v5',
+-'tp-link-tl-wr1043nd-v2',
+-'tp-link-tl-wr1043nd-v3',
+-'tp-link-tl-wr1043nd-v4',
+-'tp-link-tl-wr841n-v13',
+-'tp-link-tl-wr842n-v3',
+-'tp-link-tl-wr902ac-v1',
+-'tp-link-tl-wr902ac-v3',
+-'tp-link-tl-wr902ac-v4',
+-'tp-link-wbs210-v1',
+-'tp-link-wbs210-v2',
+-'tp-link-wbs510-v1',
+-'ubiquiti-unifi-ap',
+-'ubiquiti-unifi-ap-outdoor+',
+-'xiaomi-mi-router-4c'
++	'alfa-network-ap121f',
++	'arcadyan-vgv7510kw22',
++	'asus-rt-ac51u',
++	'avm-fritz-box-7312',
++	'avm-fritz-wlan-repeater-1750e',
++	'avm-fritz-wlan-repeater-300e',
++	'avm-fritz-wlan-repeater-450e',
++	'buffalo-wzr-hp-g300nh-rtl8366s',
++	'cudy-wr1000',
++	'd-link-dap-1330-a1',
++	'd-link-dap-1365-a1',
++	'd-link-dir-505',
++	'd-link-dir825b1',
++	'gl-mt300n',
++	'gl.inet-6416',
++	'gl.inet-gl-ar150',
++	'gl.inet-gl-usb150',
++	'gl.inet-vixmini',
++	'mikrotik-routerboard-951ui-2nd-hap',
++	'mikrotik-routerboard-wapr-2nd',
++	'netgear-dgn3500b',
++	'netgear-ex3700',
++	'netgear-ex6130',
++	'netgear-ex6150',
++	'netgear-r6020',
++	'netgear-r6120',
++	'netgear-wndr3700',
++	'netgear-wndr3700-v2',
++	'netgear-wnr2200-16m',
++	'netgear-wnr2200-8m',
++	'nexx-wt3020-8m',
++	'onion-omega',
++	'openmesh-om2p-hs-v1',
++	'openmesh-om2p-hs-v2',
++	'openmesh-om2p-hs-v3',
++	'openmesh-om2p-hs-v4',
++	'openmesh-om2p-lc',
++	'openmesh-om2p-v1',
++	'openmesh-om2p-v2',
++	'openmesh-om2p-v4',
++	'openmesh-om5p',
++	'openmesh-om5p-an',
++	'plasma-cloud-pa300',
++	'plasma-cloud-pa300e',
++	'ravpower-rp-wd009',
++	'teltonika-rut230-v1',
++	'tp-link-archer-c2-v1',
++	'tp-link-archer-c2-v3',
++	'tp-link-archer-c20-v1',
++	'tp-link-archer-c20-v4',
++	'tp-link-archer-c20-v5',
++	'tp-link-archer-c20i',
++	'tp-link-archer-c25-v1',
++	'tp-link-archer-c50-v1',
++	'tp-link-archer-c50-v3',
++	'tp-link-archer-c50-v4',
++	'tp-link-archer-c58-v1',
++	'tp-link-archer-c60-v1',
++	'tp-link-archer-d50-v1',
++	'tp-link-cpe210-v1',
++	'tp-link-cpe210-v2',
++	'tp-link-cpe210-v3',
++	'tp-link-cpe220-v3',
++	'tp-link-cpe510-v1',
++	'tp-link-cpe510-v2',
++	'tp-link-cpe510-v3',
++	'tp-link-re200-v2',
++	'tp-link-re200-v3',
++	'tp-link-re200-v4',
++	'tp-link-td-w8970',
++	'tp-link-td-w8980',
++	'tp-link-tl-mr3020-v3',
++	'tp-link-tl-mr3420-v5',
++	'tp-link-tl-mr6400-v5',
++	'tp-link-tl-wa801nd-v5',
++	'tp-link-tl-wr1043n-v5',
++	'tp-link-tl-wr1043nd-v2',
++	'tp-link-tl-wr1043nd-v3',
++	'tp-link-tl-wr1043nd-v4',
++	'tp-link-tl-wr2543n-nd',
++	'tp-link-tl-wr810n-v1',
++	'tp-link-tl-wr841n-v13',
++	'tp-link-tl-wr842n-v3',
++	'tp-link-tl-wr902ac-v1',
++	'tp-link-tl-wr902ac-v3',
++	'tp-link-tl-wr902ac-v4',
++	'tp-link-wbs210-v1',
++	'tp-link-wbs210-v2',
++	'tp-link-wbs510-v1',
++	'ubiquiti-unifi-ap',
++	'ubiquiti-unifi-ap-outdoor+',
++	'xiaomi-mi-ra75',
++	'xiaomi-mi-router-4a-100m-edition',
++	'xiaomi-mi-router-4a-100m-international-edition',
++	'xiaomi-mi-router-4a-100m-international-edition-v2',
++	'xiaomi-mi-router-4c'
+ ) then
+ 	atmost_64mb_ram = true
+ end
+
+From f9e22421f8647a3198447220311af0d5833c3ae5 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sun, 7 Sep 2025 13:26:33 +0200
+Subject: [PATCH 3/3] contrib: image-customization-helper: add new devices from
+ toh
+
+---
+ contrib/image-customization-helper.lua | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/contrib/image-customization-helper.lua b/contrib/image-customization-helper.lua
+index 5c9071efaa..0dffee1765 100644
+--- a/contrib/image-customization-helper.lua
++++ b/contrib/image-customization-helper.lua
+@@ -19,6 +19,7 @@ if device(
+ 	'avm-fritz-box-7360-sl',
+ 	'avm-fritz-box-7360-v2',
+ 	'avm-fritz-box-7362-sl',
++	'avm-fritz-box-7430',
+ 	'avm-fritz-box-7530',
+ 	'buffalo-wzr-600dhp',
+ 	'buffalo-wzr-hp-ag300h',
+@@ -45,6 +46,7 @@ if device(
+ 	'gl.inet-gl-ar150',
+ 	'gl.inet-gl-ar300m-lite',
+ 	'gl.inet-gl-ar300m-nor',
++	'gl.inet-gl-ar300m16',
+ 	'gl.inet-gl-ar750',
+ 	'gl.inet-gl-ar750s-nor',
+ 	'gl.inet-gl-b1300',
+@@ -52,6 +54,7 @@ if device(
+ 	'gl.inet-gl-mt1300',
+ 	'gl.inet-gl-mt2500',
+ 	'gl.inet-gl-mt3000',
++	'gl.inet-gl-mv1000',
+ 	'gl.inet-gl-usb150',
+ 	'gl.inet-gl-xe300',
+ 	'gl.inet-vixmini',
+@@ -179,6 +182,7 @@ if device(
+ 	'tp-link-cpe510-v2',
+ 	'tp-link-cpe510-v3',
+ 	'tp-link-cpe710-v1',
++	'tp-link-cpe710-v2',
+ 	'tp-link-eap225-outdoor-v1',
+ 	'tp-link-eap225-outdoor-v3',
+ 	'tp-link-wbs210-v1',
+@@ -202,6 +206,7 @@ if device(
+ 	'friendlyelec-nanopi-r3s',
+ 	'friendlyelec-nanopi-r4s',
+ 	'gl.inet-gl-mt2500',
++	'gl.inet-gl-mv1000',
+ 	'lemaker-banana-pi',
+ 	'mikrotik-sxtsq-5-ac-rbsxtsqg-5acd',
+ 	'openmesh-om5p',
+@@ -211,6 +216,7 @@ if device(
+ 	'tp-link-cpe510-v2',
+ 	'tp-link-cpe510-v3',
+ 	'tp-link-cpe710-v1',
++	'tp-link-cpe710-v2',
+ 	'tp-link-wbs510-v1',
+ 	'ubiquiti-edgerouter-x',
+ 	'ubiquiti-edgerouter-x-sfp',
+@@ -234,6 +240,7 @@ if device(
+ 	'avm-fritz-box-7360-v2',
+ 	'avm-fritz-box-7362-sl',
+ 	'avm-fritz-box-7412',
++	'avm-fritz-box-7430',
+ 	'avm-fritz-wlan-repeater-450e',
+ 	'buffalo-wzr-hp-g300nh-rtl8366s',
+ 	'd-link-dap-1330-a1',
+@@ -249,7 +256,9 @@ if device(
+ 	'gl.inet-gl-ar150',
+ 	'gl.inet-gl-ar300m-lite',
+ 	'gl.inet-gl-ar300m-nor',
++	'gl.inet-gl-ar300m16',
+ 	'gl.inet-gl-mt2500',
++	'gl.inet-gl-mv1000',
+ 	'gl.inet-gl-usb150',
+ 	'gl.inet-gl-xe300',
+ 	'gl.inet-microuter-n300',
