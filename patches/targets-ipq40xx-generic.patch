@@ -1,5 +1,5 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 85509de7..b1e8de8f 100644
+index 85509de7..a4a81b44 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
 @@ -14,6 +14,15 @@ local ATH10K_PACKAGES_IPQ40XX_QCA9888 = {
@@ -121,3 +121,13 @@ index 85509de7..b1e8de8f 100644
  	broken = true,	-- case must be opened to install
  	factory = false,
  })
+@@ -154,3 +200,9 @@ device('zyxel-nbg6617', 'zyxel_nbg6617')
+ device('8devices-jalapeno', '8dev_jalapeno', {
+ 	factory_ext = '.ubi',
+ })
++
++-- Extreme Networks
++
++device('extreme-networks-ws-ap3915i', 'extreme-networks_ws-ap3915i', {
++        factory = false,
++})
