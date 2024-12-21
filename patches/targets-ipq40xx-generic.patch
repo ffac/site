@@ -22,7 +22,7 @@ index 85509de7..a4a81b44 100644
  device('avm-fritz-box-7530', 'avm_fritzbox-7530', {
  	factory = false,
  	aliases = {'avm-fritz-box-7520'},
--	packages = {
+	packages = {
 -		-- same as ATH10K_PACKAGES_IPQ40XX
 -		'kmod-ath10k',
 -		'-kmod-ath10k-ct',
@@ -30,14 +30,17 @@ index 85509de7..a4a81b44 100644
 -		'ath10k-firmware-qca4019',
 -		'-ath10k-firmware-qca4019-ct',
 -
--		-- VDSL modem
+		-- VDSL modem
++		'ppp',
++		'kmod-ppp',
++		'ppp-mod-pppoe',
 -		'-kmod-ltq-vdsl-vr11',
 -		'-kmod-ltq-vdsl-vr11-mei',
 -		'-ltq-vdsl-vr11-app',
 -		'-ltq-dsl-base',
 -		'-kmod-atm',
 -		'-linux-atm',
--	},
+	},
  })
  
  device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
