@@ -1,7 +1,7 @@
-From 60fd73e4043c2837369f4d1e368f65de31b7aeec Mon Sep 17 00:00:00 2001
+From aebb30a2d2e6e87a289c3d8c4905a4076338c6ad Mon Sep 17 00:00:00 2001
 From: David Bauer <mail@david-bauer.net>
 Date: Fri, 8 Mar 2019 00:25:21 +0100
-Subject: [PATCH 1/7] gluon-core: increase number of available MACs
+Subject: [PATCH 1/5] gluon-core: increase number of available MACs
 
 ---
  package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua | 10 ++++++++--
@@ -41,10 +41,45 @@ index e5d8052e53..daf862aed7 100644
  end
  
 
-From d7bb883797789c73cde0958309a8b2af6d656a34 Mon Sep 17 00:00:00 2001
+From c3daad796160c3c5d5c6a71dd2bc083923acc24d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 14 Dec 2024 14:26:09 +0100
+Subject: [PATCH 2/5] gluon-core: if last mac-address byte overflows - let it
+ overflow
+
+---
+ package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
+index daf862aed7..354e94bd07 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
+@@ -194,7 +194,6 @@ function M.generate_mac(i)
+ 	local m1, m2, m3, m4, m5, m6 = string.match(hashed, '(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)')
+ 
+ 	m1 = tonumber(m1, 16)
+-	m5 = tonumber(m5, 16)
+ 	m6 = tonumber(m6, 16)
+ 
+ 	m1 = bit.bor(m1, 0x02)  -- set locally administered bit
+@@ -205,10 +204,8 @@ function M.generate_mac(i)
+ 	-- a hardware MAC filter. (e.g 'rt305x')
+ 
+ 	m6 = bit.band(m6, 0xF8) -- zero the last three bits (space needed for counting)
+-	m6 = m6 + i                   -- add virtual interface id
++	m6 = math.fmod(m6 + i, 256)   -- add virtual interface id
+ 
+-	local overflow = math.floor(i/8)
+-	m5 = math.fmod(m5 + overflow, 256)
+ 
+ 	return string.format('%02x:%s:%s:%s:%s:%02x', m1, m2, m3, m4, m5, m6)
+ end
+
+From 18e2b575401509ebcfc09f36d5e40ad03c0fae05 Mon Sep 17 00:00:00 2001
 From: David Bauer <mail@david-bauer.net>
 Date: Fri, 8 Mar 2019 16:24:21 +0100
-Subject: [PATCH 2/7] gluon-core: deactivate client radios in case a dedicated
+Subject: [PATCH 3/5] gluon-core: deactivate client radios in case a dedicated
  client radio is present
 
 ---
@@ -126,7 +161,7 @@ index 9550a887d3..535d4b8c57 100755
  			uci:set('wireless', radio_name, 'country3', '0x4f')
  			configure_mesh_wireless(radio, index, config, true)
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-index daf862aed7..dab4d6c047 100644
+index 354e94bd07..da8b795f01 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
 @@ -167,6 +167,16 @@ function M.get_role_interfaces(uci, role, exclusive)
@@ -147,20 +182,20 @@ index daf862aed7..dab4d6c047 100644
  -- a non-existing path
  function M.glob(pattern)
 
-From 49be3540c36de398a09b9060f195845a9c743c5a Mon Sep 17 00:00:00 2001
+From 4b5455194dfb73a2d7d225ba410850049a6faf72 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 14 Oct 2024 00:36:52 +0200
-Subject: [PATCH 3/7] fixup imports
+Subject: [PATCH 4/5] glon-core: fixup imports after rebase
 
 ---
- .../gluon/upgrade/320-gluon-client-bridge-wireless    |  7 +++----
- .../gluon-core/luasrc/lib/gluon/upgrade/200-wireless  |  4 ++--
- package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua  | 10 ----------
- .../gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua  | 11 +++++++++++
+ .../lib/gluon/upgrade/320-gluon-client-bridge-wireless |  8 ++++----
+ .../gluon-core/luasrc/lib/gluon/upgrade/200-wireless   |  4 ++--
+ package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua   | 10 ----------
+ .../gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua   | 10 ++++++++++
  4 files changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 0a5b614876..d318009a2a 100755
+index 0a5b614876..8542c35118 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 @@ -4,7 +4,6 @@ local wireless = require 'gluon.wireless'
@@ -180,7 +215,7 @@ index 0a5b614876..d318009a2a 100755
  		has_client_radio = true
  	end
  
-@@ -121,12 +120,12 @@ wireless.foreach_radio(uci, function(radio, index, config)
+@@ -121,12 +120,13 @@ wireless.foreach_radio(uci, function(radio, index, config)
  end)
  
  if not sysconfig.gluon_version and has_client_radio then
@@ -191,7 +226,8 @@ index 0a5b614876..d318009a2a 100755
  		local name = 'client_' .. radio_name
  
 -		if util.supports_channel(radio, config.channel()) and (radio.hwmode == '11a' or radio.hwmode == '11na') then
-+		if wireless.supports_channel(radio, config.channel()) and (radio.hwmode == '11a' or radio.hwmode == '11na') then
++		-- disable client radio on the 5GHz band which supports the mesh channel
++		if wireless.supports_channel(radio, config.channel()) and radio.band == '5g' then
  			uci:set('wireless', name, 'disabled', true)
  		end
  	end)
@@ -218,7 +254,7 @@ index 535d4b8c57..7669d6616d 100755
  			uci:set('wireless', radio_name, 'country3', '0x4f')
  			configure_mesh_wireless(radio, index, config, true)
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-index dab4d6c047..daf862aed7 100644
+index da8b795f01..354e94bd07 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
 @@ -167,16 +167,6 @@ function M.get_role_interfaces(uci, role, exclusive)
@@ -239,15 +275,10 @@ index dab4d6c047..daf862aed7 100644
  -- a non-existing path
  function M.glob(pattern)
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 01379a1d11..1e83f8a4c0 100644
+index 01379a1d11..85db6d15a9 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-@@ -1,3 +1,4 @@
-+local iwinfo = require 'iwinfo'
- local sysconfig = require 'gluon.sysconfig'
- local site = require 'gluon.site'
- local util = require 'gluon.util'
-@@ -39,6 +40,16 @@ local function get_wlan_mac_from_driver(radio, vif)
+@@ -39,6 +39,16 @@ local function get_wlan_mac_from_driver(radio, vif)
  	return addresses[vif]
  end
  
@@ -265,106 +296,66 @@ index 01379a1d11..1e83f8a4c0 100644
  	local addr = get_wlan_mac_from_driver(radio, vif)
  	if addr then
 
-From 461b35f204f2b4dff8673f08a45f3015cbb454fd Mon Sep 17 00:00:00 2001
+From 8c070c8d55858e64f29551d347aa59e6e523e8fb Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Mon, 14 Oct 2024 13:20:47 +0200
-Subject: [PATCH 4/7] use radio.band instead of hwmode
+Date: Sun, 22 Dec 2024 21:20:52 +0100
+Subject: [PATCH 5/5] gluon-web-wifi-config: remove mesh checkbox if channel is
+ unsupported
 
 ---
- .../luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless  | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ .../lib/gluon/upgrade/320-gluon-client-bridge-wireless |  6 +++---
+ .../lib/gluon/config-mode/model/admin/wifi-config.lua  | 10 +++++++---
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index d318009a2a..8542c35118 100755
+index 8542c35118..98443bed9e 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-@@ -125,7 +125,8 @@ if not sysconfig.gluon_version and has_client_radio then
- 
- 		local name = 'client_' .. radio_name
- 
--		if wireless.supports_channel(radio, config.channel()) and (radio.hwmode == '11a' or radio.hwmode == '11na') then
-+		-- disable client radio on the 5GHz band which supports the mesh channel
-+		if wireless.supports_channel(radio, config.channel()) and radio.band == '5g' then
- 			uci:set('wireless', name, 'disabled', true)
- 		end
- 	end)
-
-From 7dbcd6c46049377d54d1baa1823d310ccde7ded7 Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Mon, 14 Oct 2024 15:16:50 +0200
-Subject: [PATCH 5/7] remove duplicate iwinfo
-
----
- package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 1e83f8a4c0..85db6d15a9 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-@@ -1,4 +1,3 @@
--local iwinfo = require 'iwinfo'
- local sysconfig = require 'gluon.sysconfig'
- local site = require 'gluon.site'
- local util = require 'gluon.util'
-
-From e45ef70af24909304e59897bf772dad2b613ffc9 Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Sat, 14 Dec 2024 14:26:09 +0100
-Subject: [PATCH 6/7] gluon-core: convert 5th byte back to hex
-
----
- package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-index daf862aed7..b0bf7efca4 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-@@ -210,7 +210,7 @@ function M.generate_mac(i)
- 	local overflow = math.floor(i/8)
- 	m5 = math.fmod(m5 + overflow, 256)
- 
--	return string.format('%02x:%s:%s:%s:%s:%02x', m1, m2, m3, m4, m5, m6)
-+	return string.format('%02x:%s:%s:%s:%02x:%02x', m1, m2, m3, m4, m5, m6)
+@@ -14,7 +14,7 @@ local function is_disabled(config, name)
+ 	return config.disabled(false)
  end
  
- function M.get_uptime()
-
-From af539fc577f691984c08d984b81de685032bac3c Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Sat, 14 Dec 2024 15:05:53 +0100
-Subject: [PATCH 7/7] gluon-core: if last mac-address byte overflows - let it
- overflow
-
----
- package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-index b0bf7efca4..354e94bd07 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-@@ -194,7 +194,6 @@ function M.generate_mac(i)
- 	local m1, m2, m3, m4, m5, m6 = string.match(hashed, '(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)')
+-local has_client_radio = false
++local has_client_only_radio = false
  
- 	m1 = tonumber(m1, 16)
--	m5 = tonumber(m5, 16)
- 	m6 = tonumber(m6, 16)
+ local function configure_ap(radio, index, config, radio_name)
+ 	local name = 'client_' .. radio_name
+@@ -24,7 +24,7 @@ local function configure_ap(radio, index, config, radio_name)
+ 	local disabled = is_disabled(ap, name)
  
- 	m1 = bit.bor(m1, 0x02)  -- set locally administered bit
-@@ -205,12 +204,10 @@ function M.generate_mac(i)
- 	-- a hardware MAC filter. (e.g 'rt305x')
+ 	if not wireless.supports_channel(radio, config.channel()) then
+-		has_client_radio = true
++		has_client_only_radio = true
+ 	end
  
- 	m6 = bit.band(m6, 0xF8) -- zero the last three bits (space needed for counting)
--	m6 = m6 + i                   -- add virtual interface id
-+	m6 = math.fmod(m6 + i, 256)   -- add virtual interface id
+ 	uci:delete('wireless', name)
+@@ -119,7 +119,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 	configure_owe_transition_mode(config, radio_name)
+ end)
  
--	local overflow = math.floor(i/8)
--	m5 = math.fmod(m5 + overflow, 256)
+-if not sysconfig.gluon_version and has_client_radio then
++if not sysconfig.gluon_version and has_client_only_radio then
+ 	wireless.foreach_radio(uci, function(radio, _, config)
+ 		local radio_name = radio['.name']
  
--	return string.format('%02x:%s:%s:%s:%02x:%02x', m1, m2, m3, m4, m5, m6)
-+	return string.format('%02x:%s:%s:%s:%s:%02x', m1, m2, m3, m4, m5, m6)
- end
+diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
+index 3f0169418a..c927445b4f 100644
+--- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
++++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
+@@ -95,9 +95,13 @@ uci:foreach('wireless', 'wifi-device', function(config)
  
- function M.get_uptime()
+ 	vif_option('client', {'client', 'owe'}, translate('Enable client network (access point)'))
+ 
+-	local mesh_vif = vif_option('mesh', {'mesh'}, translate("Enable mesh network (802.11s)"))
+-	if is_5ghz then
+-		table.insert(mesh_vifs_5ghz, mesh_vif)
++	-- disable setting mesh iface setting if radio does not support configured mesh channel
++	if wireless.supports_channel(config, tonumber(config.channel)) then
++		local mesh_vif = vif_option('mesh', {'mesh'}, translate("Enable mesh network (802.11s)"))
++
++		if is_5ghz then
++			table.insert(mesh_vifs_5ghz, mesh_vif)
++		end
+ 	end
+ 
+ 	local phy = wireless.find_phy(config)
