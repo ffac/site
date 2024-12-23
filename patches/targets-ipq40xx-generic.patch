@@ -1,122 +1,65 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 85509de7..a4a81b44 100644
+index 85509de7..251396ec 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -14,6 +14,15 @@ local ATH10K_PACKAGES_IPQ40XX_QCA9888 = {
- 	'ath10k-firmware-qca9888',
- 	'-ath10k-firmware-qca9888-ct',
- }
-+local ATH10K_PACKAGES_IPQ40XX_QCA9984 = {
-+	'kmod-ath10k',
-+	'-kmod-ath10k-ct',
-+	'-kmod-ath10k-ct-smallbuffers',
-+	'ath10k-firmware-qca4019',
-+	'-ath10k-firmware-qca4019-ct',
-+	'ath10k-firmware-qca9984',
-+	'-ath10k-firmware-qca9984-ct',
-+}
+@@ -60,12 +60,9 @@ device('avm-fritz-box-7530', 'avm_fritzbox-7530', {
+ 		'-ath10k-firmware-qca4019-ct',
  
- 
- defaults {
-@@ -51,28 +60,29 @@ device('avm-fritz-box-4040', 'avm_fritzbox-4040', {
- device('avm-fritz-box-7530', 'avm_fritzbox-7530', {
- 	factory = false,
- 	aliases = {'avm-fritz-box-7520'},
-	packages = {
--		-- same as ATH10K_PACKAGES_IPQ40XX
--		'kmod-ath10k',
--		'-kmod-ath10k-ct',
--		'-kmod-ath10k-ct-smallbuffers',
--		'ath10k-firmware-qca4019',
--		'-ath10k-firmware-qca4019-ct',
--
-		-- VDSL modem
-+		'ppp',
-+		'kmod-ppp',
-+		'ppp-mod-pppoe',
+ 		-- VDSL modem
 -		'-kmod-ltq-vdsl-vr11',
 -		'-kmod-ltq-vdsl-vr11-mei',
 -		'-ltq-vdsl-vr11-app',
 -		'-ltq-dsl-base',
 -		'-kmod-atm',
 -		'-linux-atm',
-	},
++		'ppp',
++		'kmod-ppp',
++		'ppp-mod-pppoe',
+ 	},
  })
  
- device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
+@@ -73,6 +70,15 @@ device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
  	factory = false,
  })
  
 +device('avm-fritz-repeater-3000', 'avm_fritzrepeater-3000', {
 +	factory = false,
-+	packages = { -- exclude until Gluon supports third radio
-+	'kmod-ath10k',
-+	'-kmod-ath10k-ct',
-+	'-kmod-ath10k-ct-smallbuffers',
-+	'ath10k-firmware-qca4019',
-+	'-ath10k-firmware-qca4019-ct',
-+	'-ath10k-firmware-qca9984-ct',
-+	'-ath10k-board-qca9984',
-+	},
-+	broken = true,
-+	-- 3rd WiFi radio not supported (5GHz DFS channels 100+)
-+	-- outdoor mode is broken due to 5GHz being limited to channels 36-64
 +})
 +
++-- Extreme Networks
 +
++device('extreme-networks-ws-ap3915i', 'extreme-networks_ws-ap3915i', {
++        factory = false,
++})
  
  -- GL.iNet
  
-@@ -89,6 +99,36 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -89,13 +95,23 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
-+device('linksys-ea8300-dallas', 'linksys_ea8300', {
-+	packages = { -- exclude until Gluon supports third radio
-+	'kmod-ath10k',
-+	'-kmod-ath10k-ct',
-+	'-kmod-ath10k-ct-smallbuffers',
-+	'ath10k-firmware-qca4019',
-+	'-ath10k-firmware-qca4019-ct',
-+	'-ath10k-firmware-qca9888-ct',
-+	'-ath10k-board-qca9888',
-+	},
-+	broken = true,
-+	-- 3rd WiFi radio not supported (5GHz DFS channels 100+)
-+	-- outdoor mode is broken due to 5GHz being limited to channels 36-64
-+})
++device('linksys-ea8300-dallas', 'linksys_ea8300')
 +
-+device('linksys-mr8300-dallas', 'linksys_mr8300', {
-+	packages = { -- exclude until Gluon supports third radio
-+	'kmod-ath10k',
-+	'-kmod-ath10k-ct',
-+	'-kmod-ath10k-ct-smallbuffers',
-+	'ath10k-firmware-qca4019',
-+	'-ath10k-firmware-qca4019-ct',
-+	'-ath10k-firmware-qca9888-ct',
-+	'-ath10k-board-qca9888',
-+	},
-+	broken = true,
-+	-- 3rd WiFi radio not supported (5GHz DFS channels 100+)
-+	-- outdoor mode is broken due to 5GHz being limited to channels 36-64
-+})
++device('linksys-mr8300-dallas', 'linksys_mr8300')
 +
  
  -- Meraki
  
-@@ -96,6 +136,11 @@ device('meraki-mr33-access-point', 'meraki_mr33', {
+ device('meraki-mr33-access-point', 'meraki_mr33', {
  	packages = {
- 		-- radio0 is monitoring radio - removed for now
+-		-- radio0 is monitoring radio - removed for now
  		-- the -ct firmware does not have working mesh
++		-- use non ct for now
 +		'kmod-ath10k',
 +		'-kmod-ath10k-ct',
 +		'-kmod-ath10k-ct-smallbuffers',
 +		'ath10k-firmware-qca4019',
 +		'-ath10k-firmware-qca4019-ct',
++		-- radio0 is monitoring radio - removed for now
  		'-ath10k-firmware-qca9887-ct',
  		'-ath10k-board-qca9887',
  	},
-@@ -139,6 +184,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
+@@ -139,6 +155,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
  -- ZTE
  
  device('zte-mf289f', 'zte_mf289f', {
@@ -124,13 +67,3 @@ index 85509de7..a4a81b44 100644
  	broken = true,	-- case must be opened to install
  	factory = false,
  })
-@@ -154,3 +200,9 @@ device('zyxel-nbg6617', 'zyxel_nbg6617')
- device('8devices-jalapeno', '8dev_jalapeno', {
- 	factory_ext = '.ubi',
- })
-+
-+-- Extreme Networks
-+
-+device('extreme-networks-ws-ap3915i', 'extreme-networks_ws-ap3915i', {
-+        factory = false,
-+})
