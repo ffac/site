@@ -1,40 +1,8 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 85509de7..251396ec 100644
+index 80dbbf4a..19a187a5 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -60,12 +60,9 @@ device('avm-fritz-box-7530', 'avm_fritzbox-7530', {
- 		'-ath10k-firmware-qca4019-ct',
- 
- 		-- VDSL modem
--		'-kmod-ltq-vdsl-vr11',
--		'-kmod-ltq-vdsl-vr11-mei',
--		'-ltq-vdsl-vr11-app',
--		'-ltq-dsl-base',
--		'-kmod-atm',
--		'-linux-atm',
-+		'ppp',
-+		'kmod-ppp',
-+		'ppp-mod-pppoe',
- 	},
- })
- 
-@@ -73,6 +70,15 @@ device('avm-fritz-repeater-1200', 'avm_fritzrepeater-1200', {
- 	factory = false,
- })
- 
-+device('avm-fritz-repeater-3000', 'avm_fritzrepeater-3000', {
-+	factory = false,
-+})
-+
-+-- Extreme Networks
-+
-+device('extreme-networks-ws-ap3915i', 'extreme-networks_ws-ap3915i', {
-+        factory = false,
-+})
- 
- -- GL.iNet
- 
-@@ -89,13 +95,23 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -86,13 +86,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
@@ -42,6 +10,9 @@ index 85509de7..251396ec 100644
 +
 +device('linksys-mr8300-dallas', 'linksys_mr8300')
 +
++device('linksys-whw03', 'linksys_whw03')
++
++device('linksys-whw03v2', 'linksys_whw03v2')
  
  -- Meraki
  
@@ -59,7 +30,7 @@ index 85509de7..251396ec 100644
  		'-ath10k-firmware-qca9887-ct',
  		'-ath10k-board-qca9887',
  	},
-@@ -139,6 +155,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
+@@ -136,6 +149,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
  -- ZTE
  
  device('zte-mf289f', 'zte_mf289f', {
