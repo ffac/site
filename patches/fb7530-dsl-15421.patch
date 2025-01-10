@@ -1,0 +1,383 @@
+diff --git a/patches/openwrt/15421.patch b/patches/openwrt/15421.patch
+new file mode 100644
+index 00000000..3598b937
+--- /dev/null
++++ b/patches/openwrt/15421.patch
+@@ -0,0 +1,377 @@
++From d8fabd44aacb34669475ff841e623f753a52f9d2 Mon Sep 17 00:00:00 2001
++From: Christian Marangi <ansuelsmth@gmail.com>
++Date: Tue, 7 May 2024 20:44:27 +0200
++Subject: [PATCH] ipq4019: add HACK patch for Lantiq DSL on FritzBox 7530
++
++Add HACK patch for Lantiq DSL on FritzBox 7530.
++
++A dedicated compatible is created for this. This will be expanded once
++this alternative patch is confirmed to work.
++
++Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
++---
++ ...-PCI-dwc-Add-host_post_init-callback.patch |  49 +++++
++ ...ASPM-for-platforms-supporting-1.9.0-.patch | 107 +++++++++++
++ .../dts/qcom/qcom-ipq4019-fritzbox-7530.dts   |   1 +
++ ...ck-compatible-for-ipq4019-Lantiq-DSL.patch | 170 ++++++++++++++++++
++ 4 files changed, 327 insertions(+)
++ create mode 100644 target/linux/generic/backport-6.6/870-v6.7-01-PCI-dwc-Add-host_post_init-callback.patch
++ create mode 100644 target/linux/generic/backport-6.6/870-v6.7-02-PCI-qcom-Enable-ASPM-for-platforms-supporting-1.9.0-.patch
++ create mode 100644 target/linux/ipq40xx/patches-6.6/900-PCI-qcom-add-hack-compatible-for-ipq4019-Lantiq-DSL.patch
++
++diff --git a/target/linux/generic/backport-6.6/870-v6.7-01-PCI-dwc-Add-host_post_init-callback.patch b/target/linux/generic/backport-6.6/870-v6.7-01-PCI-dwc-Add-host_post_init-callback.patch
++new file mode 100644
++index 00000000000000..99ded8ed3f781c
++--- /dev/null
+++++ b/target/linux/generic/backport-6.6/870-v6.7-01-PCI-dwc-Add-host_post_init-callback.patch
++@@ -0,0 +1,49 @@
+++From a78794562fcb2659c976388b1285eddda97e9954 Mon Sep 17 00:00:00 2001
+++From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+++Date: Tue, 10 Oct 2023 21:29:13 +0530
+++Subject: [PATCH] PCI: dwc: Add host_post_init() callback
+++MIME-Version: 1.0
+++Content-Type: text/plain; charset=UTF-8
+++Content-Transfer-Encoding: 8bit
+++
+++This callback can be used by the platform drivers to do configuration
+++once all the devices are scanned. Like changing LNKCTL of all downstream
+++devices to enable ASPM etc...
+++
+++Link: https://lore.kernel.org/linux-pci/20231010155914.9516-2-manivannan.sadhasivam@linaro.org
+++Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+++Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
+++---
+++ drivers/pci/controller/dwc/pcie-designware-host.c | 3 +++
+++ drivers/pci/controller/dwc/pcie-designware.h      | 1 +
+++ 2 files changed, 4 insertions(+)
+++
+++diff --git a/drivers/pci/controller/dwc/pcie-designware-host.c b/drivers/pci/controller/dwc/pcie-designware-host.c
+++index a7170fd0e847..7991f0e179b2 100644
+++--- a/drivers/pci/controller/dwc/pcie-designware-host.c
++++++ b/drivers/pci/controller/dwc/pcie-designware-host.c
+++@@ -502,6 +502,9 @@ int dw_pcie_host_init(struct dw_pcie_rp *pp)
+++ 	if (ret)
+++ 		goto err_stop_link;
+++ 
++++	if (pp->ops->host_post_init)
++++		pp->ops->host_post_init(pp);
++++
+++ 	return 0;
+++ 
+++ err_stop_link:
+++diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+++index ef0b2efa9f93..efb4d4754fc8 100644
+++--- a/drivers/pci/controller/dwc/pcie-designware.h
++++++ b/drivers/pci/controller/dwc/pcie-designware.h
+++@@ -301,6 +301,7 @@ enum dw_pcie_ltssm {
+++ struct dw_pcie_host_ops {
+++ 	int (*host_init)(struct dw_pcie_rp *pp);
+++ 	void (*host_deinit)(struct dw_pcie_rp *pp);
++++	void (*host_post_init)(struct dw_pcie_rp *pp);
+++ 	int (*msi_host_init)(struct dw_pcie_rp *pp);
+++ 	void (*pme_turn_off)(struct dw_pcie_rp *pp);
+++ };
+++-- 
+++2.45.1
+++
++diff --git a/target/linux/generic/backport-6.6/870-v6.7-02-PCI-qcom-Enable-ASPM-for-platforms-supporting-1.9.0-.patch b/target/linux/generic/backport-6.6/870-v6.7-02-PCI-qcom-Enable-ASPM-for-platforms-supporting-1.9.0-.patch
++new file mode 100644
++index 00000000000000..214d0f5f5b6bd4
++--- /dev/null
+++++ b/target/linux/generic/backport-6.6/870-v6.7-02-PCI-qcom-Enable-ASPM-for-platforms-supporting-1.9.0-.patch
++@@ -0,0 +1,107 @@
+++From 9f4f3dfad8cf08208fbb78b1b9cbf957c12618b9 Mon Sep 17 00:00:00 2001
+++From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+++Date: Tue, 10 Oct 2023 21:29:14 +0530
+++Subject: [PATCH] PCI: qcom: Enable ASPM for platforms supporting 1.9.0 ops
+++MIME-Version: 1.0
+++Content-Type: text/plain; charset=UTF-8
+++Content-Transfer-Encoding: 8bit
+++
+++ASPM is supported by Qcom host controllers/bridges on most of the recent
+++platforms and so the devices tested so far. But for enabling ASPM by
+++default (without using Kconfig, kernel command-line or sysfs), BIOS has
+++to enable ASPM on both host bridge and downstream devices during boot.
+++
+++Unfortunately, none of the BIOS available on Qcom platforms enables
+++ASPM. Due to this, the platforms making use of Qcom SoCs draw high power
+++during runtime.
+++
+++To fix this power draw issue, users have to enable ASPM using Kconfig,
+++kernel command-line, sysfs or the BIOS has to start enabling ASPM.
+++
+++The latter may happen in the future, but that won't address the issue on
+++current platforms. Also, asking users to enable a feature to get the power
+++management right would provide an unpleasant out-of-the-box experience.
+++
+++So the apt solution is to enable ASPM in the controller driver itself. And
+++this is being accomplished by calling pci_enable_link_state() in the newly
+++introduced host_post_init() callback for all the devices connected to the
+++bus. This function enables all supported link low power states for both
+++host bridge and the downstream devices.
+++
+++Due to limited testing, ASPM is only enabled for platforms making use of
+++ops_1_9_0 callbacks.
+++
+++[kwilczynski: commit log]
+++Link: https://lore.kernel.org/linux-pci/20231010155914.9516-3-manivannan.sadhasivam@linaro.org
+++Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+++Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
+++---
+++ drivers/pci/controller/dwc/pcie-qcom.c | 28 ++++++++++++++++++++++++++
+++ 1 file changed, 28 insertions(+)
+++
+++diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
+++index e2f29404c84e..a0252c9b2d71 100644
+++--- a/drivers/pci/controller/dwc/pcie-qcom.c
++++++ b/drivers/pci/controller/dwc/pcie-qcom.c
+++@@ -219,6 +219,7 @@ struct qcom_pcie_ops {
+++ 	int (*get_resources)(struct qcom_pcie *pcie);
+++ 	int (*init)(struct qcom_pcie *pcie);
+++ 	int (*post_init)(struct qcom_pcie *pcie);
++++	void (*host_post_init)(struct qcom_pcie *pcie);
+++ 	void (*deinit)(struct qcom_pcie *pcie);
+++ 	void (*ltssm_enable)(struct qcom_pcie *pcie);
+++ 	int (*config_sid)(struct qcom_pcie *pcie);
+++@@ -964,6 +965,22 @@ static int qcom_pcie_post_init_2_7_0(struct qcom_pcie *pcie)
+++ 	return 0;
+++ }
+++ 
++++static int qcom_pcie_enable_aspm(struct pci_dev *pdev, void *userdata)
++++{
++++	/* Downstream devices need to be in D0 state before enabling PCI PM substates */
++++	pci_set_power_state(pdev, PCI_D0);
++++	pci_enable_link_state(pdev, PCIE_LINK_STATE_ALL);
++++
++++	return 0;
++++}
++++
++++static void qcom_pcie_host_post_init_2_7_0(struct qcom_pcie *pcie)
++++{
++++	struct dw_pcie_rp *pp = &pcie->pci->pp;
++++
++++	pci_walk_bus(pp->bridge->bus, qcom_pcie_enable_aspm, NULL);
++++}
++++
+++ static void qcom_pcie_deinit_2_7_0(struct qcom_pcie *pcie)
+++ {
+++ 	struct qcom_pcie_resources_2_7_0 *res = &pcie->res.v2_7_0;
+++@@ -1216,9 +1233,19 @@ static void qcom_pcie_host_deinit(struct dw_pcie_rp *pp)
+++ 	pcie->cfg->ops->deinit(pcie);
+++ }
+++ 
++++static void qcom_pcie_host_post_init(struct dw_pcie_rp *pp)
++++{
++++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++++	struct qcom_pcie *pcie = to_qcom_pcie(pci);
++++
++++	if (pcie->cfg->ops->host_post_init)
++++		pcie->cfg->ops->host_post_init(pcie);
++++}
++++
+++ static const struct dw_pcie_host_ops qcom_pcie_dw_ops = {
+++ 	.host_init	= qcom_pcie_host_init,
+++ 	.host_deinit	= qcom_pcie_host_deinit,
++++	.host_post_init	= qcom_pcie_host_post_init,
+++ };
+++ 
+++ /* Qcom IP rev.: 2.1.0	Synopsys IP rev.: 4.01a */
+++@@ -1280,6 +1307,7 @@ static const struct qcom_pcie_ops ops_1_9_0 = {
+++ 	.get_resources = qcom_pcie_get_resources_2_7_0,
+++ 	.init = qcom_pcie_init_2_7_0,
+++ 	.post_init = qcom_pcie_post_init_2_7_0,
++++	.host_post_init = qcom_pcie_host_post_init_2_7_0,
+++ 	.deinit = qcom_pcie_deinit_2_7_0,
+++ 	.ltssm_enable = qcom_pcie_2_3_2_ltssm_enable,
+++ 	.config_sid = qcom_pcie_config_sid_1_9_0,
+++-- 
+++2.45.1
+++
++diff --git a/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4019-fritzbox-7530.dts b/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4019-fritzbox-7530.dts
++index 2c86cd57bc950c..247d4af9ac3327 100644
++--- a/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4019-fritzbox-7530.dts
+++++ b/target/linux/ipq40xx/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq4019-fritzbox-7530.dts
++@@ -305,6 +305,7 @@
++ };
++ 
++ &pcie0 {
+++	compatible = "qcom,pcie-ipq4019-lantiq-hack";
++ 	status = "okay";
++ 
++ 	perst-gpio = <&tlmm 38 GPIO_ACTIVE_LOW>;
++diff --git a/target/linux/ipq40xx/patches-6.6/900-PCI-qcom-add-hack-compatible-for-ipq4019-Lantiq-DSL.patch b/target/linux/ipq40xx/patches-6.6/900-PCI-qcom-add-hack-compatible-for-ipq4019-Lantiq-DSL.patch
++new file mode 100644
++index 00000000000000..76522c8af76060
++--- /dev/null
+++++ b/target/linux/ipq40xx/patches-6.6/900-PCI-qcom-add-hack-compatible-for-ipq4019-Lantiq-DSL.patch
++@@ -0,0 +1,170 @@
+++From f4f03dca92b45616ef0325051fdc7627c16fdd62 Mon Sep 17 00:00:00 2001
+++From: Christian Marangi <ansuelsmth@gmail.com>
+++Date: Tue, 7 May 2024 20:21:17 +0200
+++Subject: [PATCH] PCI: qcom: add hack compatible for ipq4019 Lantiq DSL
+++
+++Add hack compatible for ipq4019 Lantiq DSL
+++
+++This change the PCIe vendor/device ID to the values from Lantiq
+++GRX500 SoCs. We also program the ATU to fake the CPU ID as a Lantiq CPU
+++by providing to the Lantiq firmware custom crafted value in the address
+++the firmware would expect the CPU ID to be readable.
+++
+++Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+++---
+++ drivers/pci/controller/dwc/pcie-qcom.c | 94 +++++++++++++++++++++++++-
+++ 1 file changed, 93 insertions(+), 1 deletion(-)
+++
+++diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
+++index 14772edcf0d3..f5e2e288b1ce 100644
+++--- a/drivers/pci/controller/dwc/pcie-qcom.c
++++++ b/drivers/pci/controller/dwc/pcie-qcom.c
+++@@ -187,11 +187,24 @@ struct qcom_pcie_resources_2_3_3 {
+++ 
+++ #define QCOM_PCIE_2_4_0_MAX_CLOCKS		4
+++ #define QCOM_PCIE_2_4_0_MAX_RESETS		12
++++/*
++++ * This value is the manufacturer ID of Lantiq. The address where
++++ * it will be visible for the PCIe device matches the location of
++++ * CPU ID registers on Lantiq SocS (MPS base address is 0x1f107000).
++++ */
++++#define QCOM_PCIE_2_4_0_CPU_ID_BASE_REG		0x1f107000
++++#define QCOM_PCIE_2_4_0_CPU_ID_REG		0x340
++++#define QCOM_PCIE_2_4_0_CPU_ID_REG_OFFSET	(QCOM_PCIE_2_4_0_CPU_ID_REG / sizeof(u32))
++++#define QCOM_PCIE_2_4_0_CPU_ID_REG_VAL		(0x389 << 5)
++++#define QCOM_PCIE_2_4_0_GRX500_VENDOR_ID	0x1bef
++++#define QCOM_PCIE_2_4_0_GRX500_DEVICE_ID	0x0030
+++ struct qcom_pcie_resources_2_4_0 {
+++ 	struct clk_bulk_data clks[QCOM_PCIE_2_4_0_MAX_CLOCKS];
+++ 	int num_clks;
+++ 	struct reset_control_bulk_data resets[QCOM_PCIE_2_4_0_MAX_RESETS];
+++ 	int num_resets;
++++	void *lantiq_hack_virt;
++++	dma_addr_t lantiq_hack_phys;
+++ };
+++ 
+++ #define QCOM_PCIE_2_7_0_MAX_CLOCKS		15
+++@@ -653,12 +666,65 @@ static int qcom_pcie_post_init_2_3_2(struct qcom_pcie *pcie)
+++ 	return 0;
+++ }
+++ 
++++static void qcom_pcie_host_post_init_2_3_2_lantiq_hack(struct qcom_pcie *pcie)
++++{
++++	struct qcom_pcie_resources_2_4_0 *res = &pcie->res.v2_4_0;
++++	struct dw_pcie *pci = pcie->pci;
++++	struct dw_pcie_rp *pp = &pci->pp;
++++	struct device *dev = pci->dev;
++++	struct resource_entry *entry;
++++	int ret, index = 0;
++++	u64 addr, phys;
++++	u32 *val;
++++
++++	res->lantiq_hack_virt = dma_alloc_coherent(dev, SZ_4K,
++++						   &res->lantiq_hack_phys,
++++						   GFP_ATOMIC);
++++	if (!res->lantiq_hack_virt) {
++++		dev_err(dev, "failed to allocate DMA for lantiq hack\n");
++++		return;
++++	}
++++
++++	/* Fake Lantiq CPU ID register */
++++	val = (u32 *)res->lantiq_hack_virt;
++++	val[QCOM_PCIE_2_4_0_CPU_ID_REG_OFFSET] = QCOM_PCIE_2_4_0_CPU_ID_REG_VAL;
++++
++++	/* Increment index based on used iATU */
++++	resource_list_for_each_entry(entry, &pp->bridge->dma_ranges)
++++		if (resource_type(entry->res) == IORESOURCE_MEM)
++++			index++;
++++
++++	/* Check if there is space for an additional iATU */
++++	if (index >= pci->num_ib_windows) {
++++		dev_err(dev, "No inbound iATU window available for magic\n");
++++		return;
++++	}
++++
++++	addr = QCOM_PCIE_2_4_0_CPU_ID_BASE_REG;
++++	phys = res->lantiq_hack_phys;
++++
++++	/* Make it visible to PCIe devices using address translation unit */
++++	ret = dw_pcie_prog_inbound_atu(pci, index, PCIE_ATU_TYPE_MEM,
++++				       phys, addr, SZ_4K);
++++	if (ret) {
++++		dev_err(dev, "timeout waiting for IATU for lantiq hack: %d\n", ret);
++++		return;
++++	}
++++
++++	/* Set vendor/device ID of GRX500 PCIe host */
++++	dw_pcie_dbi_ro_wr_en(pci);
++++	dw_pcie_writew_dbi(pci, PCI_VENDOR_ID, QCOM_PCIE_2_4_0_GRX500_VENDOR_ID);
++++	dw_pcie_writew_dbi(pci, PCI_DEVICE_ID, QCOM_PCIE_2_4_0_GRX500_DEVICE_ID);
++++	dw_pcie_dbi_ro_wr_dis(pci);
++++}
++++
+++ static int qcom_pcie_get_resources_2_4_0(struct qcom_pcie *pcie)
+++ {
+++ 	struct qcom_pcie_resources_2_4_0 *res = &pcie->res.v2_4_0;
+++ 	struct dw_pcie *pci = pcie->pci;
+++ 	struct device *dev = pci->dev;
+++-	bool is_ipq = of_device_is_compatible(dev->of_node, "qcom,pcie-ipq4019");
++++	bool is_ipq = of_device_is_compatible(dev->of_node, "qcom,pcie-ipq4019") || 
++++		      of_device_is_compatible(dev->of_node, "qcom,pcie-ipq4019-lantiq-hack");
+++ 	int ret;
+++ 
+++ 	res->clks[0].id = "aux";
+++@@ -703,6 +769,17 @@ static void qcom_pcie_deinit_2_4_0(struct qcom_pcie *pcie)
+++ 	clk_bulk_disable_unprepare(res->num_clks, res->clks);
+++ }
+++ 
++++static void qcom_pcie_deinit_2_4_0_lantiq_hack(struct qcom_pcie *pcie)
++++{
++++	struct qcom_pcie_resources_2_4_0 *res = &pcie->res.v2_4_0;
++++	struct dw_pcie *pci = pcie->pci;
++++	struct device *dev = pci->dev;
++++
++++	dma_free_coherent(dev, SZ_4K, res->lantiq_hack_virt, res->lantiq_hack_phys);
++++
++++	qcom_pcie_deinit_2_4_0(pcie);
++++}
++++
+++ static int qcom_pcie_init_2_4_0(struct qcom_pcie *pcie)
+++ {
+++ 	struct qcom_pcie_resources_2_4_0 *res = &pcie->res.v2_4_0;
+++@@ -1320,6 +1397,16 @@ static const struct qcom_pcie_ops ops_2_4_0 = {
+++ 	.ltssm_enable = qcom_pcie_2_3_2_ltssm_enable,
+++ };
+++ 
++++/* Qcom IP rev.: 2.4.0	Synopsys IP rev.: 4.20a Lantiq DSL Hack */
++++static const struct qcom_pcie_ops ops_2_4_0_lantiq_hack = {
++++	.get_resources = qcom_pcie_get_resources_2_4_0,
++++	.init = qcom_pcie_init_2_4_0,
++++	.post_init = qcom_pcie_post_init_2_3_2,
++++	.host_post_init = qcom_pcie_host_post_init_2_3_2_lantiq_hack,
++++	.deinit = qcom_pcie_deinit_2_4_0_lantiq_hack,
++++	.ltssm_enable = qcom_pcie_2_3_2_ltssm_enable,
++++};
++++
+++ /* Qcom IP rev.: 2.3.3	Synopsys IP rev.: 4.30a */
+++ static const struct qcom_pcie_ops ops_2_3_3 = {
+++ 	.get_resources = qcom_pcie_get_resources_2_3_3,
+++@@ -1382,6 +1469,10 @@ static const struct qcom_pcie_cfg cfg_2_4_0 = {
+++ 	.ops = &ops_2_4_0,
+++ };
+++ 
++++static const struct qcom_pcie_cfg cfg_2_4_0_lantiq_hack = {
++++	.ops = &ops_2_4_0_lantiq_hack,
++++};
++++
+++ static const struct qcom_pcie_cfg cfg_2_7_0 = {
+++ 	.ops = &ops_2_7_0,
+++ };
+++@@ -1659,6 +1750,7 @@ static const struct of_device_id qcom_pcie_match[] = {
+++ 	{ .compatible = "qcom,pcie-apq8064", .data = &cfg_2_1_0 },
+++ 	{ .compatible = "qcom,pcie-apq8084", .data = &cfg_1_0_0 },
+++ 	{ .compatible = "qcom,pcie-ipq4019", .data = &cfg_2_4_0 },
++++	{ .compatible = "qcom,pcie-ipq4019-lantiq-hack", .data = &cfg_2_4_0_lantiq_hack },
+++ 	{ .compatible = "qcom,pcie-ipq6018", .data = &cfg_2_9_0 },
+++ 	{ .compatible = "qcom,pcie-ipq8064", .data = &cfg_2_1_0 },
+++ 	{ .compatible = "qcom,pcie-ipq8064-v2", .data = &cfg_2_1_0 },
+++-- 
+++2.45.2
+++

@@ -200,6 +200,12 @@ if device({
     broken(false)
 end
 
+if device({
+    'avm-fritz-box-7530',
+}) then
+    packages {'ffac-web-dsl'}
+end
+
 if target('x86', '64') then
     -- add guest agent for qemu and vmware
     packages {
