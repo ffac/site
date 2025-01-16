@@ -1,0 +1,36 @@
+diff --git a/patches/openwrt/17618.patch b/patches/openwrt/17618.patch
+new file mode 100644
+index 00000000..da642017
+--- /dev/null
++++ b/patches/openwrt/17618.patch
+@@ -0,0 +1,30 @@
++From 1a56f8ffdc668123585544d1b17b99a5faecdd4d Mon Sep 17 00:00:00 2001
++From: Florian Maurer <f.maurer@outlook.de>
++Date: Wed, 15 Jan 2025 21:31:47 +0100
++Subject: [PATCH] lantiq-xrx200: fb7430 set correct label-mac
++
++Signed-off-by: Florian Maurer <f.maurer@outlook.de>
++---
++ target/linux/lantiq/xrx200/base-files/etc/board.d/02_network | 2 ++
++ 1 file changed, 2 insertions(+)
++
++diff --git a/target/linux/lantiq/xrx200/base-files/etc/board.d/02_network b/target/linux/lantiq/xrx200/base-files/etc/board.d/02_network
++index 8c2cdb12af51f7..bf907578970cdb 100644
++--- a/target/linux/lantiq/xrx200/base-files/etc/board.d/02_network
+++++ b/target/linux/lantiq/xrx200/base-files/etc/board.d/02_network
++@@ -125,6 +125,7 @@ lantiq_setup_macs()
++ 		tffsdev=$(find_mtd_chardev "nand-tffs")
++ 		lan_mac=$(/usr/bin/fritz_tffs_nand -d $tffsdev -n maca -o)
++ 		wan_mac=$(/usr/bin/fritz_tffs_nand -d $tffsdev -n macdsl -o)
+++		label_mac=$lan_mac
++ 		;;
++ 	bt,homehub-v5a)
++ 		lan_mac=$(mtd_get_mac_binary_ubi caldata 0x110c)
++@@ -142,6 +143,7 @@ lantiq_setup_macs()
++ 
++ 	[ -n "$lan_mac" ] && ucidef_set_interface_macaddr "lan" "$lan_mac"
++ 	[ -n "$wan_mac" ] && ucidef_set_interface_macaddr "wan" "$wan_mac"
+++	[ -n "$label_mac" ] && ucidef_set_label_macaddr "$label_mac"
++ }
++ 
++ board_config_update

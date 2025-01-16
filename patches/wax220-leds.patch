@@ -1,0 +1,53 @@
+diff --git a/patches/openwrt/17627.patch b/patches/openwrt/17627.patch
+new file mode 100644
+index 00000000..107fccbf
+--- /dev/null
++++ b/patches/openwrt/17627.patch
+@@ -0,0 +1,47 @@
++From 6b48afba4fc39d053e02d8b944846ee16a8f985e Mon Sep 17 00:00:00 2001
++From: Florian Maurer <f.maurer@outlook.de>
++Date: Thu, 16 Jan 2025 09:29:55 +0100
++Subject: [PATCH] mediatek-filogic: fix wax220 wifi leds
++
++The WAX220 does have a 2.4GHz and 5GHz wifi led, which was set to trigger on netdev before.
++This commit changes this to trigger on activity of the respective radio
++
++Signed-off-by: Florian Maurer <f.maurer@outlook.de>
++---
++ target/linux/mediatek/dts/mt7986b-netgear-wax220.dts         | 2 ++
++ target/linux/mediatek/filogic/base-files/etc/board.d/01_leds | 2 --
++ 2 files changed, 2 insertions(+), 2 deletions(-)
++
++diff --git a/target/linux/mediatek/dts/mt7986b-netgear-wax220.dts b/target/linux/mediatek/dts/mt7986b-netgear-wax220.dts
++index 6e51d884702358..9537afba898aed 100644
++--- a/target/linux/mediatek/dts/mt7986b-netgear-wax220.dts
+++++ b/target/linux/mediatek/dts/mt7986b-netgear-wax220.dts
++@@ -67,6 +67,7 @@
++ 		wlan2g_blue {
++ 			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
++ 			label = "blue:wlan2g";
+++			linux,default-trigger = "phy0tpt";
++ 		};
++ 
++ 		lan_green {
++@@ -84,6 +85,7 @@
++ 		wlan5g_blue {
++ 			gpios = <&pio 2 GPIO_ACTIVE_LOW>;
++ 			label = "blue:wlan5g";
+++			linux,default-trigger = "phy1tpt";
++ 		};
++ 	};
++ };
++diff --git a/target/linux/mediatek/filogic/base-files/etc/board.d/01_leds b/target/linux/mediatek/filogic/base-files/etc/board.d/01_leds
++index a6bb9b0ca8ac30..fded01a73ea783 100644
++--- a/target/linux/mediatek/filogic/base-files/etc/board.d/01_leds
+++++ b/target/linux/mediatek/filogic/base-files/etc/board.d/01_leds
++@@ -66,8 +66,6 @@ mercusys,mr90x-v1-ubi)
++ 	;;
++ netgear,wax220)
++ 	ucidef_set_led_netdev "eth0" "LAN" "green:lan" "eth0"
++-	ucidef_set_led_netdev "wlan2g" "WLAN2G" "blue:wlan2g" "phy0-ap0"
++-	ucidef_set_led_netdev "wlan5g" "WLAN5G" "blue:wlan5g" "phy1-ap0"
++ 	;;
++ nokia,ea0326gmp)
++ 	ucidef_set_led_netdev "wan" "WAN" "green:wan" "eth1" "link"
