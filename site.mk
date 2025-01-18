@@ -3,7 +3,6 @@ GLUON_DEPRECATED=upgrade
 
 GLUON_FEATURES := \
         autoupdater \
-        config-mode-geo-location-osm \
         config-mode-mesh-vpn \
         ebtables-filter-multicast \
         ebtables-filter-ra-dhcp \
@@ -27,6 +26,7 @@ GLUON_SITE_PACKAGES := \
     eulenfunk-hotfix \
     gluon-ssid-changer \
     gluon-weeklyreboot \
+    ffac-eol-ssid \
     ffho-autoupdater-wifi-fallback \
     ffac-mesh-vpn-wireguard-openwrt19 \
     respondd-module-airtime
