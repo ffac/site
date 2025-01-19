@@ -1,18 +1,8 @@
-From ceb3262db91a4065437ccdf4f7bec2e56d4eb05c Mon Sep 17 00:00:00 2001
-From: David Bauer <mail@david-bauer.net>
-Date: Mon, 13 Jan 2025 09:06:06 +0100
-Subject: [PATCH] mt76: import MT7915 recovery fixes
-
----
- ...10-mt76-import-MT7915-recovery-fixes.patch | 143 ++++++++++++++++++
- 1 file changed, 143 insertions(+)
- create mode 100644 patches/openwrt/0010-mt76-import-MT7915-recovery-fixes.patch
-
-diff --git a/patches/openwrt/0010-mt76-import-MT7915-recovery-fixes.patch b/patches/openwrt/0010-mt76-import-MT7915-recovery-fixes.patch
+diff --git a/patches/openwrt/0009-mt76-import-MT7915-recovery-fixes.patch b/patches/openwrt/0009-mt76-import-MT7915-recovery-fixes.patch
 new file mode 100644
-index 0000000000..6eaf2da555
+index 00000000..6eaf2da5
 --- /dev/null
-+++ b/patches/openwrt/0010-mt76-import-MT7915-recovery-fixes.patch
++++ b/patches/openwrt/0009-mt76-import-MT7915-recovery-fixes.patch
 @@ -0,0 +1,143 @@
 +From: David Bauer <mail@david-bauer.net>
 +Date: Mon, 13 Jan 2025 11:52:37 +0100

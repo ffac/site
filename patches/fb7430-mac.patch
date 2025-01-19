@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/17618.patch b/patches/openwrt/17618.patch
+diff --git a/patches/openwrt/x17618.patch b/patches/openwrt/x17618.patch
 new file mode 100644
 index 00000000..da642017
 --- /dev/null
-+++ b/patches/openwrt/17618.patch
++++ b/patches/openwrt/x17618.patch
 @@ -0,0 +1,30 @@
 +From 1a56f8ffdc668123585544d1b17b99a5faecdd4d Mon Sep 17 00:00:00 2001
 +From: Florian Maurer <f.maurer@outlook.de>

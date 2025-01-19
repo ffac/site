@@ -1,5 +1,5 @@
 diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
-index 744fdea4..16672c91 100644
+index 7d000d89..8c27e14c 100644
 --- a/targets/lantiq-xrx200
 +++ b/targets/lantiq-xrx200
 @@ -33,6 +33,10 @@ device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {

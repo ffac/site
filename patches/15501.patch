@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch b/patches/openwrt/0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
+diff --git a/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch b/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
 new file mode 100644
 index 00000000..642644f7
 --- /dev/null
-+++ b/patches/openwrt/0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
++++ b/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
 @@ -0,0 +1,283 @@
 +From: Dustin Gathmann <dzsoftware@posteo.org>
 +Date: Thu, 28 Nov 2024 10:10:52 +0100
