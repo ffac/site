@@ -1,12 +1,14 @@
-diff --git a/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch b/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
+diff --git a/patches/openwrt/0009-15501-fb7430-cal_extract.patch b/patches/openwrt/0009-15501-fb7430-cal_extract.patch
 new file mode 100644
-index 00000000..642644f7
+index 00000000..7d870a26
 --- /dev/null
-+++ b/patches/openwrt/x0006-lantiq-fritz_cal_extract-with-reverse-option-for-AVM-FritzBox-7430.patch
-@@ -0,0 +1,283 @@
++++ b/patches/openwrt/0009-15501-fb7430-cal_extract.patch
+@@ -0,0 +1,289 @@
++From 5ecaf3c79c83d5e639ad4c146e5715831d7db730 Mon Sep 17 00:00:00 2001
 +From: Dustin Gathmann <dzsoftware@posteo.org>
-+Date: Thu, 28 Nov 2024 10:10:52 +0100
-+Subject: lantiq: fritz_cal_extract with reverse option for AVM FritzBox 7430
++Date: Wed, 15 Jan 2025 15:55:29 +0100
++Subject: [PATCH] lantiq: fritz_cal_extract with reverse option for AVM
++ FritzBox 7430
 +
 +This implementation of fritz_cal_extract can also retrieve firmware
 +data stored in reverse byte order, as found in the AVM 7430 device.
@@ -24,9 +26,13 @@ index 00000000..642644f7
 +limit [-l] to enforce a sufficient buffer size.
 +
 +Signed-off-by: Dustin Gathmann <dzsoftware@posteo.org>
++---
++ .../utils/fritz-tools/src/fritz_cal_extract.c | 142 +++++++++++++-----
++ .../etc/hotplug.d/firmware/12-ath9k-eeprom    |   7 +-
++ 2 files changed, 111 insertions(+), 38 deletions(-)
 +
 +diff --git a/package/utils/fritz-tools/src/fritz_cal_extract.c b/package/utils/fritz-tools/src/fritz_cal_extract.c
-+index 9899cd53c33e5db7ac99422fbb5c12e06b8acd24..c4547bc7e05d262fdf3d506af8c8ae15813c37bc 100644
++index 9899cd53c33e5d..c4547bc7e05d26 100644
 +--- a/package/utils/fritz-tools/src/fritz_cal_extract.c
 ++++ b/package/utils/fritz-tools/src/fritz_cal_extract.c
 +@@ -8,6 +8,9 @@
@@ -259,7 +265,7 @@ index 00000000..642644f7
 + 
 + out_bad:
 + 	ret = EXIT_FAILURE;
-+@@ -257,5 +326,6 @@ out:
++@@ -257,5 +326,6 @@ int main(int argc, char **argv)
 + 		fclose(in);
 + 	if (out)
 + 		fclose(out);
@@ -267,12 +273,12 @@ index 00000000..642644f7
 + 	return ret;
 + }
 +diff --git a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+index eefc39b30b463e431eecc46fb0bd6f5c4bab4a43..2e5bf10bf92d4047e9a003c060e678397914da58 100644
++index 936181c6935210..cb3fef91687534 100644
 +--- a/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
 ++++ b/target/linux/lantiq/xrx200/base-files/etc/hotplug.d/firmware/12-ath9k-eeprom
-+@@ -22,11 +22,14 @@ case "$FIRMWARE" in
-+ 			avm,fritz7360sl)
-+ 				caldata_extract "urlader" 0x985 0x1000
++@@ -19,11 +19,14 @@ case "$FIRMWARE" in
++ 			avm,fritz3390)
++ 				caldata_extract_reverse "urlader" 0x2546 0x440
 + 				;;
 +-			avm,fritz7412|\
 +-			avm,fritz7430)
