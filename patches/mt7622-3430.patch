@@ -1,0 +1,28 @@
+From 8c930c2ec6782d05f2b464a7cc54a0957177dd4d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 22 Jan 2025 22:12:29 +0100
+Subject: [PATCH] gluon-core: this fixes the mediatek-mt7622 issue with
+ renaming wireless phys
+
+Signed-off-by: Florian Maurer <f.maurer@outlook.de>
+---
+ package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index 01379a1d11..bce6c5d089 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -9,7 +9,11 @@ local iwinfo = require 'iwinfo'
+ local M = {}
+ 
+ function M.find_phy(config)
+-	return iwinfo.nl80211.phyname(config['.name'])
++	local phyname = iwinfo.nl80211.phyname(config['.name'])
++	if not phyname then
++	    phyname = iwinfo.nl80211.phyname(config['.name']:gsub("radio", "phy"))
++	end
++	return phyname
+ end
+ 
+ local function get_addresses(radio)
