@@ -49,7 +49,7 @@ index ff4ca17f..98443bed 100755
 +
  uci:save('wireless')
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 2bbe1a8f..a4b5060f 100755
+index 2cf2e8da..cc0d9bb8 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -53,7 +53,7 @@ local function is_outdoor()

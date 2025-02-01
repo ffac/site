@@ -1,5 +1,5 @@
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-index 9d8b7ac4..34bd7d20 100644
+index 2241ac9a..33ebeefc 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 @@ -26,6 +26,8 @@ function M.is_outdoor_device()

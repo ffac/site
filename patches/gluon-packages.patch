@@ -1,8 +1,8 @@
-diff --git a/patches/packages/gluon/x0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch b/patches/packages/gluon/x0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch
+diff --git a/patches/packages/gluon/0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch b/patches/packages/gluon/0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch
 new file mode 100644
 index 00000000..ac347e07
 --- /dev/null
-+++ b/patches/packages/gluon/x0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch
++++ b/patches/packages/gluon/0001-delete-etc-opkg-keys-on-autoupdater-upgrade-does-trigger-on-autoupdate-after-checking-that-the-image-is-correct.patch
 @@ -0,0 +1,21 @@
 +From: Florian Maurer <f.maurer@outlook.de>
 +Date: Wed, 14 Jun 2023 09:33:48 +0200
