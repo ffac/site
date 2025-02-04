@@ -1,0 +1,205 @@
+diff --git a/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch b/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
+new file mode 100644
+index 00000000..e51dde1c
+--- /dev/null
++++ b/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
+@@ -0,0 +1,199 @@
++From: Matthias Schiffer <mschiffer@universe-factory.net>
++Date: Sat, 1 Feb 2025 16:28:07 +0100
++Subject: wifi-scripts: rename PHYs on detection instead of bringup
++
++This more or less reverts commit 4d323303e7e5 ("mac80211: rename phy
++according to board.json entries on bringup") and moves the renaming code
++to /lib/wifi/mac80211.sh instead.
++
++Renaming the PHY only on bringup means that the PHY will have the wrong
++name as long as the WLAN is not brought up. In addition to this behavior
++being confusing and having the potential for race conditions between the
++renaming and other code, it also breaks commands like `iwinfo nl80211
++phyname radio0` and its iwinfo-lua version, which affects both LuCI and
++Gluon. Fix the issue by renaming the PHYs when `wifi config` is run.
++
++Closes #14207
++Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
++
++diff --git a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
++index b4aa19bf526ec28b42235efb9a48d2d30fdf44b5..d10bcbcec11448f6fbe3705c1f90fb7d518b36b0 100755
++--- a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
+++++ b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
++@@ -582,77 +582,15 @@ mac80211_generate_mac() {
++ 	wdev_tool "$phy$phy_suffix" get_macaddr id=$id num_global=$num_global_macaddr mbssid=${multiple_bssid:-0} macaddr_base=${macaddr_base}
++ }
++ 
++-get_board_phy_name() (
++-	local path="$1"
++-	local fallback_phy=""
++-
++-	__check_phy() {
++-		local val="$1"
++-		local key="$2"
++-		local ref_path="$3"
++-
++-		json_select "$key"
++-		json_get_vars path
++-		json_select ..
++-
++-		[ "${ref_path%+*}" = "$path" ] && fallback_phy=$key
++-		[ "$ref_path" = "$path" ] || return 0
++-
++-		echo "$key"
++-		exit
++-	}
++-
++-	json_load_file /etc/board.json
++-	json_for_each_item __check_phy wlan "$path"
++-	[ -n "$fallback_phy" ] && echo "${fallback_phy}.${path##*+}"
++-)
++-
++-rename_board_phy_by_path() {
++-	local path="$1"
++-
++-	local new_phy="$(get_board_phy_name "$path")"
++-	[ -z "$new_phy" -o "$new_phy" = "$phy" ] && return
++-
++-	iw "$phy" set name "$new_phy" && phy="$new_phy"
++-}
++-
++-rename_board_phy_by_name() (
++-	local phy="$1"
++-	local suffix="${phy##*.}"
++-	[ "$suffix" = "$phy" ] && suffix=
++-
++-	json_load_file /etc/board.json
++-	json_select wlan
++-	json_select "${phy%.*}" || return 0
++-	json_get_vars path
++-
++-	prev_phy="$(iwinfo nl80211 phyname "path=$path${suffix:++$suffix}")"
++-	[ -n "$prev_phy" ] || return 0
++-
++-	[ "$prev_phy" = "$phy" ] && return 0
++-
++-	iw "$prev_phy" set name "$phy"
++-)
++-
++ find_phy() {
++-	[ -n "$phy" ] && {
++-		rename_board_phy_by_name "$phy"
++-		[ -d /sys/class/ieee80211/$phy ] && return 0
++-	}
+++	[ -n "$phy" ] && [ -d /sys/class/ieee80211/$phy ] && return 0
++ 	[ -n "$path" ] && {
++ 		phy="$(iwinfo nl80211 phyname "path=$path")"
++-		[ -n "$phy" ] && {
++-			rename_board_phy_by_path "$path"
++-			return 0
++-		}
+++		[ -n "$phy" ] && return 0
++ 	}
++ 	[ -n "$macaddr" ] && {
++ 		for phy in $(ls /sys/class/ieee80211 2>/dev/null); do
++-			grep -i -q "$macaddr" "/sys/class/ieee80211/${phy}/macaddress" && {
++-				path="$(iwinfo nl80211 path "$phy")"
++-				rename_board_phy_by_path "$path"
++-				return 0
++-			}
+++			grep -i -q "$macaddr" "/sys/class/ieee80211/${phy}/macaddress" && return 0
++ 		done
++ 	}
++ 	return 1
++diff --git a/package/network/config/wifi-scripts/files/lib/wifi/mac80211.sh b/package/network/config/wifi-scripts/files/lib/wifi/mac80211.sh
++new file mode 100644
++index 0000000000000000000000000000000000000000..112557f9a8792a17ac78b3fb25eaf3072ee4284c
++--- /dev/null
+++++ b/package/network/config/wifi-scripts/files/lib/wifi/mac80211.sh
++@@ -0,0 +1,90 @@
+++#!/bin/sh
+++
+++append DRIVERS "mac80211"
+++
+++mac80211_get_board_phy_name() (
+++	local path="$1"
+++	local fallback_phy=""
+++
+++	__check_phy() {
+++		local val="$1"
+++		local key="$2"
+++		local ref_path="$3"
+++
+++		json_select "$key"
+++		json_get_vars path
+++		json_select ..
+++
+++		[ "${ref_path%+*}" = "$path" ] && fallback_phy=$key
+++		[ "$ref_path" = "$path" ] || return
+++
+++		echo "$key"
+++		exit
+++	}
+++
+++	json_load_file /etc/board.json
+++	json_for_each_item __check_phy wlan "$path"
+++	[ -n "$fallback_phy" ] && echo "${fallback_phy}.${path##*+}"
+++)
+++
+++mac80211_rename_board_phy_by_path() {
+++	local path="$1"
+++
+++	local new_phy="$(mac80211_get_board_phy_name "$path")"
+++	[ -z "$new_phy" -o "$new_phy" = "$phy" ] && return
+++
+++	iw "$phy" set name "$new_phy"
+++}
+++
+++mac80211_rename_board_phy_by_name() (
+++	local phy="$1"
+++	local suffix="${phy##*.}"
+++	[ "$suffix" = "$phy" ] && suffix=
+++
+++	json_load_file /etc/board.json
+++	json_select wlan
+++	json_select "${phy%.*}" || return
+++	json_get_vars path
+++
+++	prev_phy="$(iwinfo nl80211 phyname "path=$path${suffix:++$suffix}")"
+++	[ -n "$prev_phy" ] || return
+++
+++	[ "$prev_phy" = "$phy" ] && return
+++
+++	iw "$prev_phy" set name "$phy"
+++)
+++
+++mac80211_rename_phy() {
+++	local phy path macaddr
+++
+++	config_get phy "$1" phy
+++	[ -n "$phy" ] && {
+++		[ -d /sys/class/ieee80211/$phy ] && return
+++		mac80211_rename_board_phy_by_name "$phy"
+++		[ -d /sys/class/ieee80211/$phy ] && return
+++	}
+++	config_get path "$1" path
+++	[ -n "$path" ] && {
+++		phy="$(iwinfo nl80211 phyname "path=$path")"
+++		[ -n "$phy" ] && {
+++			mac80211_rename_board_phy_by_path "$path"
+++			return
+++		}
+++	}
+++	config_get macaddr "$1" macaddr
+++	[ -n "$macaddr" ] && {
+++		for phy in $(ls /sys/class/ieee80211 2>/dev/null); do
+++			grep -i -q "$macaddr" "/sys/class/ieee80211/${phy}/macaddress" && {
+++				path="$(iwinfo nl80211 path "$phy")"
+++				mac80211_rename_board_phy_by_path "$path"
+++				return
+++			}
+++		done
+++	}
+++}
+++
+++detect_mac80211() {
+++	config_load wireless
+++	config_foreach mac80211_rename_phy wifi-device
+++}
+++

@@ -1,0 +1,39 @@
+From 9ee05404e28eeca226b89bb112b1b0deff4bb647 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sun, 16 Mar 2025 13:52:33 +0100
+Subject: [PATCH] add hop penalty per hardif setting
+
+set this using
+
+    uci set gluon.mesh_batman_adv.hop_penalty_mesh0='8'
+
+and check using
+
+    batctl hardif mesh0 hop_penalty
+---
+ .../files/lib/netifd/proto/gluon_bat0.sh             | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
+index 91ea0d3567..ae9c107f6b 100755
+--- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
++++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
+@@ -27,10 +27,14 @@ proto_gluon_bat0_renew() {
+ 
+ 	lock /var/lock/gluon_bat0.lock
+ 
+-	ubus call network.interface dump | jsonfilter \
+-		-e "@.interface[@.proto='gluon_mesh' && @.up=true].device" \
+-	| xargs -r -n 1 batctl interface add
+-
++	for device in $(ubus call network.interface dump | jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device"); do
++		batctl interface add "$device"
++		local device_sanitized="$(echo "$device" | sed 's/[^a-zA-Z0-9]/_/g')"
++		local hop_penalty="$(lookup_uci "gluon.mesh_batman_adv.hop_penalty_$device_sanitized" 0)"
++		if [ "$hop_penalty" -ne 0 ]; then
++			batctl hardif "$device" hop_penalty "$hop_penalty"
++		fi
++	done
+ 	lock -u /var/lock/gluon_bat0.lock
+ }
+ 
