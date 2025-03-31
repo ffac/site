@@ -36,6 +36,7 @@ if not device_class('tiny') and not tiny_like then
     features {
         'tls',
         'wireless-encryption-wpa3',
+        'web-logging',
     }
     packages {
         'openssh-sftp-server',
@@ -43,6 +44,7 @@ if not device_class('tiny') and not tiny_like then
         'ffmuc-custom-banner',
         'ffac-ssid-changer',
         'ff-web-ap-timer',
+        'ffda-gluon-usteer',
     }
     -- usb is only default available for non-tiny devices
     include_usb = true
