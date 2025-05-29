@@ -1,24 +1,8 @@
-From 9ee05404e28eeca226b89bb112b1b0deff4bb647 Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Sun, 16 Mar 2025 13:52:33 +0100
-Subject: [PATCH] add hop penalty per hardif setting
-
-set this using
-
-    uci set gluon.mesh_batman_adv.hop_penalty_mesh0='8'
-
-and check using
-
-    batctl hardif mesh0 hop_penalty
----
- .../files/lib/netifd/proto/gluon_bat0.sh             | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
 diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-index 91ea0d3567..ae9c107f6b 100755
+index feeacfd7..9a699ca1 100755
 --- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
 +++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-@@ -27,10 +27,14 @@ proto_gluon_bat0_renew() {
+@@ -29,10 +29,14 @@ proto_gluon_bat0_renew() {
  
  	lock /var/lock/gluon_bat0.lock
  

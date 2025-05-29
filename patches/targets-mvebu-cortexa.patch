@@ -1,0 +1,13 @@
+diff --git a/targets/mvebu-cortexa9 b/targets/mvebu-cortexa9
+index 1a5e640e..418c4f7c 100644
+--- a/targets/mvebu-cortexa9
++++ b/targets/mvebu-cortexa9
+@@ -1,3 +1,8 @@
+ device('linksys-wrt1200ac', 'linksys_wrt1200ac', {
+ 	factory_ext = '.img',
+ })
++
++device('cznic-turris-omnia', 'cznic_turris-omnia', {
++	factory = false,
++	sysupgrade_ext = '.img.gz',
++})

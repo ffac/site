@@ -1,8 +1,8 @@
 diff --git a/targets/targets.mk b/targets/targets.mk
-index 1ee2fe7c..90e56d11 100644
+index 2a47e959..e03a3e51 100644
 --- a/targets/targets.mk
 +++ b/targets/targets.mk
-@@ -30,6 +30,8 @@ $(eval $(call GluonTarget,x86,64))
+@@ -29,6 +29,8 @@ $(eval $(call GluonTarget,x86,64))
  ifeq ($(BROKEN),1)
  $(eval $(call GluonTarget,bcm27xx,bcm2710)) # BROKEN: Untested
  $(eval $(call GluonTarget,bcm27xx,bcm2711)) # BROKEN: No 11s support, no reset button, sys LED issues

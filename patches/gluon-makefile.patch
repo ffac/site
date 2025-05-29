@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index afdbc4c8..7f3869c6 100644
+index 0b5f740e..90671fbc 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -121,11 +121,11 @@ update-modules: FORCE
+@@ -122,11 +122,11 @@ update-modules: FORCE
  update-ci: FORCE
  	@$(GLUON_ENV) scripts/update-ci.sh
  

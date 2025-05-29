@@ -1,8 +1,8 @@
-diff --git a/targets/ipq807x-generic b/targets/ipq807x-generic
+diff --git a/targets/qualcommax-ipq807x b/targets/qualcommax-ipq807x
 new file mode 100644
 index 00000000..efe50f5f
 --- /dev/null
-+++ b/targets/ipq807x-generic
++++ b/targets/qualcommax-ipq807x
 @@ -0,0 +1,32 @@
 +local ATH10K_PACKAGES_IPQ807X = {
 +	-- default: candela tech driver

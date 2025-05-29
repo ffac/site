@@ -1,24 +1,24 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
-index 300347e3..94e0737e 100755
+index 50eabdc6..3c59f750 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/250-cellular
-@@ -51,6 +51,7 @@ if platform.match('ath79', 'nand', {
- 	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
- elseif platform.match('ath79', 'nand', {
- 	'zte,mf281',
+@@ -57,6 +57,7 @@ elseif platform.match('ath79', 'nand', {
+ elseif platform.match('ipq40xx', 'generic', {
+ 	'glinet,gl-ap1300',
+ 	'zte,mf289f',
 +	'zte,mf286r',
  }) then
- 	setup_ncm_qmi('/dev/ttyACM0', 'ncm', 15)
- elseif platform.match('ipq40xx', 'generic', {
+ 	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
+ elseif platform.match('ramips', 'mt7621', {
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-index 33ebeefc..34bd7d20 100644
+index 163e8e41..66604ffd 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-@@ -84,6 +84,7 @@ end
- function M.is_cellular_device()
- 	if M.match('ath79', 'nand', {
- 		'zte,mf281',
+@@ -91,6 +91,7 @@ function M.is_cellular_device()
+ 	elseif M.match('ipq40xx', 'generic', {
+ 		'glinet,gl-ap1300',
+ 		'zte,mf289f',
 +		'zte,mf286r',
- 		'glinet,gl-xe300',
  	}) then
  		return true
+ 	elseif M.match('ramips', 'mt7621', {

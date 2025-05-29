@@ -1,5 +1,5 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-index 2f5b770b..1790d5f8 100755
+index 2f5b770b..9cda12b2 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 @@ -83,6 +83,21 @@ elseif platform.match('lantiq', 'xrx200', {

@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch b/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
+diff --git a/patches/openwrt/0011-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch b/patches/openwrt/0011-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
 new file mode 100644
-index 00000000..e51dde1c
+index 00000000..f191112e
 --- /dev/null
-+++ b/patches/openwrt/0009-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
++++ b/patches/openwrt/0011-wifi-scripts-rename-PHYs-on-detection-instead-of-bringup.patch
 @@ -0,0 +1,199 @@
 +From: Matthias Schiffer <mschiffer@universe-factory.net>
 +Date: Sat, 1 Feb 2025 16:28:07 +0100
@@ -23,7 +23,7 @@ index 00000000..e51dde1c
 +Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 +
 +diff --git a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
-+index b4aa19bf526ec28b42235efb9a48d2d30fdf44b5..d10bcbcec11448f6fbe3705c1f90fb7d518b36b0 100755
++index 059fd9b8c8a50ddf212bf0d23affe572db7f2741..082188695802f5fd52808a46dc9c7aee880d40f7 100755
 +--- a/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
 ++++ b/package/network/config/wifi-scripts/files/lib/netifd/wireless/mac80211.sh
 +@@ -582,77 +582,15 @@ mac80211_generate_mac() {
