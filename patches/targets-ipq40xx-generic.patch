@@ -1,5 +1,5 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 068f538b..6e7c8bd4 100644
+index 669f7ad0..b1e8de8f 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
 @@ -14,6 +14,15 @@ local ATH10K_PACKAGES_IPQ40XX_QCA9888 = {

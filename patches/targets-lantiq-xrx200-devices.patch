@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
+diff --git a/patches/openwrt/0012-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch b/patches/openwrt/0012-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 new file mode 100644
 index 00000000..9b7a21f9
 --- /dev/null
-+++ b/patches/openwrt/0008-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
++++ b/patches/openwrt/0012-lantiq-fix-ath9k-eeprom-for-AVM-Fritz-Box-7430.patch
 @@ -0,0 +1,53 @@
 +From: Felix Baumann <felix.bau@gmx.de>
 +Date: Tue, 28 Feb 2023 04:21:07 +0100
@@ -58,10 +58,10 @@ index 00000000..9b7a21f9
 + 				caldata_extract_ubi "caldata" 0x1000 0x1000
 + 				ath9k_patch_mac_crc $(macaddr_add $(mtd_get_mac_binary_ubi caldata 0x110c) 2) 0x10c
 diff --git a/targets/lantiq-xrx200 b/targets/lantiq-xrx200
-index f54cd87f..80f0659d 100644
+index 1e34259e..29b04423 100644
 --- a/targets/lantiq-xrx200
 +++ b/targets/lantiq-xrx200
-@@ -30,6 +30,10 @@ device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {
+@@ -32,6 +32,10 @@ device('avm-fritz-box-3370-rev-2-micron-nand', 'avm_fritz3370-rev2-micron', {
  	broken = true, -- no button for setup mode; hw revision not visible on device
  })
  
@@ -72,7 +72,7 @@ index f54cd87f..80f0659d 100644
  device('avm-fritz-box-7360-sl', 'avm_fritz7360sl', {
  	factory = false,
  	aliases = {'avm-fritz-box-7360-v1'},
-@@ -47,6 +51,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
+@@ -49,6 +53,10 @@ device('avm-fritz-box-7412', 'avm_fritz7412', {
  	factory = false,
  })
  

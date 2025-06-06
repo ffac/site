@@ -1,5 +1,5 @@
 diff --git a/targets/ath79-nand b/targets/ath79-nand
-index 172f8271..3d60ceaf 100644
+index 5ee65151..de324c49 100644
 --- a/targets/ath79-nand
 +++ b/targets/ath79-nand
 @@ -59,6 +59,12 @@ device('zte-mf281', 'zte_mf281', {
