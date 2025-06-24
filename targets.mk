@@ -27,7 +27,7 @@ define GLUON_TARGETS +=
 bcm27xx-bcm2710
 bcm27xx-bcm2711
 ipq40xx-chromium
-ipq807x-generic
+qualcommax-ipq807x
 mvebu-cortexa9
 endef
 endif
