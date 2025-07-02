@@ -7,7 +7,7 @@ index 2a47e959..e03a3e51 100644
  $(eval $(call GluonTarget,bcm27xx,bcm2710)) # BROKEN: Untested
  $(eval $(call GluonTarget,bcm27xx,bcm2711)) # BROKEN: No 11s support, no reset button, sys LED issues
 +$(eval $(call GluonTarget,ipq40xx,chromium)) # BROKEN: Untested
-+$(eval $(call GluonTarget,ipq807x,generic)) # BROKEN: Untested
++$(eval $(call GluonTarget,qualcommax,ipq807x)) # BROKEN: Untested
  $(eval $(call GluonTarget,kirkwood,generic)) # BROKEN: No devices with 11s support
  $(eval $(call GluonTarget,mvebu,cortexa9)) # BROKEN: No 11s support
  endif
