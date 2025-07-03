@@ -1,8 +1,96 @@
+From bfb007bd937d6e29ee4f376f747aaade00368a25 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sun, 16 Mar 2025 13:52:33 +0100
+Subject: [PATCH 1/3] gluon-core: allow setting hop_penalty in network
+
+Done:
+* `gluon_wired` protocol forwards setting to `gluon_mesh`
+* `gluon_mesh` protocol adds setting to protocol data
+* `gluon_bat0` protocol is extended to get the info from the `ubus call network.interface dump` and apply it after `batctl interface add`
+---
+ .../files/lib/netifd/proto/gluon_mesh.sh           |  6 ++++--
+ .../files/lib/netifd/proto/gluon_wired.sh          |  6 ++++--
+ .../luasrc/lib/gluon/upgrade/210-interface-mesh    |  2 ++
+ .../files/lib/netifd/proto/gluon_bat0.sh           | 14 ++++++++++----
+ 4 files changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
+index 2dc7e75c47..5cf1e8aacd 100755
+--- a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
++++ b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
+@@ -14,10 +14,11 @@ proto_gluon_mesh_setup() {
+ 	export CONFIG="$1"
+ 	export IFNAME="$2"
+ 
+-	local fixed_mtu
+-	json_get_vars fixed_mtu
++	local fixed_mtu hop_penalty
++	json_get_vars fixed_mtu hop_penalty
+ 
+ 	export FIXED_MTU="${fixed_mtu:-0}"
++	export HOP_PENALTY="${hop_penalty:-0}"
+ 
+ 	for script in /lib/gluon/core/mesh/setup.d/*; do
+ 		[ ! -x "$script" ] || "$script"
+@@ -27,6 +28,7 @@ proto_gluon_mesh_setup() {
+ 
+ 	proto_add_data
+ 	json_add_boolean fixed_mtu "$FIXED_MTU"
++	json_add_int hop_penalty "$HOP_PENALTY"
+ 	[ "$IFNAME" != 'br-wan' ] && json_add_string zone 'mesh'
+ 	proto_close_data
+ 	proto_send_update "$CONFIG"
+diff --git a/package/gluon-core/files/lib/netifd/proto/gluon_wired.sh b/package/gluon-core/files/lib/netifd/proto/gluon_wired.sh
+index 20021ef9a8..e7027663a4 100755
+--- a/package/gluon-core/files/lib/netifd/proto/gluon_wired.sh
++++ b/package/gluon-core/files/lib/netifd/proto/gluon_wired.sh
+@@ -49,10 +49,11 @@ proto_gluon_wired_setup() {
+ 
+ 	local meshif="$config"
+ 
+-	local index vxlan vxpeer6addr
+-	json_get_vars index vxlan vxpeer6addr
++	local hop_penalty index vxlan vxpeer6addr
++	json_get_vars hop_penalty index vxlan vxpeer6addr
+ 
+ 	# default args
++	[ -z "$hop_penalty" ] && hop_penalty=0
+ 	[ -z "$vxlan" ] && vxlan=1
+ 	[ -z "$vxpeer6addr" ] && vxpeer6addr='ff02::15c'
+ 
+@@ -82,6 +83,7 @@ proto_gluon_wired_setup() {
+ 	json_add_string ifname "@${meshif}"
+ 	json_add_string proto 'gluon_mesh'
+ 	json_add_boolean fixed_mtu 1
++	json_add_int hop_penalty "${hop_penalty}"
+ 	json_close_object
+ 	ubus call network add_dynamic "$(json_dump)"
+ }
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
+index 3549379508..ac3bbe38fa 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
+@@ -22,6 +22,7 @@ if #mesh_interfaces_uplink > 0 then
+ 		ifname = 'br-wan',
+ 		proto = 'gluon_wired',
+ 		index = 0,
++		hop_penalty = 0,
+ 		vxlan = site.mesh.vxlan(true),
+ 	})
+ end
+@@ -49,6 +50,7 @@ if #mesh_interfaces_other > 0 then
+ 		igmp_snooping = false,
+ 		proto = 'gluon_wired',
+ 		index = 4,
++		hop_penalty = 0,
+ 		vxlan = site.mesh.vxlan(true),
+ 	})
+ end
 diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-index feeacfd7..9a699ca1 100755
+index feeacfd7da..755af4475e 100755
 --- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
 +++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-@@ -29,10 +29,14 @@ proto_gluon_bat0_renew() {
+@@ -29,10 +29,16 @@ proto_gluon_bat0_renew() {
  
  	lock /var/lock/gluon_bat0.lock
  
@@ -10,14 +98,156 @@ index feeacfd7..9a699ca1 100755
 -		-e "@.interface[@.proto='gluon_mesh' && @.up=true].device" \
 -	| xargs -r -n 1 batctl interface add
 -
-+	for device in $(ubus call network.interface dump | jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device"); do
-+		batctl interface add "$device"
-+		local device_sanitized="$(echo "$device" | sed 's/[^a-zA-Z0-9]/_/g')"
-+		local hop_penalty="$(lookup_uci "gluon.mesh_batman_adv.hop_penalty_$device_sanitized" 0)"
-+		if [ "$hop_penalty" -ne 0 ]; then
++	ubus call network.interface dump | \
++		jsonfilter -e "@.interface[@.proto='static' && @.up=true]['device', 'hop_penalty']" | \
++		while read -r device
++	do
++		batctl interface add "$device"	
++		read -r hop_penalty
++		if [ -n "$hop_penalty" ]; then
 +			batctl hardif "$device" hop_penalty "$hop_penalty"
 +		fi
 +	done
  	lock -u /var/lock/gluon_bat0.lock
  }
  
+
+From dfc3b065d95b501f0d0604a895f4d50be423c8cb Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 2 Jul 2025 08:45:49 +0200
+Subject: [PATCH 2/3] gluon-core: copy hop_penalty from
+ gluon.batadv_hop_penalty to gluon_mesh
+
+---
+ package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh    | 1 +
+ package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless   | 1 +
+ .../gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh | 4 ++--
+ .../files/lib/netifd/proto/gluon_bat0.sh                   | 7 +++++--
+ .../luasrc/lib/gluon/upgrade/500-mesh-vpn                  | 1 +
+ 5 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
+index 5cf1e8aacd..0b3299f571 100755
+--- a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
++++ b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
+@@ -8,6 +8,7 @@ init_proto "$@"
+ 
+ proto_gluon_mesh_init_config() {
+ 	proto_config_add_boolean fixed_mtu
++	proto_config_add_int hop_penalty
+ }
+ 
+ proto_gluon_mesh_setup() {
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index 2cf2e8daa3..5281e30bf9 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -129,6 +129,7 @@ local function configure_mesh(config, radio, index, suffix, disabled)
+ 
+ 	uci:section('network', 'interface', name, {
+ 		proto = 'gluon_mesh',
++		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', name) or 0
+ 	})
+ 
+ 	uci:section('wireless', 'wifi-iface', name, {
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
+index ac3bbe38fa..4484bb73f5 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
+@@ -22,7 +22,7 @@ if #mesh_interfaces_uplink > 0 then
+ 		ifname = 'br-wan',
+ 		proto = 'gluon_wired',
+ 		index = 0,
+-		hop_penalty = 0,
++		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'wan') or 0,
+ 		vxlan = site.mesh.vxlan(true),
+ 	})
+ end
+@@ -50,7 +50,7 @@ if #mesh_interfaces_other > 0 then
+ 		igmp_snooping = false,
+ 		proto = 'gluon_wired',
+ 		index = 4,
+-		hop_penalty = 0,
++		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'mesh_other') or 0,
+ 		vxlan = site.mesh.vxlan(true),
+ 	})
+ end
+diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
+index 755af4475e..c12ff0edfb 100755
+--- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
++++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
+@@ -30,11 +30,14 @@ proto_gluon_bat0_renew() {
+ 	lock /var/lock/gluon_bat0.lock
+ 
+ 	ubus call network.interface dump | \
+-		jsonfilter -e "@.interface[@.proto='static' && @.up=true]['device', 'hop_penalty']" | \
++		jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device" | \
+ 		while read -r device
+ 	do
+ 		batctl interface add "$device"	
+-		read -r hop_penalty
++		
++		hop_penalty="$(ubus call network.interface dump | \
++			jsonfilter -e "@.interface[@.device='$device'].data.hop_penalty")"
++
+ 		if [ -n "$hop_penalty" ]; then
+ 			batctl hardif "$device" hop_penalty "$hop_penalty"
+ 		fi
+diff --git a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
+index d1f105d4c4..fc53575ca9 100755
+--- a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
++++ b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
+@@ -12,6 +12,7 @@ uci:section('network', 'interface', 'mesh_vpn', {
+ 	ifname = vpn_core.get_interface(),
+ 	proto = 'gluon_mesh',
+ 	fixed_mtu = true,
++	hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'mesh_vpn') or 0,
+ 	macaddr = util.generate_mac(7),
+ 	mtu = active_vpn.mtu(),
+ })
+
+From f226086f9d7c9fc3695976294b096599952f8ab5 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Thu, 3 Jul 2025 08:51:35 +0200
+Subject: [PATCH 3/3] docs: add documentation about tweaking hop penalties
+
+---
+ docs/package/gluon-mesh-batman-adv.rst | 28 ++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/docs/package/gluon-mesh-batman-adv.rst b/docs/package/gluon-mesh-batman-adv.rst
+index cd362ede93..3d3d82ac81 100644
+--- a/docs/package/gluon-mesh-batman-adv.rst
++++ b/docs/package/gluon-mesh-batman-adv.rst
+@@ -168,3 +168,31 @@ or to at least manually mark the port to the Gluon router as a
+ Alternatively, the filtering of IGMP/MLD reports can be disabled via
+ the site.conf (which is not recommended in large meshes though).
+ See :ref:`site.conf mesh section <user-site-mesh>` for details.
++
++Tweaking Hop Penalty
++^^^^^^^^^^^^^^^^^^^^
++
++In general, the usage of a directly connected uplink is preferred over a faster more distant connection.
++In situations where the uplink of a device should only be used as a fallback (e.g. metered connection or slower encryption), this can be tweaked using a hop_penalty in gluon.
++Examples of this are shown below
++
++  uci set gluon.batadv_hop_penalty=batadv_hop_penalty
++  # use mesh-vpn as fallback only
++  uci set gluon.batadv_hop_penalty.mesh_vpn='120'
++  # optional penalty on wifi mesh
++  uci set gluon.batadv_hop_penalty.mesh_radio0='10'
++  # optional penalty for wired mesh
++  uci set gluon.batadv_hop_penalty.mesh_other='10'
++  # optional for mesh on wan
++  uci set gluon.batadv_hop_penalty.wan='10'
++  # don't forget to commit changes
++  uci commit gluon
++
++To apply the changes one should running
++
++  gluon-reconfigure
++  reboot
++
++Further documentation of the hop penalty can be found here:
++
++* https://www.open-mesh.org/doc/batman-adv/Tweaking.html#hop-penalty
