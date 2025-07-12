@@ -1,0 +1,15 @@
+diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
+index fdc3c3af..b20f8db3 100644
+--- a/targets/ramips-mt7621
++++ b/targets/ramips-mt7621
+@@ -96,6 +96,10 @@ device('netgear-wac104', 'netgear_wac104', {
+ 	factory_ext = '.img',
+ })
+ 
++device('netgear-wac124', 'netgear_wac124', {
++	factory_ext = '.img',
++})
++
+ device('netgear-wax202', 'netgear_wax202', {
+ 	factory_ext = '.img',
+ })
