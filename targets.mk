@@ -16,7 +16,6 @@ lantiq-xway
 mediatek-mt7622
 mpc85xx-p1010
 mpc85xx-p1020
-ramips-mt7620
 ramips-mt76x8
 rockchip-armv8
 x86-64

@@ -1,62 +1,21 @@
-From 3181052435c6bebde95092fa641710e61294e480 Mon Sep 17 00:00:00 2001
+From 7755796db257dbf1864d7347676d75a0ead7c58f Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Fri, 8 Mar 2019 00:25:21 +0100
-Subject: [PATCH 1/4] gluon-core: increase number of available MACs
-
-if last mac-address byte overflows - let it overflow
-
-Co-authored-by: David Bauer <mail@david-bauer.net>
----
- package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-index e5d8052e53..c6c2d88837 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/util.lua
-@@ -185,9 +185,11 @@ end
- -- 5: mesh1
- -- 6: owe1
- -- 7: wan_radio1 (private WLAN); mesh VPN
-+-- 8: client2
-+-- 9: mesh2
-+-- A: owe2
-+-- B: wan_radio2
- function M.generate_mac(i)
--	if i > 7 or i < 0 then return nil end -- max allowed id (0b111)
--
- 	local hashed = string.sub(hash.md5(sysconfig.primary_mac), 0, 12)
- 	local m1, m2, m3, m4, m5, m6 = string.match(hashed, '(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)(%x%x)')
- 
-@@ -202,7 +204,8 @@ function M.generate_mac(i)
- 	-- a hardware MAC filter. (e.g 'rt305x')
- 
- 	m6 = bit.band(m6, 0xF8) -- zero the last three bits (space needed for counting)
--	m6 = m6 + i                   -- add virtual interface id
-+	m6 = bit.band(m6 + i, 0xFF) -- add virtual interface id
-+
- 
- 	return string.format('%02x:%s:%s:%s:%s:%02x', m1, m2, m3, m4, m5, m6)
- end
-
-From d7e2fc034664a6e6e91a675ae981b7c71ccbb0fc Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Fri, 8 Mar 2019 16:24:21 +0100
-Subject: [PATCH 2/4] gluon-core: deactivate client radios in case a dedicated
+Date: Mon, 21 Jul 2025 21:00:32 +0200
+Subject: [PATCH 1/3] gluon-core: deactivate client radios in case a dedicated
  client radio is present
 
 Co-authored-by: David Bauer <mail@david-bauer.net>
 ---
- .../upgrade/320-gluon-client-bridge-wireless  | 35 +++++++++++++++++--
- .../luasrc/lib/gluon/upgrade/200-wireless     |  6 ++--
- .../luasrc/usr/lib/lua/gluon/wireless.lua     | 10 ++++++
- 3 files changed, 46 insertions(+), 5 deletions(-)
+ .../upgrade/320-gluon-client-bridge-wireless  | 41 +++++++++++++++++--
+ .../luasrc/lib/gluon/upgrade/200-wireless     |  6 ++-
+ .../luasrc/usr/lib/lua/gluon/wireless.lua     | 10 +++++
+ 3 files changed, 52 insertions(+), 5 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index ff4ca17f8e..04c4333cb5 100755
+index 1fd97301f3..a971d67cf7 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-@@ -4,15 +4,26 @@ local wireless = require 'gluon.wireless'
+@@ -4,15 +4,28 @@ local wireless = require 'gluon.wireless'
  
  local uci = require('simple-uci').cursor()
  
@@ -69,16 +28,18 @@ index ff4ca17f8e..04c4333cb5 100755
  
 -	return config.disabled(false)
 +	return nil
-+end
-+
+ end
+ 
 +local function is_disabled(config, name)
 +	local disabled = is_disabled_wireless(name)
 +
 +	if disabled == nil then
 +		return config.disabled(false)
 +	end
- end
- 
++
++	return disabled
++end
++
 +-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
 +-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
 +local has_client_only_radio = false
@@ -86,7 +47,7 @@ index ff4ca17f8e..04c4333cb5 100755
  local function configure_ap(radio, index, config, radio_name)
  	local name = 'client_' .. radio_name
  	local suffix = radio_name:match('^radio(%d+)$')
-@@ -20,6 +31,10 @@ local function configure_ap(radio, index, config, radio_name)
+@@ -20,6 +33,10 @@ local function configure_ap(radio, index, config, radio_name)
  	local ap = config.ap
  	local disabled = is_disabled(ap, name)
  
@@ -96,11 +57,15 @@ index ff4ca17f8e..04c4333cb5 100755
 +
  	uci:delete('wireless', name)
  
- 	local macaddr = wireless.get_wlan_mac(uci, radio, index, 1)
-@@ -112,4 +127,18 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 	local macaddr = wireless.get_wlan_mac('client', index, radio)
+@@ -112,4 +129,22 @@ wireless.foreach_radio(uci, function(radio, index, config)
  	configure_owe_transition_mode(config, radio_name)
  end)
  
++-- Assign mesh radio and client radio to separate 5GHz radios if at least
++-- two exist and one of them doesn't support mesh channels.
++-- Let the one(s) that don't support mesh channels run as client radio and
++-- run mesh radio on all remaining 5GHz radios.
 +if has_client_only_radio then
 +	wireless.foreach_radio(uci, function(radio, _, config)
 +		local radio_name = radio['.name']
@@ -117,7 +82,7 @@ index ff4ca17f8e..04c4333cb5 100755
 +
  uci:save('wireless')
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 2cf2e8daa3..6fe5f2375f 100755
+index 810e87ebb9..13851c8740 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -53,7 +53,9 @@ local function is_outdoor()
@@ -141,11 +106,11 @@ index 2cf2e8daa3..6fe5f2375f 100755
  			uci:set('wireless', radio_name, 'country3', '0x4f')
  			configure_mesh_wireless(radio, index, config, true)
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 01379a1d11..85db6d15a9 100644
+index 5845bca7a7..f1231cc083 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 @@ -39,6 +39,16 @@ local function get_wlan_mac_from_driver(radio, vif)
- 	return addresses[vif]
+ 	return addresses[vif+1]
  end
  
 +function M.supports_channel(radio, channel)
@@ -158,14 +123,14 @@ index 01379a1d11..85db6d15a9 100644
 +	return false
 +end
 +
- function M.get_wlan_mac(_, radio, index, vif)
- 	local addr = get_wlan_mac_from_driver(radio, vif)
- 	if addr then
+ local radio_mac_offsets = {
+ 	client = 0,
+ 	mesh = 1,
 
-From 0aefebf7e3036417ace774c5b9d5dca5b31a0176 Mon Sep 17 00:00:00 2001
+From d210cfbdfe6e69c63bfcbeda61f30cc92afc6efb Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Sun, 22 Dec 2024 21:20:52 +0100
-Subject: [PATCH 3/4] gluon-web-wifi-config: remove mesh checkbox if channel is
+Date: Mon, 21 Jul 2025 21:00:32 +0200
+Subject: [PATCH 2/3] gluon-web-wifi-config: remove mesh checkbox if channel is
  unsupported
 
 ---
@@ -198,16 +163,19 @@ index 3f0169418a..434e3c7c8c 100644
  
  	local phy = wireless.find_phy(config)
 
-From a01986d9cd04b40f794ed37d24c0adf3f769fed2 Mon Sep 17 00:00:00 2001
+From 371f59194a60b0632cefc32cbdd60be04043f481 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Tue, 24 Jun 2025 01:36:48 +0200
-Subject: [PATCH 4/4] gluon-web: switch to notice instead of warning for
+Date: Mon, 21 Jul 2025 21:00:32 +0200
+Subject: [PATCH 3/3] gluon-web: switch to notice instead of warning for
  deactivated mesh on third radio
 
+gluon-web-wifi-config: refine messages
 ---
  .../files/lib/gluon/web/view/model/notice.html     | 14 ++++++++++++++
- .../gluon/config-mode/model/admin/wifi-config.lua  |  2 +-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ package/gluon-web-wifi-config/i18n/de.po           |  3 +++
+ .../i18n/gluon-web-wifi-config.pot                 |  3 +++
+ .../gluon/config-mode/model/admin/wifi-config.lua  |  6 +++---
+ 4 files changed, 23 insertions(+), 3 deletions(-)
  create mode 100644 package/gluon-web-model/files/lib/gluon/web/view/model/notice.html
 
 diff --git a/package/gluon-web-model/files/lib/gluon/web/view/model/notice.html b/package/gluon-web-model/files/lib/gluon/web/view/model/notice.html
@@ -230,15 +198,54 @@ index 0000000000..e94e76e067
 +	<%- end -%>
 +</div>
 +<%- end -%>
+diff --git a/package/gluon-web-wifi-config/i18n/de.po b/package/gluon-web-wifi-config/i18n/de.po
+index f0883ad6f4..3fbb460b76 100644
+--- a/package/gluon-web-wifi-config/i18n/de.po
++++ b/package/gluon-web-wifi-config/i18n/de.po
+@@ -47,6 +47,9 @@ msgstr "Knoten wird im Außenbereich betrieben"
+ msgid "Outdoor Installation"
+ msgstr "Outdoor-Installation"
+ 
++msgid "The configured channel for meshing is unsupported by this WLAN radio."
++msgstr "Der ausgewählte Mesh-Kanal wird von diesem WLAN radio nicht unterstützt."
++
+ msgid "Transmission power"
+ msgstr "Sendeleistung"
+ 
+diff --git a/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot b/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
+index 2af9b5f3a5..c776c185be 100644
+--- a/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
++++ b/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
+@@ -33,6 +33,9 @@ msgstr ""
+ msgid "Outdoor Installation"
+ msgstr ""
+ 
++msgid "The configured channel for meshing is unsupported by this WLAN radio."
++msgstr ""
++
+ msgid "Transmission power"
+ msgstr ""
+ 
 diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-index 434e3c7c8c..2e9ea9ff0c 100644
+index 434e3c7c8c..129b35018b 100644
 --- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
 +++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-@@ -105,7 +105,7 @@ uci:foreach('wireless', 'wifi-device', function(config)
+@@ -95,7 +95,7 @@ uci:foreach('wireless', 'wifi-device', function(config)
+ 
+ 	vif_option('client', {'client', 'owe'}, translate('Enable client network (access point)'))
+ 
+-	-- disable setting mesh iface setting if radio does not support configured mesh channel
++	-- only show mesh iface setting on radios which support the configured mesh channel
+ 	if wireless.supports_channel(config, tonumber(config.channel)) then
+ 		local mesh_vif = vif_option('mesh', {'mesh'}, translate("Enable mesh network (802.11s)"))
+ 
+@@ -104,8 +104,8 @@ uci:foreach('wireless', 'wifi-device', function(config)
+ 		end
  	else
  		p:element('model/warning', {
- 			content = translate("Mesh deactivated due to unsupported channel"),
+-			content = translate("Mesh deactivated due to unsupported channel"),
 -		}, 'warning')
++			content = translate("The configured channel for meshing is unsupported by this WLAN radio."),
 +		}, 'notice')
  	end
  
