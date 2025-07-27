@@ -1,24 +1,31 @@
-From 2536cc1d2043fdb0863d153470e7d8691a0d27b7 Mon Sep 17 00:00:00 2001
+From b1e734b3a547dfc764b8e7d9a99b9ead34961742 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 21 Jul 2025 20:56:29 +0200
-Subject: [PATCH 1/4] gluon-core: allow setting hop_penalty in network
+Subject: [PATCH 1/3] gluon-core: allow setting hop_penalty in network
 
 Done:
 * `gluon_wired` protocol forwards setting to `gluon_mesh`
 * `gluon_mesh` protocol adds setting to protocol data
 * `gluon_bat0` protocol is extended to get the info from the `ubus call network.interface dump` and apply it after `batctl interface add`
 ---
- .../files/lib/netifd/proto/gluon_mesh.sh           |  6 ++++--
+ .../files/lib/netifd/proto/gluon_mesh.sh           |  7 +++++--
  .../files/lib/netifd/proto/gluon_wired.sh          |  6 ++++--
  .../luasrc/lib/gluon/upgrade/210-interface-mesh    |  2 ++
  .../files/lib/netifd/proto/gluon_bat0.sh           | 14 ++++++++++----
- 4 files changed, 20 insertions(+), 8 deletions(-)
+ 4 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
-index 2dc7e75c47..5cf1e8aacd 100755
+index 2dc7e75c47..0b3299f571 100755
 --- a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
 +++ b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
-@@ -14,10 +14,11 @@ proto_gluon_mesh_setup() {
+@@ -8,16 +8,18 @@ init_proto "$@"
+ 
+ proto_gluon_mesh_init_config() {
+ 	proto_config_add_boolean fixed_mtu
++	proto_config_add_int hop_penalty
+ }
+ 
+ proto_gluon_mesh_setup() {
  	export CONFIG="$1"
  	export IFNAME="$2"
  
@@ -32,7 +39,7 @@ index 2dc7e75c47..5cf1e8aacd 100755
  
  	for script in /lib/gluon/core/mesh/setup.d/*; do
  		[ ! -x "$script" ] || "$script"
-@@ -27,6 +28,7 @@ proto_gluon_mesh_setup() {
+@@ -27,6 +29,7 @@ proto_gluon_mesh_setup() {
  
  	proto_add_data
  	json_add_boolean fixed_mtu "$FIXED_MTU"
@@ -112,160 +119,101 @@ index 0db4a3ebc7..6f4e273a2c 100755
  }
  
 
-From 7ab1b3cdd16a086f2f90104a2802bd029543b1d0 Mon Sep 17 00:00:00 2001
+From 15413aba164e987b7225b7bb213b51ce05383cae Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 21 Jul 2025 20:57:10 +0200
-Subject: [PATCH 2/4] gluon-core: copy hop_penalty from
+Subject: [PATCH 2/3] gluon-core: copy hop_penalty from
  gluon.batadv_hop_penalty to gluon_mesh
 
 ---
- package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh    | 1 +
- package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless   | 1 +
- .../gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh | 4 ++--
- .../files/lib/netifd/proto/gluon_bat0.sh                   | 7 +++++--
- .../luasrc/lib/gluon/upgrade/500-mesh-vpn                  | 1 +
- 5 files changed, 10 insertions(+), 4 deletions(-)
+ .../lib/gluon/upgrade/210-interface-mesh      | 42 +++++++++++++------
+ .../files/lib/netifd/proto/gluon_bat0.sh      | 36 +++++++++++-----
+ .../luasrc/lib/gluon/upgrade/500-mesh-vpn     |  1 +
+ 3 files changed, 56 insertions(+), 23 deletions(-)
 
-diff --git a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
-index 5cf1e8aacd..0b3299f571 100755
---- a/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
-+++ b/package/gluon-core/files/lib/netifd/proto/gluon_mesh.sh
-@@ -8,6 +8,7 @@ init_proto "$@"
- 
- proto_gluon_mesh_init_config() {
- 	proto_config_add_boolean fixed_mtu
-+	proto_config_add_int hop_penalty
- }
- 
- proto_gluon_mesh_setup() {
-diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 810e87ebb9..327e9465fc 100755
---- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-+++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -129,6 +129,7 @@ local function configure_mesh(config, radio, index, suffix, disabled)
- 
- 	uci:section('network', 'interface', name, {
- 		proto = 'gluon_mesh',
-+		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', name) or 0
- 	})
- 
- 	uci:section('wireless', 'wifi-iface', name, {
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
-index 764114fef1..eb1b9e2562 100755
+index 764114fef1..95f5832568 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/210-interface-mesh
-@@ -22,7 +22,7 @@ if #mesh_interfaces_uplink > 0 then
+@@ -4,36 +4,52 @@ local site = require 'gluon.site'
+ local uci = require('simple-uci').cursor()
+ local util = require 'gluon.util'
+ 
+-local mesh_interfaces = util.get_role_interfaces(uci, 'mesh')
+-local uplink_interfaces = util.get_role_interfaces(uci, 'uplink')
++local mesh_interfaces = util.get_role_interfaces_with_options(uci, 'mesh', {'batadv_hop_penalty'})
++local uplink_interfaces = util.get_role_interfaces_with_options(uci, 'uplink', {'batadv_hop_penalty'})
+ 
+ local mesh_interfaces_uplink = {}
+ local mesh_interfaces_other = {}
+-for _, iface in ipairs(mesh_interfaces) do
+-	if util.contains(uplink_interfaces, iface) then
+-		table.insert(mesh_interfaces_uplink, iface)
++for iface, options in pairs(mesh_interfaces) do
++	if uplink_interfaces[iface] ~= nil then
++		mesh_interfaces_uplink[iface] = options
+ 	else
+-		table.insert(mesh_interfaces_other, iface)
++		mesh_interfaces_other[iface] = options
+ 	end
+ end
+ 
+-if #mesh_interfaces_uplink > 0 then
++local function extract_ifaces(interfaces)
++	local ifnames = {}
++	local if_count = 0
++	local max_hop_penalty = 0
++	for ifname, options in pairs(interfaces) do
++		table.insert(ifnames, ifname)
++		if_count = if_count + 1
++		if options['batadv_hop_penalty'] and tonumber(options['batadv_hop_penalty']) > max_hop_penalty then
++			max_hop_penalty = options['batadv_hop_penalty']
++		end
++	end
++	return max_hop_penalty, ifnames, if_count
++end
++
++if next(mesh_interfaces_uplink) ~= nil then
++	local max_hop_penalty, _, _ = extract_ifaces(mesh_interfaces_uplink)
+ 	uci:section('network', 'interface', 'mesh_uplink', {
  		ifname = 'br-wan',
  		proto = 'gluon_wired',
  		func = 'wan',
 -		hop_penalty = 0,
-+		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'wan') or 0,
++		hop_penalty = max_hop_penalty,
  		vxlan = site.mesh.vxlan(true),
  	})
  end
-@@ -50,7 +50,7 @@ if #mesh_interfaces_other > 0 then
+ 
+-if #mesh_interfaces_other > 0 then
++if next(mesh_interfaces_other) ~= nil then
++	local max_hop_penalty, ifnames, if_count = extract_ifaces(mesh_interfaces_other)
+ 	local iftype, ifname
+-	if #mesh_interfaces_other == 1 then
+-		ifname = mesh_interfaces_other[1]
++	if if_count == 1 then
++		ifname = ifnames[1]
+ 	else
+ 		iftype = 'bridge'
+-		ifname = mesh_interfaces_other
++		ifname = ifnames
+ 
+ 		for _, iface in ipairs(ifname) do
+ 			uci:section('network', 'device', nil, {
+@@ -50,7 +66,7 @@ if #mesh_interfaces_other > 0 then
  		igmp_snooping = false,
  		proto = 'gluon_wired',
  		func = 'mesh_other',
 -		hop_penalty = 0,
-+		hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'mesh_other') or 0,
++		hop_penalty = max_hop_penalty,
  		vxlan = site.mesh.vxlan(true),
  	})
  end
 diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-index 6f4e273a2c..b668bdcd8e 100755
+index 6f4e273a2c..2e1708fa2f 100755
 --- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
 +++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-@@ -30,11 +30,14 @@ proto_gluon_bat0_renew() {
- 	lock /var/lock/gluon_bat0.lock
- 
- 	ubus call network.interface dump | \
--		jsonfilter -e "@.interface[@.proto='static' && @.up=true]['device', 'hop_penalty']" | \
-+		jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device" | \
- 		while read -r device
- 	do
- 		batctl interface add "$device"	
--		read -r hop_penalty
-+		
-+		hop_penalty="$(ubus call network.interface dump | \
-+			jsonfilter -e "@.interface[@.device='$device'].data.hop_penalty")"
-+
- 		if [ -n "$hop_penalty" ]; then
- 			batctl hardif "$device" hop_penalty "$hop_penalty"
- 		fi
-diff --git a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
-index fd18e1cd20..e92ce925d2 100755
---- a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
-+++ b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
-@@ -12,6 +12,7 @@ uci:section('network', 'interface', 'mesh_vpn', {
- 	ifname = vpn_core.get_interface(),
- 	proto = 'gluon_mesh',
- 	fixed_mtu = true,
-+	hop_penalty = uci:get('gluon', 'batadv_hop_penalty', 'mesh_vpn') or 0,
- 	macaddr = util.generate_mac_by_name('mesh_vpn'),
- 	mtu = active_vpn.mtu(),
- })
-
-From 132a218e3949d21572b4da159d43908a7e9ec6f9 Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Mon, 21 Jul 2025 20:57:10 +0200
-Subject: [PATCH 3/4] docs: add documentation about tweaking hop penalties
-
----
- docs/package/gluon-mesh-batman-adv.rst | 28 ++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
-
-diff --git a/docs/package/gluon-mesh-batman-adv.rst b/docs/package/gluon-mesh-batman-adv.rst
-index cd362ede93..3d3d82ac81 100644
---- a/docs/package/gluon-mesh-batman-adv.rst
-+++ b/docs/package/gluon-mesh-batman-adv.rst
-@@ -168,3 +168,31 @@ or to at least manually mark the port to the Gluon router as a
- Alternatively, the filtering of IGMP/MLD reports can be disabled via
- the site.conf (which is not recommended in large meshes though).
- See :ref:`site.conf mesh section <user-site-mesh>` for details.
-+
-+Tweaking Hop Penalty
-+^^^^^^^^^^^^^^^^^^^^
-+
-+In general, the usage of a directly connected uplink is preferred over a faster more distant connection.
-+In situations where the uplink of a device should only be used as a fallback (e.g. metered connection or slower encryption), this can be tweaked using a hop_penalty in gluon.
-+Examples of this are shown below
-+
-+  uci set gluon.batadv_hop_penalty=batadv_hop_penalty
-+  # use mesh-vpn as fallback only
-+  uci set gluon.batadv_hop_penalty.mesh_vpn='120'
-+  # optional penalty on wifi mesh
-+  uci set gluon.batadv_hop_penalty.mesh_radio0='10'
-+  # optional penalty for wired mesh
-+  uci set gluon.batadv_hop_penalty.mesh_other='10'
-+  # optional for mesh on wan
-+  uci set gluon.batadv_hop_penalty.wan='10'
-+  # don't forget to commit changes
-+  uci commit gluon
-+
-+To apply the changes one should running
-+
-+  gluon-reconfigure
-+  reboot
-+
-+Further documentation of the hop penalty can be found here:
-+
-+* https://www.open-mesh.org/doc/batman-adv/Tweaking.html#hop-penalty
-
-From 5cf70778d06d6cb4657250a5d1e08ea6236a678c Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Mon, 21 Jul 2025 20:57:10 +0200
-Subject: [PATCH 4/4] gluon-core: switch to json_for_each_item
-
----
- .../files/lib/netifd/proto/gluon_bat0.sh      | 37 +++++++++++++------
- 1 file changed, 25 insertions(+), 12 deletions(-)
-
-diff --git a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-index b668bdcd8e..2e1708fa2f 100755
---- a/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-+++ b/package/gluon-mesh-batman-adv/files/lib/netifd/proto/gluon_bat0.sh
-@@ -24,24 +24,37 @@ lookup_uci() {
+@@ -24,21 +24,37 @@ lookup_uci() {
  	uci -q get "$path" || echo "$default"
  }
  
@@ -282,18 +230,16 @@ index b668bdcd8e..2e1708fa2f 100755
 +	json_select "data"
 +	json_get_var hop_penalty hop_penalty
 +	json_select ".."
- 
--	ubus call network.interface dump | \
--		jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device" | \
--		while read -r device
--	do
--		batctl interface add "$device"	
--		
--		hop_penalty="$(ubus call network.interface dump | \
--			jsonfilter -e "@.interface[@.device='$device'].data.hop_penalty")"
++
 +	if [ "$proto" = "gluon_mesh" ] && [ "$up" = 1 ]; then
 +		batctl interface add "$device"
  
+-	ubus call network.interface dump | \
+-		jsonfilter -e "@.interface[@.proto='static' && @.up=true]['device', 'hop_penalty']" | \
+-		while read -r device
+-	do
+-		batctl interface add "$device"	
+-		read -r hop_penalty
  		if [ -n "$hop_penalty" ]; then
  			batctl hardif "$device" hop_penalty "$hop_penalty"
  		fi
@@ -315,3 +261,60 @@ index b668bdcd8e..2e1708fa2f 100755
  	lock -u /var/lock/gluon_bat0.lock
  }
  
+diff --git a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
+index fd18e1cd20..6573250308 100755
+--- a/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
++++ b/package/gluon-mesh-vpn-core/luasrc/lib/gluon/upgrade/500-mesh-vpn
+@@ -12,6 +12,7 @@ uci:section('network', 'interface', 'mesh_vpn', {
+ 	ifname = vpn_core.get_interface(),
+ 	proto = 'gluon_mesh',
+ 	fixed_mtu = true,
++	hop_penalty = uci:get('gluon', 'mesh_vpn', 'batadv_hop_penalty'),
+ 	macaddr = util.generate_mac_by_name('mesh_vpn'),
+ 	mtu = active_vpn.mtu(),
+ })
+
+From 04aea2dee3506971a15ed6538430abffae08e9e6 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Mon, 21 Jul 2025 20:57:10 +0200
+Subject: [PATCH 3/3] docs: add documentation about tweaking hop penalties
+
+---
+ docs/package/gluon-mesh-batman-adv.rst | 27 ++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/docs/package/gluon-mesh-batman-adv.rst b/docs/package/gluon-mesh-batman-adv.rst
+index cd362ede93..2d88f5c086 100644
+--- a/docs/package/gluon-mesh-batman-adv.rst
++++ b/docs/package/gluon-mesh-batman-adv.rst
+@@ -168,3 +168,30 @@ or to at least manually mark the port to the Gluon router as a
+ Alternatively, the filtering of IGMP/MLD reports can be disabled via
+ the site.conf (which is not recommended in large meshes though).
+ See :ref:`site.conf mesh section <user-site-mesh>` for details.
++
++Tweaking Hop Penalty
++^^^^^^^^^^^^^^^^^^^^
++
++In general, the usage of a directly connected uplink is preferred over a faster more distant connection.
++In situations where the uplink of a device should only be used as a fallback (e.g. metered connection or slower encryption), this can be tweaked using a hop_penalty in gluon.
++Examples of this are shown below
++
++  
++  
++  # use mesh-vpn as fallback only
++  uci set gluon.mesh_vpn.batadv_hop_penalty='120'
++  # optional penalty for wired mesh
++  uci set gluon.iface_lan.batadv_hop_penalty=10
++  # optional for mesh on wan
++  uci set gluon.iface_wan.batadv_hop_penalty=10
++  # don't forget to commit changes
++  uci commit gluon
++
++To apply the changes one should running
++
++  gluon-reconfigure
++  reboot
++
++Further documentation of the hop penalty can be found here:
++
++* https://www.open-mesh.org/doc/batman-adv/Tweaking.html#hop-penalty
