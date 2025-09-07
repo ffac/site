@@ -1,0 +1,27 @@
+diff --git a/patches/openwrt/0010-Revert-kernel-load-r8169-network-module-at-boot-time.patch b/patches/openwrt/0010-Revert-kernel-load-r8169-network-module-at-boot-time.patch
+new file mode 100644
+index 00000000..020e7a50
+--- /dev/null
++++ b/patches/openwrt/0010-Revert-kernel-load-r8169-network-module-at-boot-time.patch
+@@ -0,0 +1,21 @@
++From: FFAC <technik@freifunk-aachen.de>
++Date: Thu, 4 Sep 2025 06:16:50 +0000
++Subject: Revert "kernel: load r8169 network module at boot time"
++
++This reverts commit 8e5c9dbb177ed98562d825a67d62bf30aa6874cf.
++
++Signed-off-by: FFAC <technik@freifunk-aachen.de>
++
++diff --git a/package/kernel/linux/modules/netdevices.mk b/package/kernel/linux/modules/netdevices.mk
++index c60a9479788f4e816b01b8eda251fa19adb22479..fe0b4078808c72155cbf65116fffdf4626365bdf 100644
++--- a/package/kernel/linux/modules/netdevices.mk
+++++ b/package/kernel/linux/modules/netdevices.mk
++@@ -976,7 +976,7 @@ define KernelPackage/r8169
++     CONFIG_R8169 \
++     CONFIG_R8169_LEDS=y
++   FILES:=$(LINUX_DIR)/drivers/net/ethernet/realtek/r8169.ko
++-  AUTOLOAD:=$(call AutoProbe,r8169,1)
+++  AUTOLOAD:=$(call AutoProbe,r8169)
++ endef
++ 
++ define KernelPackage/r8169/description
