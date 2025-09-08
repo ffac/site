@@ -225,9 +225,11 @@ if target('bcm27xx') then
     packages(pkgs_hid)
 end
 
-if target('ramips', 'mt7621') or target('ramips', 'mt7622') or target('mediatek', 'filogic') then
-	-- restart device if mt7915e driver shows known failure symptom
+if device({
+    'acer-vero-w6m',
+}) then
+	-- add SAE support to w6m, as 6GHz requires the package
 	packages {
-		'ffac-mt7915-hotfix',
+        'gluon-mesh-wireless-sae',
 	}
 end
