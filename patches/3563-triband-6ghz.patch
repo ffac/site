@@ -1,7 +1,7 @@
-From ee860546fec06446a3dcdbbdda636a7953858ab5 Mon Sep 17 00:00:00 2001
+From 0a489e1bbf00928a5558e487090cad0a598ca072 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 17:17:57 +0200
-Subject: [PATCH 01/12] gluon-core: rename device_uses_11a to device_uses_5ghz
+Subject: [PATCH 01/13] gluon-core: rename device_uses_11a to device_uses_5ghz
 
 this is a more appropriate naming as the function checks if a radio uses the 5g band
 ---
@@ -64,10 +64,10 @@ index 3f0169418a..92cda8efe0 100644
  		"Configuring the node for outdoor use tunes the 5 GHz radio to a frequency "
  		.. "and transmission power that conforms with the local regulatory requirements. "
 
-From 1173e4b0abd963af3bb4a97867cead2b3d790d6b Mon Sep 17 00:00:00 2001
+From b304ec67fc60a517bde110d33ddcc64fbf457cca Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 20 Aug 2025 01:08:00 +0200
-Subject: [PATCH 02/12] gluon-core: improve band counting
+Subject: [PATCH 02/13] gluon-core: improve band counting
 
 using band2g instead of band24 allows to retrieve the actual band name from the key.
 Add a helper function to increment the correct counter
@@ -125,10 +125,10 @@ index a4ca20219b..904141f619 100755
  			end
  		end
 
-From 7a697e155b016310232790aff901f3a03c8b7f7c Mon Sep 17 00:00:00 2001
+From faa5bd253c09ed81eeb071b31996e3028b5a31ee Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 20 Aug 2025 00:04:08 +0200
-Subject: [PATCH 03/12] gluon-core: add initialization script of gluon wireless
+Subject: [PATCH 03/13] gluon-core: add initialization script of gluon wireless
  roles
 
 migrate existing wireless configuration to the new role settings.
@@ -239,10 +239,10 @@ index 0000000000..c62cd71f19
 +
 +uci:save('gluon')
 
-From 5cea4629c07ecc63b789e0237675d76e91a7a1a9 Mon Sep 17 00:00:00 2001
+From 9a5dfa39a0df4b6a9d67a5955642c06f53d6210a Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 20 Aug 2025 00:03:54 +0200
-Subject: [PATCH 04/12] gluon-core: create wireless config from gluon wireless
+Subject: [PATCH 04/13] gluon-core: create wireless config from gluon wireless
  roles section
 
 Delete all wifi-ifaces on reconfigure.
@@ -261,7 +261,7 @@ client radio and is mesh only.
  3 files changed, 87 insertions(+), 61 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 1fd97301f3..04efdd4be4 100755
+index bc5a7e249e..6a78175269 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 @@ -1,6 +1,7 @@
@@ -490,10 +490,10 @@ index 5ded4f5f50..b93ad2566b 100644
  	client = 0,
  	mesh = 1,
 
-From da4931ac8bbdf1b75d0d739c559ca19fe7fb6d5e Mon Sep 17 00:00:00 2001
+From 30ab10609fab011c6d015f507cd76867cf97a576 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 09:29:31 +0200
-Subject: [PATCH 05/12] gluon-core: add hop_penalty support for mesh interfaces
+Subject: [PATCH 05/13] gluon-core: add hop_penalty support for mesh interfaces
  and fix preserve_channels
 
 do not delete config if preserve_channels is set
@@ -531,10 +531,10 @@ index 8ebb173716..07e7aaab53 100755
  
  	uci:section('wireless', 'wifi-iface', name, {
 
-From f7ccf5f1d27957ac93f2fcf5f0774b153ccbffc3 Mon Sep 17 00:00:00 2001
+From c3f3c85da4e15dd27aae894d175fdd9a97f522bc Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 11:34:32 +0200
-Subject: [PATCH 06/12] gluon-client-bridge: correctly enabled/disable client
+Subject: [PATCH 06/13] gluon-client-bridge: correctly enabled/disable client
  and owe based on role
 
 If there is a radio which does not support the mesh channel, we can configure it on a different channel.
@@ -544,7 +544,7 @@ In this case, the other radio on the same band supporting the channel turns off 
  1 file changed, 20 insertions(+), 28 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 04efdd4be4..76f1fa1553 100755
+index 6a78175269..289479697b 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 @@ -5,13 +5,27 @@ local util = require 'gluon.util'
@@ -629,10 +629,10 @@ index 04efdd4be4..76f1fa1553 100755
  
  	configure_owe(radio, index, config, radio_name)
 
-From c65593a8b79eabd707ef81be1566b53bd2854b34 Mon Sep 17 00:00:00 2001
+From 1079927e96dc088f3c96ade027399b161a86ef81 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sat, 16 Aug 2025 18:14:22 +0200
-Subject: [PATCH 07/12] gluon-private-wifi: add uci wireless config to
+Subject: [PATCH 07/13] gluon-private-wifi: add uci wireless config to
  gluon-private-wifi
 
 Recreate private wifi config using upgrade scripts.
@@ -883,10 +883,10 @@ index ba649fccee..b15fc6181b 100644
  end
  
 
-From fb9ee033817fdd816072f8d6f29e9d41223f1a7c Mon Sep 17 00:00:00 2001
+From 26bbbc1c67c977f8ec1ceb621455d4dbb162cd5a Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 12:33:20 +0200
-Subject: [PATCH 08/12] gluon-web-wifi-config: refactor for gluon roles
+Subject: [PATCH 08/13] gluon-web-wifi-config: refactor for gluon roles
 
 Adjust configuration for roles.
 Allow setting client and mesh per band instead of per radio.
@@ -1031,10 +1031,10 @@ index 92cda8efe0..2ede916813 100644
  	uci:commit('wireless')
  end
 
-From 2ca558aa8864c13ce2f6b3dec2cb1f8434ac52c9 Mon Sep 17 00:00:00 2001
+From c94ef6d28b55ce8344003fa966ad0adc9e8f1bac Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Tue, 19 Aug 2025 23:18:51 +0200
-Subject: [PATCH 09/12] gluon-core: migrate txpower setting and allow setting
+Subject: [PATCH 09/13] gluon-core: migrate txpower setting and allow setting
  of htmode
 
 add a txpower and htmode per radio section, which can be set using for example
@@ -1244,10 +1244,57 @@ index 2ede916813..087e9251c9 100644
  
  
 
-From 234ae5f2a89247446289379ac82da1e60e4140a8 Mon Sep 17 00:00:00 2001
+From 6fe3596975061be611c23f0254067341184ae209 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 10 Sep 2025 21:32:56 +0200
+Subject: [PATCH 10/13] gluon-core: only create wireless roles if a radio for
+ band exists
+
+Otherwise a wifi5 wireless config exists for devices without wifi5 as well.
+This is especially useful to be prepared for additional bands in the future.
+---
+ .../gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles  | 2 +-
+ package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua    | 6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
+index dfe31c8347..96550b1482 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
+@@ -70,7 +70,7 @@ end
+ 
+ for band_name, band_roles in pairs(wifi_roles) do
+ 	local raw_band = band_name:gsub("band", "")
+-	if not uci:get('gluon', raw_band) then
++	if not uci:get('gluon', raw_band) and wireless.device_uses_band(uci, raw_band) then
+ 		-- remove when upgrades are only possible from v2025.1 onwards
+ 		migrate_wifi_to_roles(raw_band, band_roles)
+ 
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index b93ad2566b..751b8ebc7d 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -133,10 +133,14 @@ function M.device_uses_wlan(uci)
+ end
+ 
+ function M.device_uses_5ghz(uci)
++	return M.device_uses_band(uci, '5g')
++end
++
++function M.device_uses_band(uci, band)
+ 	local ret = false
+ 
+ 	uci:foreach('wireless', 'wifi-device', function(radio)
+-		if radio.band == '5g' then
++		if radio.band == band then
+ 			ret = true
+ 			return false
+ 		end
+
+From 21e8968b1e5e93a0a084ddd8cbe9106d043ff427 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sat, 6 Sep 2025 02:51:52 +0200
-Subject: [PATCH 10/12] add vero w6m  to supported devices
+Subject: [PATCH 11/13] add vero w6m  to supported devices
 
 ---
  docs/user/supported_devices.rst | 4 ++++
@@ -1288,10 +1335,10 @@ index 2a399c500b..818bb01114 100644
  
  device('asus-rt-ax52', 'asus_rt-ax52', {
 
-From f96d9bbfb78e8abe11498497b173a1c21beb7d87 Mon Sep 17 00:00:00 2001
+From c6d40bcc4489bee36a8d203c4b69a82f852e55cf Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 10:50:37 +0200
-Subject: [PATCH 11/12] gluon-core: add basic support for 6GHz wifi
+Subject: [PATCH 12/13] gluon-core: add basic support for 6GHz wifi
 
 ---
  .../lib/gluon/upgrade/320-gluon-client-bridge-wireless |  2 +-
@@ -1302,7 +1349,7 @@ Subject: [PATCH 11/12] gluon-core: add basic support for 6GHz wifi
  5 files changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 76f1fa1553..315f2f5d12 100755
+index 289479697b..d152111c29 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 @@ -5,7 +5,7 @@ local util = require 'gluon.util'
@@ -1315,7 +1362,7 @@ index 76f1fa1553..315f2f5d12 100755
  local function count_band(band)
  	client_only_radio[band] = client_only_radio[band] + 1
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-index dfe31c8347..9decf6570e 100755
+index 96550b1482..269a14463d 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 @@ -9,6 +9,7 @@ local wireless = require 'gluon.wireless'
@@ -1416,10 +1463,10 @@ index 087e9251c9..20f10d1380 100644
  			is_5ghz = true
  			title = translate("5GHz WLAN")
 
-From f8e06d287b1c35e939d274b82421061444a05b73 Mon Sep 17 00:00:00 2001
+From f68f13d1cff60e12dd342bbbc519cb06a857b197 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sat, 6 Sep 2025 02:46:16 +0200
-Subject: [PATCH 12/12] update 6ghz
+Subject: [PATCH 13/13] update 6ghz
 
 ---
  package/gluon-client-bridge/check_site.lua            |  2 +-
@@ -1444,7 +1491,7 @@ index b077f87bb5..8cbf2ffca0 100644
  		need_boolean({config, 'ap', 'disabled'}, false)
  		if need_boolean({config, 'ap', 'owe_transition_mode'}, false) then
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 315f2f5d12..85424c3c55 100755
+index d152111c29..94fd72f1cb 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 @@ -120,10 +120,17 @@ end
@@ -1518,7 +1565,7 @@ index 423695467c..cb88463b7e 100755
  		elseif (band == '5g') then
  			if is_outdoor() or not wireless.supports_channel(radio, config.channel()) then
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index b93ad2566b..d596c8650e 100644
+index 751b8ebc7d..43ffe77b2e 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 @@ -89,6 +89,8 @@ function M.foreach_radio(uci, f)
