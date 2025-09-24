@@ -1,0 +1,80 @@
+From 660caf5bb6d003b23f9e2df72d60c7f20e031912 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Thu, 25 Sep 2025 00:49:01 +0200
+Subject: [PATCH 1/2] fix vero
+
+---
+ patches/openwrt/0020-vero-mac.patch | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 patches/openwrt/0020-vero-mac.patch
+
+diff --git a/patches/openwrt/0020-vero-mac.patch b/patches/openwrt/0020-vero-mac.patch
+new file mode 100644
+index 0000000000..0265539a5c
+--- /dev/null
++++ b/patches/openwrt/0020-vero-mac.patch
+@@ -0,0 +1,25 @@
++From eb72d1715f2eb1eae40feb696fefbd7f090ef5e8 Mon Sep 17 00:00:00 2001
++From: Florian Maurer <f.maurer@outlook.de>
++Date: Thu, 25 Sep 2025 00:44:37 +0200
++Subject: [PATCH] mediatek: fix label-mac for vero w6m
++
++This makes sure that the label-mac is unique.
++Otherwise all models of this device show the 00:0c:43:26:60:00 mac address in gluon
++
++Signed-off-by: Florian Maurer <f.maurer@outlook.de>
++---
++ target/linux/mediatek/filogic/base-files/etc/board.d/02_network | 1 +
++ 1 file changed, 1 insertion(+)
++
++diff --git a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
++index 95af3b04e39ecc..be843db4f91673 100644
++--- a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
+++++ b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
++@@ -184,6 +184,7 @@ mediatek_setup_macs()
++ 	acer,vero-w6m)
++ 		wan_mac=$(mmc_get_mac_ascii u-boot-env WANMAC)
++ 		lan_mac=$(mmc_get_mac_ascii u-boot-env LANMAC)
+++		label_mac=$(mmc_get_mac_ascii u-boot-env WANMAC)
++ 		;;
++ 	acer,predator-w6x)
++ 		wan_mac=$(mtd_get_mac_ascii u-boot-env ethaddr)
+
+From b107bd1c94d7ff9a6785758c2080b2306951e34a Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Thu, 25 Sep 2025 10:22:34 +0200
+Subject: [PATCH 2/2] vero: use backport of patch for openwrt-24
+
+---
+ patches/openwrt/0020-vero-mac.patch | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/patches/openwrt/0020-vero-mac.patch b/patches/openwrt/0020-vero-mac.patch
+index 0265539a5c..7db4ba29cd 100644
+--- a/patches/openwrt/0020-vero-mac.patch
++++ b/patches/openwrt/0020-vero-mac.patch
+@@ -1,4 +1,4 @@
+-From eb72d1715f2eb1eae40feb696fefbd7f090ef5e8 Mon Sep 17 00:00:00 2001
++From 161ba7f6493eb1a0f0ef4bb3f8a1758f6a5ac601 Mon Sep 17 00:00:00 2001
+ From: Florian Maurer <f.maurer@outlook.de>
+ Date: Thu, 25 Sep 2025 00:44:37 +0200
+ Subject: [PATCH] mediatek: fix label-mac for vero w6m
+@@ -12,14 +12,14 @@ Signed-off-by: Florian Maurer <f.maurer@outlook.de>
+  1 file changed, 1 insertion(+)
+ 
+ diff --git a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
+-index 95af3b04e39ecc..be843db4f91673 100644
++index 59a7a720f3af66..1c8c86d916af99 100644
+ --- a/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
+ +++ b/target/linux/mediatek/filogic/base-files/etc/board.d/02_network
+-@@ -184,6 +184,7 @@ mediatek_setup_macs()
++@@ -164,6 +164,7 @@ mediatek_setup_macs()
+  	acer,vero-w6m)
+  		wan_mac=$(mmc_get_mac_ascii u-boot-env WANMAC)
+  		lan_mac=$(mmc_get_mac_ascii u-boot-env LANMAC)
+ +		label_mac=$(mmc_get_mac_ascii u-boot-env WANMAC)
+  		;;
+- 	acer,predator-w6x)
+- 		wan_mac=$(mtd_get_mac_ascii u-boot-env ethaddr)
++ 	bananapi,bpi-r3|\
++ 	bananapi,bpi-r3-mini|\
