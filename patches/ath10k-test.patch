@@ -1,8 +1,8 @@
-diff --git a/patches/openwrt/0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch b/patches/openwrt/0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch
+diff --git a/patches/openwrt/x0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch b/patches/openwrt/x0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch
 new file mode 100644
 index 00000000..5f42c4ae
 --- /dev/null
-+++ b/patches/openwrt/0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch
++++ b/patches/openwrt/x0012-mac80211-ath-improve-ath10k-failed-to-flush-transmit-queue-errors.patch
 @@ -0,0 +1,89 @@
 +From: Florian Maurer <f.maurer@outlook.de>
 +Date: Tue, 22 Jul 2025 15:11:35 +0200

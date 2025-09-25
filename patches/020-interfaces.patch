@@ -1,8 +1,8 @@
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-index 98c97ed9..c92332cc 100755
+index e6339261..329032a0 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/020-interfaces
-@@ -80,9 +80,20 @@ elseif platform.match('ramips', 'mt7621', {
+@@ -81,9 +81,20 @@ elseif platform.match('ramips', 'mt7621', {
  }) then
  	lan_ifname, wan_ifname = 'lan1 lan2 lan3', 'lan0'
  elseif platform.match('lantiq', 'xrx200', {

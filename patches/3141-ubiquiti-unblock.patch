@@ -1,5 +1,5 @@
 diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
-index 67a7b847..f61a275a 100644
+index 71d85509..9ee2ab7e 100644
 --- a/docs/user/supported_devices.rst
 +++ b/docs/user/supported_devices.rst
 @@ -150,6 +150,10 @@ ath79-generic

@@ -11,10 +11,10 @@ index 50eabdc6..3c59f750 100755
  	setup_ncm_qmi('/dev/cdc-wdm0', 'qmi', 15)
  elseif platform.match('ramips', 'mt7621', {
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-index 163e8e41..66604ffd 100644
+index cb5dc5ea..8138aacc 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/platform.lua
-@@ -91,6 +91,7 @@ function M.is_cellular_device()
+@@ -97,6 +97,7 @@ function M.is_cellular_device()
  	elseif M.match('ipq40xx', 'generic', {
  		'glinet,gl-ap1300',
  		'zte,mf289f',
