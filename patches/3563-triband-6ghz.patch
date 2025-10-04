@@ -1,7 +1,7 @@
-From 88863c59c5fdc0da38bac338d9f164d4a0259f57 Mon Sep 17 00:00:00 2001
+From e0d1d85c9edf92615b18b371fb8874f453b62cf1 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 17:17:57 +0200
-Subject: [PATCH 01/14] gluon-core: rename device_uses_11a to device_uses_band
+Subject: [PATCH 01/20] gluon-core: rename device_uses_11a to device_uses_band
 
 this is a more appropriate naming as the function checks if a radio uses a band
 it also is more generic to check for other band usage as well
@@ -70,10 +70,10 @@ index 3f0169418a..96548348d8 100644
  		"Configuring the node for outdoor use tunes the 5 GHz radio to a frequency "
  		.. "and transmission power that conforms with the local regulatory requirements. "
 
-From 85fa841298bfcaa4270a816fa35eb80b9d3c90be Mon Sep 17 00:00:00 2001
+From 4a029fa81cdd3720f8593a169a74866178f247ae Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 20 Aug 2025 01:08:00 +0200
-Subject: [PATCH 02/14] gluon-core: clean up band counting
+Subject: [PATCH 02/20] gluon-core: clean up band counting
 
 using band2g instead of band24 allows to retrieve the actual band name from the key.
 Add a helper function to increment the correct counter
@@ -131,10 +131,10 @@ index a4ca20219b..7e8c051197 100755
  			end
  		end
 
-From b83c74a4dca20a14f8bf05db2fac3d7a9109743b Mon Sep 17 00:00:00 2001
+From 96c7ba28f42dde9c775507f89b343eb3d41ab1ed Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 20 Aug 2025 00:04:08 +0200
-Subject: [PATCH 03/14] gluon-core: add initialization script of gluon wireless
+Subject: [PATCH 03/20] gluon-core: add initialization script of gluon wireless
  roles
 
 migrate existing wireless configuration to the new role settings.
@@ -144,16 +144,16 @@ This also checks to disable mesh if the device is an outdoor device.
 
 Private wlan settings are migrated even if the iface is disabled.
 ---
- .../lib/gluon/upgrade/022-wireless-roles      | 109 ++++++++++++++++++
- 1 file changed, 109 insertions(+)
+ .../lib/gluon/upgrade/022-wireless-roles      | 100 ++++++++++++++++++
+ 1 file changed, 100 insertions(+)
  create mode 100755 package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 new file mode 100755
-index 0000000000..a115668654
+index 0000000000..b030d3e04e
 --- /dev/null
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,100 @@
 +#!/usr/bin/lua
 +
 +local site = require 'gluon.site'
@@ -163,31 +163,31 @@ index 0000000000..a115668654
 +
 +-- Create wifi roles if they do not exist yet
 +local default_wifi_roles = {
-+	band_2g = {},
-+	band_5g = {},
++	["2g"] = {},
++	["5g"] = {},
 +}
 +
 +-- enable client if it is not disabled
 +if site.wifi24.ap() and not site.wifi24.ap.disabled(false) then
-+	util.add_to_set(default_wifi_roles['band_2g'], 'client')
++	util.add_to_set(default_wifi_roles['2g'], 'client')
 +end
 +
 +if site.wifi5.ap() and not site.wifi5.ap.disabled(false) then
-+	util.add_to_set(default_wifi_roles['band_5g'], 'client')
++	util.add_to_set(default_wifi_roles['5g'], 'client')
 +end
 +
 +-- enable mesh if it is not disabled
 +if site.wifi24.mesh() and not site.wifi24.mesh.disabled(false) then
-+	util.add_to_set(default_wifi_roles['band_2g'], 'mesh')
++	util.add_to_set(default_wifi_roles['2g'], 'mesh')
 +end
 +if site.wifi5.mesh() and not site.wifi5.mesh.disabled(false) then
-+	util.add_to_set(default_wifi_roles['band_5g'], 'mesh')
++	util.add_to_set(default_wifi_roles['5g'], 'mesh')
 +end
 +
 +local role_iface_names = {
-+	client = 'client_radio',
-+	mesh = 'mesh_radio',
-+	private = 'wan_radio',
++	client = 'client_',
++	mesh = 'mesh_',
++	private = 'wan_',
 +}
 +
 +local function migrate_wifi_to_roles(band)
@@ -197,20 +197,22 @@ index 0000000000..a115668654
 +		if radio.band ~= band then
 +			return
 +		end
-+		local radio_name = radio['.name']
-+		local suffix = radio_name:match('^radio(%d+)$')
-+
 +		for role, iface_prefix in pairs(role_iface_names) do
-+			local iface_name = iface_prefix .. suffix
-+			if uci:get('wireless', iface_prefix .. suffix) then
++			local iface_name = iface_prefix .. radio['.name']
++			if uci:get('wireless', iface_name) then
 +				config_exists = true
-+				local role_disabled = uci:get('wireless', iface_prefix .. suffix, 'disabled') or 0
-+				if role_disabled == '0' then
++				local role_enabled = not uci:get_bool('wireless', iface_name, 'disabled')
++				if role_enabled then
 +					util.add_to_set(band_roles, role)
 +					if role == 'private' then
 +						local ssid = uci:get('wireless', iface_name, 'ssid')
 +						local key = uci:get('wireless', iface_name, 'key')
 +						local encryption = uci:get('wireless', iface_name, 'encryption')
++
++						-- migrate encryption from Gluon v2023.2.x or older
++						-- remove this in 2027 or on first release supporting only upgrades from >=v2025.1.x
++						encryption = encryption and encryption:gsub("psk3", "sae")
++
 +						local mfp = uci:get('wireless', iface_name, 'ieee80211w')
 +						uci:set('gluon', 'wireless', 'private_ssid', ssid)
 +						uci:set('gluon', 'wireless', 'private_key', key)
@@ -224,7 +226,7 @@ index 0000000000..a115668654
 +
 +	-- if no config exists for this band, we apply the default
 +	if not config_exists then
-+		band_roles = default_wifi_roles["band_" .. band]
++		band_roles = default_wifi_roles[band]
 +	end
 +
 +	uci:section('gluon', 'wireless_band', "band_" .. band, {
@@ -232,11 +234,10 @@ index 0000000000..a115668654
 +	})
 +end
 +
-+for band_name, _ in pairs(default_wifi_roles) do
-+	local raw_band = band_name:gsub("^band_", "")
-+	if not uci:get('gluon', band_name) and wireless.device_uses_band(uci, raw_band) then
++for band, _ in pairs(default_wifi_roles) do
++	if not uci:get('gluon', 'band_' .. band) and wireless.device_uses_band(uci, band) then
 +		-- should only create defaults when upgrades are only possible from v2025.1 onwards
-+		migrate_wifi_to_roles(raw_band)
++		migrate_wifi_to_roles(band)
 +	end
 +end
 +
@@ -245,39 +246,29 @@ index 0000000000..a115668654
 +	return uci:get_bool('gluon', 'wireless', 'outdoor')
 +end
 +
-+-- Fix invalid mesh role configurations for outdoor
-+uci:foreach('gluon', 'wireless_band', function(band)
-+	local function has_role(role)
-+		if band.role == nil then
-+			return false
-+		end
-+
-+		return util.contains(band.role, role)
-+	end
-+
-+	if band['.name'].name=='5g' and has_role('mesh') and is_outdoor() then
-+		-- remove 'mesh' role
-+		util.remove_from_set(band.role, 'mesh')
-+		uci:set('gluon', band['.name'], 'role', band.role)
-+	end
-+end)
++-- Remove 5ghz mesh role configuration for outdoor
++local roles_5g = uci:get_list('gluon', 'band_5g', 'role')
++if util.contains(roles_5g, 'mesh') and is_outdoor() then
++	util.remove_from_set(roles_5g, 'mesh')
++	uci:set_list('gluon', 'band_5g', 'role', roles_5g)
++end
 +
 +uci:save('gluon')
 
-From 2675cbb1e8680eccbc2df5b53db7afacbf9ad26f Mon Sep 17 00:00:00 2001
+From 8e9bc5c6398c813ead6dcb9e06c1c3c49700b47e Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sun, 21 Sep 2025 23:12:23 +0200
-Subject: [PATCH 04/14] gluon-core: create wireless config from gluon wireless
+Subject: [PATCH 04/20] gluon-core: create wireless config from gluon wireless
  roles section
 
 Delete all wifi-ifaces on reconfigure.
 Enable mesh based on the configured wireless role.
 ---
- .../luasrc/lib/gluon/upgrade/200-wireless     | 131 +++++++-----------
- 1 file changed, 52 insertions(+), 79 deletions(-)
+ .../luasrc/lib/gluon/upgrade/200-wireless     | 139 +++++++-----------
+ 1 file changed, 52 insertions(+), 87 deletions(-)
 
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 7e8c051197..6b37ee581c 100755
+index 7e8c051197..5fb6831769 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -3,55 +3,51 @@
@@ -370,7 +361,7 @@ index 7e8c051197..6b37ee581c 100755
  
  local function is_outdoor()
  	return uci:get_bool('gluon', 'wireless', 'outdoor')
-@@ -90,31 +86,13 @@ local function get_htmode(radio)
+@@ -90,40 +86,21 @@ local function get_htmode(radio)
  	return 'HT20'
  end
  
@@ -399,27 +390,48 @@ index 7e8c051197..6b37ee581c 100755
  end
  
 -local function configure_mesh(config, radio, index, suffix, disabled)
-+local function configure_mesh(config, radio, index, suffix)
++local function configure_mesh(radio, index, mesh_config)
  	local radio_name = radio['.name']
  	local name = 'mesh_' .. radio_name
  
-@@ -147,7 +125,6 @@ local function configure_mesh(config, radio, index, suffix, disabled)
- 		basic_rate = { config.mcast_rate },
- 		mcast_rate = config.mcast_rate,
- 		ifname = suffix and 'mesh' .. suffix,
+ 	local macfilter = uci:get('wireless', name, 'macfilter')
+ 	local maclist = uci:get('wireless', name, 'maclist')
++	local suffix = radio_name:match('^radio(%d+)$')
+ 
+-	uci:delete('wireless', name)
+-
+-	if not config then
++	if not mesh_config or not suffix then
+ 		return
+ 	end
+ 
+@@ -140,14 +117,13 @@ local function configure_mesh(config, radio, index, suffix, disabled)
+ 		device = radio_name,
+ 		network = name,
+ 		mode = 'mesh',
+-		mesh_id = config.id,
++		mesh_id = mesh_config.id,
+ 		mesh_fwding = false,
+ 		mesh_nolearn = true,
+ 		macaddr = macaddr,
+-		basic_rate = { config.mcast_rate },
+-		mcast_rate = config.mcast_rate,
+-		ifname = suffix and 'mesh' .. suffix,
 -		disabled = disabled,
++		basic_rate = { mesh_config.mcast_rate },
++		mcast_rate = mesh_config.mcast_rate,
++		ifname = 'mesh' .. suffix,
  		macfilter = macfilter,
  		maclist = maclist,
  	})
-@@ -169,17 +146,11 @@ local function fixup_wan(radio, index)
+@@ -169,19 +145,6 @@ local function fixup_wan(radio, index)
  	uci:set('wireless', name, 'macaddr', macaddr)
  end
  
 -local function configure_mesh_wireless(radio, index, config, disabled)
-+local function configure_mesh_wireless(radio, index, config)
- 	local radio_name = radio['.name']
- 	local suffix = radio_name:match('^radio(%d+)$')
- 
+-	local radio_name = radio['.name']
+-	local suffix = radio_name:match('^radio(%d+)$')
+-
 -	configure_mesh(config.mesh(), radio, index, suffix,
 -		first_non_nil(
 -			disabled,
@@ -427,11 +439,12 @@ index 7e8c051197..6b37ee581c 100755
 -			config.mesh.disabled(false)
 -		)
 -	)
-+	configure_mesh(config.mesh(), radio, index, suffix)
- end
- 
+-end
+-
  local function set_channels(radio, radio_name, config)
-@@ -225,22 +196,24 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 	if wireless.preserve_channels(uci) then
+ 		return
+@@ -225,22 +188,24 @@ wireless.foreach_radio(uci, function(radio, index, config)
  	uci:delete('wireless', radio_name, 'basic_rate')
  
  	local band = radio.band
@@ -447,127 +460,29 @@ index 7e8c051197..6b37ee581c 100755
 -		util.remove_from_set(hostapd_options, 'country3=0x4f')
 -		uci:set_list('wireless', radio_name, 'hostapd_options', hostapd_options)
 -
--		if is_outdoor() then
--			-- enforce outdoor channels by filtering the regdom for outdoor channels
--			uci:set('wireless', radio_name, 'country3', '0x4f')
++		if util.contains(roles, 'mesh') then
++			configure_mesh(radio, index, config.mesh())
++		end
++	elseif band == '5g' then
+ 		if is_outdoor() then
+ 			-- enforce outdoor channels by filtering the regdom for outdoor channels
+ 			uci:set('wireless', radio_name, 'country3', '0x4f')
 -			configure_mesh_wireless(radio, index, config, true)
--		else
--			uci:delete('wireless', radio_name, 'country3')
-+	end
+ 		else
+ 			uci:delete('wireless', radio_name, 'country3')
+-			configure_mesh_wireless(radio, index, config)
 +
-+	if util.contains(roles, 'mesh') then
-+		if band == '2g' then
- 			configure_mesh_wireless(radio, index, config)
-+		elseif band == '5g' then
-+			if is_outdoor() then
-+				-- enforce outdoor channels by filtering the regdom for outdoor channels
-+				uci:set('wireless', radio_name, 'country3', '0x4f')
-+			else
-+				uci:delete('wireless', radio_name, 'country3')
-+				configure_mesh_wireless(radio, index, config)
++			if wireless.supports_channel(radio, config.channel()) and util.contains(roles, 'mesh') then
++				configure_mesh(radio, index, config.mesh())
 +			end
  		end
  	end
  
 
-From 15175d0948bc3d3daeade45cc14421dc5da443ed Mon Sep 17 00:00:00 2001
-From: Florian Maurer <f.maurer@outlook.de>
-Date: Sun, 21 Sep 2025 23:13:28 +0200
-Subject: [PATCH 05/14] gluon-core: implement detection of client_only_radio
-
-This adds support for the configuration of the third radio on triband routers.
-The client_only_radio is extended from the existing draft to theoretically also support 2g multi-band.
-
-If there is an additional radio which does not support the mesh channel, we can configure it on a
-different channel. In this case, the other radio on the same band supporting the channel turns off its
-client radio and is mesh only.
----
- .../upgrade/320-gluon-client-bridge-wireless  | 21 +++++++++++++++++++
- .../luasrc/lib/gluon/upgrade/200-wireless     |  2 +-
- .../luasrc/usr/lib/lua/gluon/wireless.lua     | 10 +++++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
-
-diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index bc5a7e249e..9aef5a1ac0 100755
---- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-+++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-@@ -1,9 +1,21 @@
- #!/usr/bin/lua
- 
- local wireless = require 'gluon.wireless'
-+local util = require 'gluon.util'
- 
- local uci = require('simple-uci').cursor()
- 
-+local client_only_radio = {band_2g=0, band_5g=0}
-+
-+local function count_band(band)
-+	client_only_radio[band] = client_only_radio[band] + 1
-+end
-+
-+wireless.foreach_radio(uci, function(radio, _, config)
-+	if not wireless.supports_channel(radio, config.channel()) then
-+		count_band("band_" .. radio.band)
-+	end
-+end)
- 
- local function is_disabled(config, name)
- 	if uci:get('wireless', name) then
-@@ -105,6 +117,15 @@ end
- 
- wireless.foreach_radio(uci, function(radio, index, config)
- 	local radio_name = radio['.name']
-+	-- now we assign radios to roles
-+	local band = radio.band
-+	local roles = uci:get('gluon', band, 'role')
-+
-+	-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
-+	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
-+	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band' .. band] > 0
-+
-+	uci:set('wireless', 'client_' .. radio_name, 'disabled', util.contains(roles, 'client') and not disable_client)
- 
- 	configure_ap(radio, index, config, radio_name)
- 
-diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 6b37ee581c..d528382ac4 100755
---- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-+++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -207,7 +207,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
- 		if band == '2g' then
- 			configure_mesh_wireless(radio, index, config)
- 		elseif band == '5g' then
--			if is_outdoor() then
-+			if is_outdoor() or not wireless.supports_channel(radio, config.channel()) then
- 				-- enforce outdoor channels by filtering the regdom for outdoor channels
- 				uci:set('wireless', radio_name, 'country3', '0x4f')
- 			else
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 5058ef5e7e..0575203371 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-@@ -39,6 +39,16 @@ local function get_wlan_mac_from_driver(radio, vif)
- 	return addresses[vif+1]
- end
- 
-+function M.supports_channel(radio, channel)
-+	local phy = M.find_phy(radio)
-+	for _, chan in ipairs(iwinfo.nl80211.freqlist(phy)) do
-+		if channel == chan.channel then
-+			return true
-+		end
-+	end
-+	return false
-+end
-+
- local radio_mac_offsets = {
- 	client = 0,
- 	mesh = 1,
-
-From 57cc859d2bfc8733e5bb9d404aeea57e7cc759a4 Mon Sep 17 00:00:00 2001
+From 17f59562ec5c8543cc340eadfd8ca5cdcb130892 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 09:29:31 +0200
-Subject: [PATCH 06/14] gluon-core: add hop_penalty support for mesh interfaces
+Subject: [PATCH 05/20] gluon-core: add hop_penalty support for mesh interfaces
  and fix preserve_channels
 
 allow setting a batadv_hop_penalty for the gluon_mesh wireless interfaces as well
@@ -576,10 +491,10 @@ allow setting a batadv_hop_penalty for the gluon_mesh wireless interfaces as wel
  1 file changed, 3 insertions(+)
 
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index d528382ac4..adecdeb1a5 100755
+index 5fb6831769..49bfdfbdfc 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -110,8 +110,11 @@ local function configure_mesh(config, radio, index, suffix)
+@@ -109,8 +109,11 @@ local function configure_mesh(radio, index, mesh_config)
  		return
  	end
  
@@ -592,26 +507,69 @@ index d528382ac4..adecdeb1a5 100755
  
  	uci:section('wireless', 'wifi-iface', name, {
 
-From 0bf535c4d670fc677c52457c97a519c2e2146e74 Mon Sep 17 00:00:00 2001
+From 97747da223eb5e860f8619aa5ecbd209be42b48d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sun, 21 Sep 2025 18:22:42 +0200
+Subject: [PATCH 06/20] gluon-core: remove delete_ibss function
+
+the function is not required anymore as the whole wireless config is removed on each reconfigure anyway.
+The old ibss config is therefore deleted as well.
+---
+ package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index 49bfdfbdfc..07b0b32fb7 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -86,12 +86,6 @@ local function get_htmode(radio)
+ 	return 'HT20'
+ end
+ 
+-local function delete_ibss(radio_name)
+-	local name = 'ibss_' .. radio_name
+-
+-	uci:delete('wireless', name)
+-end
+-
+ local function configure_mesh(radio, index, mesh_config)
+ 	local radio_name = radio['.name']
+ 	local name = 'mesh_' .. radio_name
+@@ -165,8 +159,6 @@ end
+ wireless.foreach_radio(uci, function(radio, index, config)
+ 	local radio_name = radio['.name']
+ 
+-	delete_ibss(radio_name)
+-
+ 	if not config() then
+ 		uci:set('wireless', radio_name, 'disabled', true)
+ 		return
+
+From 58cd14b560912d3b6d6baabfeae075b189d577c1 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 11:34:32 +0200
-Subject: [PATCH 07/14] gluon-client-bridge: do not create wireless config if
+Subject: [PATCH 07/20] gluon-client-bridge: do not create wireless config if
  client role is disabled
 
 This simplifies the running config by only providing what is needed.
 We throw away the old config on each reconfigure now anyway,
 so we do not need to generate all disabled ifaces anymore.
 ---
- .../upgrade/320-gluon-client-bridge-wireless  | 38 +++++++------------
- 1 file changed, 14 insertions(+), 24 deletions(-)
+ .../upgrade/320-gluon-client-bridge-wireless  | 42 ++++++++-----------
+ 1 file changed, 18 insertions(+), 24 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index 9aef5a1ac0..fad008f385 100755
+index bc5a7e249e..1824ad66ad 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-@@ -17,12 +17,15 @@ wireless.foreach_radio(uci, function(radio, _, config)
- 	end
- end)
+@@ -1,16 +1,18 @@
+ #!/usr/bin/lua
+ 
+ local wireless = require 'gluon.wireless'
+-
+ local uci = require('simple-uci').cursor()
++local util = require "gluon.util"
+ 
  
 -local function is_disabled(config, name)
 -	if uci:get('wireless', name) then
@@ -625,61 +583,73 @@ index 9aef5a1ac0..fad008f385 100755
 +	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
 +	-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
 +	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
-+	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band_' .. band] > 0
-+	local client_enabled = util.contains(roles, 'client') and not disable_client
-+	return config.ap.disabled(not client_enabled)
++	local disable_client = wireless.supports_channel(radio, config.channel())
++	return not util.contains(roles, 'client') or disable_client
  end
  
  local function configure_ap(radio, index, config, radio_name)
-@@ -30,7 +33,6 @@ local function configure_ap(radio, index, config, radio_name)
+@@ -18,13 +20,10 @@ local function configure_ap(radio, index, config, radio_name)
  	local suffix = radio_name:match('^radio(%d+)$')
  
  	local ap = config.ap
 -	local disabled = is_disabled(ap, name)
+-
+-	uci:delete('wireless', name)
  
- 	uci:delete('wireless', name)
+ 	local macaddr = wireless.get_wlan_mac('client', index, radio)
  
-@@ -47,7 +49,6 @@ local function configure_ap(radio, index, config, radio_name)
+-	if not ap.ssid() or not macaddr then
++	if not ap.ssid() or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -34,8 +33,7 @@ local function configure_ap(radio, index, config, radio_name)
+ 		mode = 'ap',
  		ssid = ap.ssid(),
  		macaddr = macaddr,
- 		ifname = suffix and 'client' .. suffix,
+-		ifname = suffix and 'client' .. suffix,
 -		disabled = disabled or false,
++		ifname = 'client' .. suffix,
  	})
  end
  
-@@ -57,8 +58,6 @@ local function configure_owe(radio, index, config, radio_name)
+@@ -45,10 +43,6 @@ local function configure_owe(radio, index, config, radio_name)
  
  	local ap = config.ap
  
 -	local disabled = is_disabled(ap, 'client_' .. radio_name)
 -
- 	uci:delete('wireless', name)
- 
+-	uci:delete('wireless', name)
+-
  	-- Don't configure OWE in case our device
-@@ -80,7 +79,6 @@ local function configure_owe(radio, index, config, radio_name)
+ 	-- can't do MFP, as it's mandatory for OWE.
+ 	if not wireless.device_supports_mfp(uci) then
+@@ -57,7 +51,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 
+ 	local macaddr = wireless.get_wlan_mac('owe', index, radio)
+ 
+-	if not ap.owe_ssid() or not macaddr then
++	if not ap.owe_ssid() or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -67,8 +61,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 		mode = 'ap',
  		ssid = ap.owe_ssid(),
  		macaddr = macaddr,
- 		ifname = suffix and 'owe' .. suffix,
+-		ifname = suffix and 'owe' .. suffix,
 -		disabled = disabled or false,
++		ifname = 'owe' .. suffix,
  		encryption = 'owe',
  		ieee80211w = 2,
  	})
-@@ -117,20 +115,12 @@ end
+@@ -105,11 +98,12 @@ end
  
  wireless.foreach_radio(uci, function(radio, index, config)
  	local radio_name = radio['.name']
--	-- now we assign radios to roles
--	local band = radio.band
--	local roles = uci:get('gluon', band, 'role')
--
--	-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
--	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
--	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band' .. band] > 0
 +	if not is_disabled(radio, config) then
 +		configure_ap(radio, index, config, radio_name)
  
--	uci:set('wireless', 'client_' .. radio_name, 'disabled', util.contains(roles, 'client') and not disable_client)
--
 -	configure_ap(radio, index, config, radio_name)
 -
 -	configure_owe(radio, index, config, radio_name)
@@ -691,20 +661,20 @@ index 9aef5a1ac0..fad008f385 100755
  
  uci:save('wireless')
 
-From 6ba82ee92783d6b363ff3069af4e749320fe2bad Mon Sep 17 00:00:00 2001
+From b98109db7fcb68f266d36f5bda7bf893f85669d1 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Sat, 16 Aug 2025 18:14:22 +0200
-Subject: [PATCH 08/14] gluon-private-wifi: add uci wireless config to
+Date: Sat, 4 Oct 2025 10:25:26 +0200
+Subject: [PATCH 08/20] gluon-private-wifi: add uci wireless config to
  gluon-private-wifi
 
 Recreate private wifi config using upgrade scripts.
-This reduces the coupling of gluon-web-private-wifi, which only sets the role of private wifi now.
+Remove unnecessary fixup_wan
+Encryption renaming is now already done in 022-wireless-roles
 ---
- docs/features/private-wlan.rst                | 24 ++++----
- .../luasrc/lib/gluon/upgrade/200-wireless     | 18 ------
- .../lib/gluon/upgrade/325-gluon-private-wifi  | 49 ++++++++++++---
- .../config-mode/model/admin/privatewifi.lua   | 60 ++++++++-----------
- 4 files changed, 75 insertions(+), 76 deletions(-)
+ docs/features/private-wlan.rst                | 24 +++++-------
+ .../luasrc/lib/gluon/upgrade/200-wireless     | 18 ---------
+ .../lib/gluon/upgrade/325-gluon-private-wifi  | 38 +++++++++++++++----
+ 3 files changed, 41 insertions(+), 39 deletions(-)
 
 diff --git a/docs/features/private-wlan.rst b/docs/features/private-wlan.rst
 index d11c9c1cd8..f0f2ad9094 100644
@@ -749,10 +719,10 @@ index d11c9c1cd8..f0f2ad9094 100644
 +  uci commit gluon
    wifi
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index adecdeb1a5..883055f9a6 100755
+index 07b0b32fb7..af5bb63cf9 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -133,22 +133,6 @@ local function configure_mesh(config, radio, index, suffix)
+@@ -126,22 +126,6 @@ local function configure_mesh(radio, index, mesh_config)
  	})
  end
  
@@ -772,10 +742,10 @@ index adecdeb1a5..883055f9a6 100755
 -	uci:set('wireless', name, 'macaddr', macaddr)
 -end
 -
- local function configure_mesh_wireless(radio, index, config)
- 	local radio_name = radio['.name']
- 	local suffix = radio_name:match('^radio(%d+)$')
-@@ -221,8 +205,6 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ local function set_channels(radio, radio_name, config)
+ 	if wireless.preserve_channels(uci) then
+ 		return
+@@ -205,8 +189,6 @@ wireless.foreach_radio(uci, function(radio, index, config)
  	end
  
  	uci:set('wireless', radio_name, 'beacon_int', beacon_interval)
@@ -785,10 +755,10 @@ index adecdeb1a5..883055f9a6 100755
  
  
 diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-index 2485847cd2..c9c9e4e0d3 100755
+index 2485847cd2..f02377b041 100755
 --- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
 +++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-@@ -2,22 +2,55 @@
+@@ -2,22 +2,46 @@
  
  local uci = require("simple-uci").cursor()
  local wireless = require 'gluon.wireless'
@@ -801,16 +771,20 @@ index 2485847cd2..c9c9e4e0d3 100755
  	local name   = "wan_" .. radio_name
  
 -	if not uci:get('wireless', name, 'device') then
--		return
++	if not suffix then
+ 		return
+ 	end
+ 
+-	uci:set('wireless', name, 'ifname', suffix and 'wl-wan' .. suffix)
 +	local encryption = uci:get('gluon', 'wireless', 'private_encryption')
 +	local ssid = uci:get('gluon', 'wireless', 'private_ssid')
 +	local key = uci:get('gluon', 'wireless', 'private_key')
 +	local mfp = wireless.device_supports_mfp(uci) and uci:get('gluon', 'wireless', 'private_mfp')
-+
-+	-- migrate encryption from Gluon v2023.2.x or older
-+	-- remove this in 2027 or on first release supporting only upgrades from >=v2025.1.x
-+	encryption = encryption and encryption:gsub("psk3", "sae")
-+
+ 
+-	-- migrate encryption from Gluon v2023.2.x or older
+-	-- remove in 2027 or on first release supporting only upgrades from >=v2025.1.x
+-	local encryption = uci:get('wireless', name, 'encryption')
+-	uci:set('wireless', name, 'encryption', encryption:gsub("psk3", "sae"))
 +	local macaddr = wireless.get_wlan_mac('wan_radio', index, radio)
 +	uci:section('wireless', 'wifi-iface', name, {
 +		device     = radio_name,
@@ -820,43 +794,70 @@ index 2485847cd2..c9c9e4e0d3 100755
 +		ssid       = ssid,
 +		key        = key,
 +		macaddr    = macaddr,
-+		ifname     = suffix and 'wl-wan' .. suffix,
-+		disabled   = false,
++		ifname     = 'wl-wan' .. suffix,
 +	})
 +
 +	-- hostapd-mini won't start in case 802.11w is configured
 +	if mfp then
 +		uci:set('wireless', name, 'ieee80211w', mfp)
-+	else
-+		uci:delete('wireless', name, 'ieee80211w')
- 	end
++	end
 +end
 +
 +wireless.foreach_radio(uci, function(radio, index)
-+	local radio_name = radio['.name']
-+	local name   = "wan_" .. radio_name
- 
--	uci:set('wireless', name, 'ifname', suffix and 'wl-wan' .. suffix)
 +	local roles = uci:get_list('gluon', 'band_' .. radio.band, 'role')
- 
--	-- migrate encryption from Gluon v2023.2.x or older
--	-- remove in 2027 or on first release supporting only upgrades from >=v2025.1.x
--	local encryption = uci:get('wireless', name, 'encryption')
--	uci:set('wireless', name, 'encryption', encryption:gsub("psk3", "sae"))
-+	if not util.contains(roles, 'private') then
-+		uci:delete('wireless', name)
-+		return
-+	end
 +
-+	configure_private_wifi(radio, index)
++	if util.contains(roles, 'private') then
++		configure_private_wifi(radio, index)
++	end
  end)
  
  uci:save('wireless')
+
+From 1ed6fba986710af7810e00bcf79f99ed19a4a47e Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 4 Oct 2025 10:28:44 +0200
+Subject: [PATCH 09/20] gluon-web-private-wifi: update to role based wireless
+ section
+
+reduces the coupling of gluon-web-private-wifi, which only sets the role of private wifi now
+runs gluon-reconfigure on save of the form
+---
+ .../config-mode/model/admin/privatewifi.lua   | 63 +++++++++----------
+ 1 file changed, 28 insertions(+), 35 deletions(-)
+
 diff --git a/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua b/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
-index ba649fccee..30c7350431 100644
+index ba649fccee..610216e56f 100644
 --- a/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
 +++ b/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
-@@ -38,12 +38,12 @@ warning:depends(enabled, true)
+@@ -2,9 +2,6 @@ local uci = require("simple-uci").cursor()
+ local wireless = require 'gluon.wireless'
+ local util = require 'gluon.util'
+ 
+--- where to read the configuration from
+-local primary_iface = 'wan_radio0'
+-
+ local f = Form(translate("Private WLAN"))
+ 
+ local s = f:section(Section, nil, translate(
+@@ -23,8 +20,16 @@ for _, iface in ipairs(util.get_role_interfaces(uci, 'mesh')) do
+ 	end
+ end
+ 
++local private_enabled = false
++
++uci:foreach('gluon', 'wireless_band', function(band_config)
++	if util.contains(band_config.role or {}, 'private') then
++		private_enabled = true
++	end
++end)
++
+ local enabled = s:option(Flag, "enabled", translate("Enabled"))
+-enabled.default = uci:get('wireless', primary_iface) and not uci:get_bool('wireless', primary_iface, "disabled")
++enabled.default = private_enabled
+ 
+ local warning = s:element('model/warning', {
+ 	content = translate(
+@@ -38,12 +43,12 @@ warning:depends(enabled, true)
  local ssid = s:option(Value, "ssid", translate("Name (SSID)"))
  ssid:depends(enabled, true)
  ssid.datatype = "maxlength(32)"
@@ -871,7 +872,7 @@ index ba649fccee..30c7350431 100644
  
  local encryption = s:option(ListValue, "encryption", translate("Encryption"))
  encryption:depends(enabled, true)
-@@ -52,7 +52,7 @@ if wireless.device_supports_wpa3() then
+@@ -52,7 +57,7 @@ if wireless.device_supports_wpa3() then
  	encryption:value("sae-mixed", translate("WPA2 / WPA3"))
  	encryption:value("sae", translate("WPA3"))
  end
@@ -880,21 +881,31 @@ index ba649fccee..30c7350431 100644
  
  local mfp = s:option(ListValue, "mfp", translate("Management Frame Protection"))
  mfp:depends(enabled, true)
-@@ -61,42 +61,30 @@ if wireless.device_supports_mfp(uci) then
+@@ -61,42 +66,30 @@ if wireless.device_supports_mfp(uci) then
  	mfp:value("1", translate("Optional"))
  	mfp:value("2", translate("Required"))
  end
 -mfp.default = uci:get('wireless', primary_iface, 'ieee80211w') or "0"
+-
 +mfp.default = uci:get('gluon', 'wireless', 'private_mfp') or "0"
- 
  
  function f:write()
 -	wireless.foreach_radio(uci, function(radio, index)
 -		local radio_name = radio['.name']
 -		local suffix = radio_name:match('^radio(%d+)$')
 -		local name   = "wan_" .. radio_name
--
--		if enabled.data then
++	if enabled.data then
++		-- set new private wifi configuration
++		uci:set('gluon', 'wireless', 'private_ssid', ssid.data)
++		uci:set('gluon', 'wireless', 'private_key', key.data)
++		uci:set('gluon', 'wireless', 'private_encryption', encryption.data)
++		uci:set('gluon', 'wireless', 'private_mfp', mfp.data)
++	end
+ 
++	uci:foreach('gluon', 'wireless_band', function(band_config)
++		local band = band_config['.name']
++		local roles = uci:get_list('gluon', band, 'role')
+ 		if enabled.data then
 -			local macaddr = wireless.get_wlan_mac('wan_radio', index, radio)
 -
 -			uci:section('wireless', 'wifi-iface', name, {
@@ -915,50 +926,35 @@ index ba649fccee..30c7350431 100644
 -			else
 -				uci:delete('wireless', name, 'ieee80211w')
 -			end
--		else
++			util.add_to_set(roles, 'private')
+ 		else
 -			uci:set('wireless', name, "disabled", true)
--		end
--	end)
--
++			util.remove_from_set(roles, 'private')
+ 		end
++		uci:set_list('gluon', band, 'role', roles)
+ 	end)
+ 
 -	uci:commit('wireless')
-+	local roles_2g = uci:get_list('gluon', 'band_2g', 'role')
-+	local roles_5g = uci:get_list('gluon', 'band_5g', 'role')
-+	if enabled.data then
-+		-- set new private wifi configuration
-+		uci:set('gluon', 'wireless', 'private_ssid', ssid.data)
-+		uci:set('gluon', 'wireless', 'private_key', key.data)
-+		uci:set('gluon', 'wireless', 'private_encryption', encryption.data)
-+		uci:set('gluon', 'wireless', 'private_mfp', mfp.data)
-+
-+		util.add_to_set(roles_2g, 'private')
-+		util.add_to_set(roles_5g, 'private')
-+	else
-+		util.remove_from_set(roles_2g, 'private')
-+		util.remove_from_set(roles_5g, 'private')
-+	end
-+	uci:set_list('gluon', 'band_2g', 'role', roles_2g)
-+	uci:set_list('gluon', 'band_5g', 'role', roles_5g)
-+
 +	uci:commit('gluon')
-+	os.execute('/usr/bin/gluon-reconfigure')
++	os.execute('exec gluon-reconfigure >/dev/null')
  end
  
  return f
 
-From 139cd1bb8a43a3c1d5119ced3f1a98d135464367 Mon Sep 17 00:00:00 2001
+From e742f02434c076c2cae5334297349d2bd23b1800 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Sun, 21 Sep 2025 23:40:48 +0200
-Subject: [PATCH 09/14] gluon-web-wifi-config: refactor for gluon roles
+Date: Wed, 8 Oct 2025 22:36:03 +0200
+Subject: [PATCH 10/20] gluon-web-wifi-config: adjust form for gluon roles
 
 Adjust configuration for roles.
 Allow setting client and mesh per band instead of per radio.
 Run gluon-reconfigure on save to take care of everything
 ---
- .../config-mode/model/admin/wifi-config.lua   | 84 +++++++++----------
- 1 file changed, 38 insertions(+), 46 deletions(-)
+ .../config-mode/model/admin/wifi-config.lua   | 86 ++++++++-----------
+ 1 file changed, 36 insertions(+), 50 deletions(-)
 
 diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-index 96548348d8..9b5c11b8c4 100644
+index 96548348d8..d7c7da1273 100644
 --- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
 +++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
 @@ -2,7 +2,7 @@ local iwinfo = require 'iwinfo'
@@ -970,57 +966,49 @@ index 96548348d8..9b5c11b8c4 100644
  
  local function txpower_list(phy)
  	local list = iwinfo.nl80211.txpwrlist(phy) or { }
-@@ -38,15 +38,47 @@ f:section(Section, nil, translate(
+@@ -38,15 +38,37 @@ f:section(Section, nil, translate(
  
  local mesh_vifs_5ghz = {}
  
-+local function add_or_remove_role(roles, role, disabled)
-+	if disabled == true then
-+		util.remove_from_set(roles, role)
-+	elseif disabled == false then
++local function add_or_remove_role(roles, role, enabled)
++	if enabled then
 +		util.add_to_set(roles, role)
++	else
++		util.remove_from_set(roles, role)
 +	end
 +end
-+
-+local function vif_option(section, role_name, band, msg)
-+	local config_roles = uci:get_list('gluon', band, 'role')
+ 
+-uci:foreach('wireless', 'wifi-device', function(config)
+-	local radio = config['.name']
++local function vif_option(section, role_name, band, band_config, msg)
 +	local o = section:option(Flag, band .. '_' .. role_name .. '_enabled', msg)
-+	o.default = util.contains(config_roles, role_name)
++	o.default = util.contains(band_config.role or {}, role_name)
 +
 +	function o:write(data)
-+		-- this does race for multiple options without additional read before write in o:write
++		-- Without the additional read before write in o:write, this would race
 +		local roles = uci:get_list('gluon', band, 'role')
-+		add_or_remove_role(roles, role_name, not data)
-+		uci:set('gluon', band, 'role', roles)
++		add_or_remove_role(roles, role_name, data)
++		uci:set_list('gluon', band, 'role', roles)
 +	end
 +
 +	return o
 +end
 +
-+local bands = {}
- 
- uci:foreach('wireless', 'wifi-device', function(config)
- 	local radio = config['.name']
++uci:foreach('gluon', 'wireless_band', function(band_config)
++	local band = band_config['.name']
  
  	local is_5ghz = false
  	local title
 -	if config.band == '2g' then
-+	local band = config.band
 +
-+	if bands and util.contains(bands, band) then
-+		return
-+	end
-+
-+	table.insert(bands, band)
-+
-+	if band == '2g' then
++	if band == 'band_2g' then
  		title = translate("2.4GHz WLAN")
 -	elseif config.band == '5g' then
-+	elseif band == '5g' then
++	elseif band == 'band_5g' then
  		is_5ghz = true
  		title = translate("5GHz WLAN")
  	else
-@@ -55,47 +87,9 @@ uci:foreach('wireless', 'wifi-device', function(config)
+@@ -55,51 +77,16 @@ uci:foreach('wireless', 'wifi-device', function(config)
  
  	local p = f:section(Section, title)
  
@@ -1033,7 +1021,8 @@ index 96548348d8..9b5c11b8c4 100644
 -		end
 -		return out
 -	end
--
++	vif_option(p, 'client', band, band_config, translate('Enable client network (access point)'))
+ 
 -	local function has_active_interfaces(interfaces)
 -		for _, interface in ipairs(interfaces) do
 -			if not uci:get_bool('wireless', interface .. '_' .. radio, 'disabled') then
@@ -1063,67 +1052,184 @@ index 96548348d8..9b5c11b8c4 100644
 -	end
 -
 -	vif_option('client', {'client', 'owe'}, translate('Enable client network (access point)'))
-+	vif_option(p, 'client', band, translate('Enable client network (access point)'))
- 
+-
 -	local mesh_vif = vif_option('mesh', {'mesh'}, translate("Enable mesh network (802.11s)"))
-+	local mesh_vif = vif_option(p, 'mesh', band, translate("Enable mesh network (802.11s)"))
++	local mesh_vif = vif_option(p, 'mesh', band, band_config, translate("Enable mesh network (802.11s)"))
  	if is_5ghz then
  		table.insert(mesh_vifs_5ghz, mesh_vif)
  	end
-@@ -186,9 +180,7 @@ end
++end)
+ 
++local p = f:section(Section, translate("Per radio settings"))
++uci:foreach('wireless', 'wifi-device', function(config)
+ 	local phy = wireless.find_phy(config)
+ 	if not phy then
+ 		return
+@@ -110,7 +97,8 @@ uci:foreach('wireless', 'wifi-device', function(config)
+ 		return
+ 	end
+ 
+-	local tp = p:option(ListValue, radio .. '_txpower', translate("Transmission power"))
++	local radio = config['.name']
++	local tp = p:option(ListValue, radio .. '_txpower', translate("Transmission power") .. ' (' .. radio .. ')')
+ 	tp.default = uci:get('wireless', radio, 'txpower') or 'default'
+ 
+ 	tp:value('default', translate("(default)"))
+@@ -163,7 +151,7 @@ if wireless.device_uses_band(uci, '5g') and not wireless.preserve_channels(uci)
+ 
+ 		local phy = wireless.find_phy(config)
+ 
+-		local ht = r:option(ListValue, 'outdoor_htmode', translate('HT Mode') .. ' (' .. radio .. ')')
++		local ht = r:option(ListValue, 'outdoor_' .. radio .. '_htmode', translate('HT Mode') .. ' (' .. radio .. ')')
+ 		ht:depends(outdoor, true)
+ 		ht.default = uci:get('gluon', 'wireless', 'outdoor_' .. radio .. '_htmode') or 'default'
+ 
+@@ -186,9 +174,7 @@ end
  
  function f:write()
  	uci:commit('gluon')
 -	os.execute('/lib/gluon/upgrade/200-wireless')
 -	uci:commit('network')
 -	uci:commit('wireless')
-+	os.execute('/usr/bin/gluon-reconfigure')
++	os.execute('exec gluon-reconfigure >/dev/null')
  end
  
  return f
 
-From 664e06f901bb12fa3bb730116241c10553b1f984 Mon Sep 17 00:00:00 2001
+From 0fbfd58aea2549081901609ff395620a97d1a8b0 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Sun, 21 Sep 2025 18:22:42 +0200
-Subject: [PATCH 10/14] gluon-core: remove delete_ibss function
+Date: Sun, 21 Sep 2025 23:13:28 +0200
+Subject: [PATCH 11/20] gluon-core: implement detection of client_only_radio
 
-the function is not required anymore as the whole wireless config is removed on each reconfigure anyway.
-The old ibss config is therefore deleted as well.
+This adds support for the configuration of the third radio on triple radio routers.
+The client_only_radio is extended from the existing draft to theoretically also support 2g multi-band.
+
+If there is an additional radio which does not support the mesh channel, we can configure it on a
+different channel. In this case, the other radio on the same band supporting the channel turns off its
+client radio and is mesh only.
 ---
- package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless | 8 --------
- 1 file changed, 8 deletions(-)
+ .../gluon/upgrade/320-gluon-client-bridge-wireless | 14 +++++++++++++-
+ .../luasrc/lib/gluon/upgrade/200-wireless          |  2 +-
+ .../luasrc/usr/lib/lua/gluon/wireless.lua          | 10 ++++++++++
+ 3 files changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 883055f9a6..ab055a3b89 100755
---- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-+++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -86,12 +86,6 @@ local function get_htmode(radio)
- 	return 'HT20'
+diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+index 1824ad66ad..0f3d91256d 100755
+--- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
++++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+@@ -4,6 +4,17 @@ local wireless = require 'gluon.wireless'
+ local uci = require('simple-uci').cursor()
+ local util = require "gluon.util"
+ 
++local client_only_radio = {band_2g=0, band_5g=0}
++
++local function count_band(band)
++	client_only_radio[band] = client_only_radio[band] + 1
++end
++
++wireless.foreach_radio(uci, function(radio, _, config)
++	if not wireless.supports_channel(radio, config.channel()) then
++		count_band("band_" .. radio.band)
++	end
++end)
+ 
+ local function is_disabled(radio, config)
+ 	-- now we assign radios to roles
+@@ -11,7 +22,8 @@ local function is_disabled(radio, config)
+ 	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
+ 	-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
+ 	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
+-	local disable_client = wireless.supports_channel(radio, config.channel())
++	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band_' .. band] > 0
++
+ 	return not util.contains(roles, 'client') or disable_client
  end
  
--local function delete_ibss(radio_name)
--	local name = 'ibss_' .. radio_name
--
--	uci:delete('wireless', name)
--end
--
- local function configure_mesh(config, radio, index, suffix)
- 	local radio_name = radio['.name']
- 	local name = 'mesh_' .. radio_name
-@@ -157,8 +151,6 @@ end
- wireless.foreach_radio(uci, function(radio, index, config)
- 	local radio_name = radio['.name']
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index af5bb63cf9..c3706c588f 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -176,7 +176,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 			configure_mesh(radio, index, config.mesh())
+ 		end
+ 	elseif band == '5g' then
+-		if is_outdoor() then
++		if is_outdoor() or not wireless.supports_channel(radio, config.channel()) then
+ 			-- enforce outdoor channels by filtering the regdom for outdoor channels
+ 			uci:set('wireless', radio_name, 'country3', '0x4f')
+ 		else
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index 5058ef5e7e..0575203371 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -39,6 +39,16 @@ local function get_wlan_mac_from_driver(radio, vif)
+ 	return addresses[vif+1]
+ end
  
--	delete_ibss(radio_name)
--
- 	if not config() then
- 		uci:set('wireless', radio_name, 'disabled', true)
- 		return
++function M.supports_channel(radio, channel)
++	local phy = M.find_phy(radio)
++	for _, chan in ipairs(iwinfo.nl80211.freqlist(phy)) do
++		if channel == chan.channel then
++			return true
++		end
++	end
++	return false
++end
++
+ local radio_mac_offsets = {
+ 	client = 0,
+ 	mesh = 1,
 
-From 032a09fdecbf3da4c3998960567d3ceddd9e1c72 Mon Sep 17 00:00:00 2001
+From b8958c2df83b1d95cb0fa2c41c8236250b42f2cc Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Tue, 14 Oct 2025 08:15:26 +0200
+Subject: [PATCH 12/20] gluon-core: set channel to auto if mesh is not possible
+
+The auto channel should be used on the client only radio
+---
+ package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index c3706c588f..830121307e 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -54,7 +54,7 @@ local function is_outdoor()
+ end
+ 
+ local function get_channel(radio, config)
+-	if radio.band == '5g' and is_outdoor() then
++	if (radio.band == '5g' and is_outdoor()) or not wireless.supports_channel(radio, config.channel()) then
+ 		-- actual channel will be picked and probed from chanlist
+ 		return 'auto'
+ 	end
+@@ -169,10 +169,11 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 	local band = radio.band
+ 	-- now we assign radios to roles
+ 	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
++	local enable_mesh = wireless.supports_channel(radio, config.channel()) and util.contains(roles, 'mesh')
+ 
+ 	if band == '2g' then
+ 		uci:set('wireless', radio_name, 'legacy_rates', false)
+-		if util.contains(roles, 'mesh') then
++		if enable_mesh then
+ 			configure_mesh(radio, index, config.mesh())
+ 		end
+ 	elseif band == '5g' then
+@@ -182,7 +183,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 		else
+ 			uci:delete('wireless', radio_name, 'country3')
+ 
+-			if wireless.supports_channel(radio, config.channel()) and util.contains(roles, 'mesh') then
++			if enable_mesh then
+ 				configure_mesh(radio, index, config.mesh())
+ 			end
+ 		end
+
+From e156c14b802326022215930bba278bece8c93b65 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 29 Sep 2025 09:11:21 +0200
-Subject: [PATCH 11/14] gluon-core: check if device_supports_band instead of
+Subject: [PATCH 13/20] gluon-core: check if device_supports_band instead of
  usage to evaluate if a default config should be created
 
 ---
@@ -1132,20 +1238,20 @@ Subject: [PATCH 11/14] gluon-core: check if device_supports_band instead of
  2 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-index a115668654..aab55ac31a 100755
+index b030d3e04e..0927f6e185 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-@@ -78,7 +78,7 @@ end
+@@ -79,7 +79,7 @@ local function migrate_wifi_to_roles(band)
+ end
  
- for band_name, _ in pairs(default_wifi_roles) do
- 	local raw_band = band_name:gsub("^band_", "")
--	if not uci:get('gluon', band_name) and wireless.device_uses_band(uci, raw_band) then
-+	if not uci:get('gluon', band_name) and wireless.device_supports_band(uci, raw_band) then
+ for band, _ in pairs(default_wifi_roles) do
+-	if not uci:get('gluon', 'band_' .. band) and wireless.device_uses_band(uci, band) then
++	if not uci:get('gluon', 'band_' .. band) and wireless.device_supports_band(uci, band) then
  		-- should only create defaults when upgrades are only possible from v2025.1 onwards
- 		migrate_wifi_to_roles(raw_band)
+ 		migrate_wifi_to_roles(band)
  	end
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 0575203371..0d455c0ef5 100644
+index 0575203371..1e2b829e6d 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 @@ -145,4 +145,18 @@ function M.device_uses_band(uci, band)
@@ -1157,7 +1263,7 @@ index 0575203371..0d455c0ef5 100644
 +	M.foreach_radio(uci, function(radio)
 +		local hwmodes = iwinfo.nl80211.hwmodelist(M.find_phy(radio))
 +
-+		if band == '2g' and (hwmodes.g) then
++		if band == '2g' and hwmodes.g then
 +			ret = true
 +		elseif band == '5g' and (hwmodes.a or hwmodes.ac) then
 +			ret = true
@@ -1168,58 +1274,179 @@ index 0575203371..0d455c0ef5 100644
 +
  return M
 
-From b6fafed3d4b46f871b27c21627bcf7ab8b362138 Mon Sep 17 00:00:00 2001
+From 4263d4cdb71ccf7841f0808c86eafb3620ec2128 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Tue, 19 Aug 2025 23:18:51 +0200
-Subject: [PATCH 12/14] gluon-core: migrate txpower setting and allow setting
+Date: Sat, 4 Oct 2025 11:16:20 +0200
+Subject: [PATCH 14/20] gluon-core: retrieve roles per radio with new
+ radio_roles helper function
+
+---
+ .../lib/gluon/upgrade/320-gluon-client-bridge-wireless |  2 +-
+ .../gluon-core/luasrc/lib/gluon/upgrade/200-wireless   |  6 ++----
+ .../gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua   | 10 ++++++++++
+ .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi    |  2 +-
+ 4 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+index 0f3d91256d..e86170085b 100755
+--- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
++++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+@@ -19,7 +19,7 @@ end)
+ local function is_disabled(radio, config)
+ 	-- now we assign radios to roles
+ 	local band = radio.band
+-	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
++	local roles = wireless.radio_roles(uci, radio)
+ 	-- if there is a radio which does not support the mesh channel, we can configure it on a different channel
+ 	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
+ 	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band_' .. band] > 0
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index 830121307e..a087d8ff0f 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -103,11 +103,9 @@ local function configure_mesh(radio, index, mesh_config)
+ 		return
+ 	end
+ 
+-	local batadv_hop_penalty = uci:get('gluon', 'band_' .. radio.band, 'batadv_hop_penalty') or 0
+-
+ 	uci:section('network', 'interface', name, {
+ 		proto = 'gluon_mesh',
+-		hop_penalty = batadv_hop_penalty,
++		hop_penalty = wireless.radio_hop_penalty(uci, radio)
+ 	})
+ 
+ 	uci:section('wireless', 'wifi-iface', name, {
+@@ -168,7 +166,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 
+ 	local band = radio.band
+ 	-- now we assign radios to roles
+-	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
++	local roles = wireless.radio_roles(uci, radio)
+ 	local enable_mesh = wireless.supports_channel(radio, config.channel()) and util.contains(roles, 'mesh')
+ 
+ 	if band == '2g' then
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index 1e2b829e6d..5e2cea8d6f 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -159,4 +159,14 @@ function M.device_supports_band(uci, band)
+ 	return ret
+ end
+ 
++function M.radio_roles(uci, radio)
++	local band = radio.band
++	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
++	return roles
++end
++
++function M.radio_hop_penalty(uci, radio)
++	return uci:get('gluon', 'band_' .. radio.band, 'batadv_hop_penalty') or 0
++end
++
+ return M
+diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+index f02377b041..6d1367fa90 100755
+--- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
++++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+@@ -37,7 +37,7 @@ local function configure_private_wifi(radio, index)
+ end
+ 
+ wireless.foreach_radio(uci, function(radio, index)
+-	local roles = uci:get_list('gluon', 'band_' .. radio.band, 'role')
++	local roles = wireless.radio_roles(uci, radio)
+ 
+ 	if util.contains(roles, 'private') then
+ 		configure_private_wifi(radio, index)
+
+From 509f4a7bf7df09db1d7c01cf0d873fa996f4e87c Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 4 Oct 2025 11:26:16 +0200
+Subject: [PATCH 15/20] gluon-core: migrate txpower setting and allow setting
  of htmode
 
 add a txpower and htmode per radio section, which can be set using for example
 
-uci set gluon.wireless.htmode_radio0="HE40"
+uci set gluon.radio0.htmode="HE40"
 
-Similarly, txpower_radio0 can be adjusted.
+Similarly, gluon.radio0.txpower can be adjusted.
 The migration of the existing txpower value takes already place in 022-wireless-roles
 ---
- .../lib/gluon/upgrade/022-wireless-roles      | 13 +++
- .../luasrc/lib/gluon/upgrade/200-wireless     | 18 +++-
- .../config-mode/model/admin/wifi-config.lua   | 91 +++++++++----------
- 3 files changed, 67 insertions(+), 55 deletions(-)
+ .../gluon/config-mode/wizard/0250-outdoor.lua |  6 +-
+ .../lib/gluon/upgrade/022-wireless-roles      | 19 +++++-
+ .../luasrc/lib/gluon/upgrade/200-wireless     | 18 ++++--
+ .../luasrc/usr/lib/lua/gluon/wireless.lua     |  9 ++-
+ .../config-mode/model/admin/wifi-config.lua   | 63 ++++++++-----------
+ 5 files changed, 69 insertions(+), 46 deletions(-)
 
+diff --git a/package/gluon-config-mode-outdoor/luasrc/lib/gluon/config-mode/wizard/0250-outdoor.lua b/package/gluon-config-mode-outdoor/luasrc/lib/gluon/config-mode/wizard/0250-outdoor.lua
+index 724b1798bf..64b3ed9a53 100644
+--- a/package/gluon-config-mode-outdoor/luasrc/lib/gluon/config-mode/wizard/0250-outdoor.lua
++++ b/package/gluon-config-mode-outdoor/luasrc/lib/gluon/config-mode/wizard/0250-outdoor.lua
+@@ -30,12 +30,12 @@ return function(form, uci)
+ 
+ 			if data == false then
+ 				local mesh_ifaces_5ghz = {}
+-				uci:foreach('wireless', 'wifi-device', function(config)
+-					if config.band ~= '5g' then
++				uci:foreach('wireless', 'wifi-device', function(radio)
++					if radio.band ~= '5g' then
+ 						return
+ 					end
+ 
+-					local radio_name = config['.name']
++					local radio_name = radio['.name']
+ 					local mesh_iface = 'mesh_' .. radio_name
+ 					table.insert(mesh_ifaces_5ghz, mesh_iface)
+ 				end)
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-index aab55ac31a..5f17dea8a2 100755
+index 0927f6e185..ee66486c62 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-@@ -64,6 +64,19 @@ local function migrate_wifi_to_roles(band)
+@@ -41,8 +41,9 @@ local function migrate_wifi_to_roles(band)
+ 		if radio.band ~= band then
+ 			return
+ 		end
++		local radio_name = radio['.name']
+ 		for role, iface_prefix in pairs(role_iface_names) do
+-			local iface_name = iface_prefix .. radio['.name']
++			local iface_name = iface_prefix .. radio_name
+ 			if uci:get('wireless', iface_name) then
+ 				config_exists = true
+ 				local role_enabled = not uci:get_bool('wireless', iface_name, 'disabled')
+@@ -66,6 +67,22 @@ local function migrate_wifi_to_roles(band)
  				end
  			end
  		end
 +
++		uci:section('gluon', 'wireless_radio', radio_name, {
++		})
++
 +		local txpower = uci:get('wireless', radio_name, 'txpower')
 +		if txpower ~= nil then
-+			uci:set('gluon', 'wireless', 'txpower_' .. radio['.name'], txpower)
++			uci:set('gluon', radio_name, 'txpower', txpower)
 +		end
 +
 +		if radio.band == '5g' then
-+			local outdoor_htmode = uci:get('gluon', 'wireless', 'outdoor_' .. radio['.name'] .. '_htmode')
++			local outdoor_htmode = uci:get('gluon', 'wireless', 'outdoor_' .. radio_name .. '_htmode')
 +			if outdoor_htmode ~= nil then
-+				uci:set('gluon', 'wireless', 'htmode_' .. radio['.name'], outdoor_htmode)
-+				uci:delete('gluon', 'wireless', 'outdoor_' .. radio['.name'] .. '_htmode')
++				uci:set('gluon', radio_name, 'htmode', outdoor_htmode)
++				uci:delete('gluon', 'wireless', 'outdoor_' .. radio_name .. '_htmode')
 +			end
 +		end
  	end)
  
  	-- if no config exists for this band, we apply the default
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index ab055a3b89..786640ba71 100755
+index a087d8ff0f..662608a97b 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -62,16 +62,19 @@ local function get_channel(radio, config)
  	return config.channel()
  end
  
-+local function get_txpower(radio)
-+	return uci:get('gluon', 'wireless', 'txpower_' .. radio['.name'])
++local function get_txpower(radio_name)
++	return uci:get('gluon', radio_name, 'txpower')
 +end
 +
  local function get_htmode(radio)
@@ -1233,17 +1460,17 @@ index ab055a3b89..786640ba71 100755
 -			return outdoor_htmode
 -		end
 +
-+	local htmode = uci:get('gluon', 'wireless', 'htmode_' .. radio['.name'])
++	local htmode = uci:get('gluon', radio['.name'], 'htmode')
 +	if htmode ~= nil then
 +		return htmode
  	end
  
  	local phy = wireless.find_phy(radio)
-@@ -161,6 +164,11 @@ wireless.foreach_radio(uci, function(radio, index, config)
+@@ -151,6 +154,11 @@ wireless.foreach_radio(uci, function(radio, index, config)
  		return
  	end
  
-+	local txpower = get_txpower(radio)
++	local txpower = get_txpower(radio_name)
 +	if txpower ~= nil then
 +		uci:set('wireless', radio_name, 'txpower', txpower)
 +	end
@@ -1251,83 +1478,70 @@ index ab055a3b89..786640ba71 100755
  	local htmode = get_htmode(radio)
  	local beacon_interval = config.beacon_interval()
  
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index 5e2cea8d6f..acf9956881 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -161,8 +161,15 @@ end
+ 
+ function M.radio_roles(uci, radio)
+ 	local band = radio.band
++	local radio_name = radio['.name']
++	local radio_roles = uci:get_list('gluon', radio_name, 'role')
++
+ 	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
+-	return roles
++	if next(radio_roles) == nil then
++        return roles
++    else
++        return radio_roles
++    end
+ end
+ 
+ function M.radio_hop_penalty(uci, radio)
 diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-index 9b5c11b8c4..434d5666db 100644
+index d7c7da1273..0ec26351a6 100644
 --- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
 +++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-@@ -70,30 +70,32 @@ uci:foreach('wireless', 'wifi-device', function(config)
- 	local title
- 	local band = config.band
- 
--	if bands and util.contains(bands, band) then
--		return
--	end
--
--	table.insert(bands, band)
--
--	if band == '2g' then
--		title = translate("2.4GHz WLAN")
--	elseif band == '5g' then
--		is_5ghz = true
--		title = translate("5GHz WLAN")
-+	local p
-+	-- store section to add txpower and htmode to
-+	if bands and bands[band] then
-+		p = bands[band]
- 	else
--		return
--	end
-+		if band == '2g' then
-+			title = translate("2.4GHz WLAN")
-+		elseif band == '5g' then
-+			is_5ghz = true
-+			title = translate("5GHz WLAN")
-+		else
-+			return
-+		end
- 
--	local p = f:section(Section, title)
-+		p = f:section(Section, title)
- 
--	vif_option(p, 'client', band, translate('Enable client network (access point)'))
-+		vif_option(p, 'client', band, translate('Enable client network (access point)'))
- 
--	local mesh_vif = vif_option(p, 'mesh', band, translate("Enable mesh network (802.11s)"))
--	if is_5ghz then
--		table.insert(mesh_vifs_5ghz, mesh_vif)
-+		local mesh_vif = vif_option(p, 'mesh', band, translate("Enable mesh network (802.11s)"))
-+		if is_5ghz then
-+			table.insert(mesh_vifs_5ghz, mesh_vif)
-+		end
-+		bands[band] = p
+@@ -85,9 +85,10 @@ uci:foreach('gluon', 'wireless_band', function(band_config)
  	end
+ end)
  
-+	-- txpowerlist
- 	local phy = wireless.find_phy(config)
+-local p = f:section(Section, translate("Per radio settings"))
+-uci:foreach('wireless', 'wifi-device', function(config)
+-	local phy = wireless.find_phy(config)
++local radio_sec = f:section(Section, translate("Per radio settings"))
++wireless.foreach_radio(uci, function(radio)
++	local radio_name = radio['.name']
++	local phy = wireless.find_phy(radio)
  	if not phy then
  		return
-@@ -104,8 +106,8 @@ uci:foreach('wireless', 'wifi-device', function(config)
+ 	end
+@@ -97,9 +98,9 @@ uci:foreach('wireless', 'wifi-device', function(config)
  		return
  	end
  
--	local tp = p:option(ListValue, radio .. '_txpower', translate("Transmission power"))
+-	local radio = config['.name']
+-	local tp = p:option(ListValue, radio .. '_txpower', translate("Transmission power") .. ' (' .. radio .. ')')
 -	tp.default = uci:get('wireless', radio, 'txpower') or 'default'
-+	local tp = p:option(ListValue, 'txpower_' .. radio, translate("Transmission power").. ' (' .. radio .. ')')
-+	tp.default = uci:get('gluon', 'wireless', 'txpower_' .. radio) or 'default'
++	local str_txpower = translate("Transmission power").. ' (' .. radio_name .. ')'
++	local tp = radio_sec:option(ListValue, 'txpower_' .. radio_name, str_txpower)
++	tp.default = uci:get('gluon', radio_name, 'txpower') or 'default'
  
  	tp:value('default', translate("(default)"))
  
-@@ -119,7 +121,25 @@ uci:foreach('wireless', 'wifi-device', function(config)
+@@ -113,7 +114,26 @@ uci:foreach('wireless', 'wifi-device', function(config)
  		if data == 'default' then
  			data = nil
  		end
 -		uci:set('wireless', radio, 'txpower', data)
-+		uci:set('gluon', 'wireless', 'txpower_' .. radio, data)
++		uci:set('gluon', radio_name, 'txpower', data)
 +	end
 +
 +	-- htmode
-+	local ht = p:option(ListValue, 'htmode_' .. radio, translate('HT Mode') .. ' (' .. radio .. ')')
-+	ht.default = uci:get('gluon', 'wireless', 'htmode_' .. radio) or 'default'
++	local str_htmode = translate('HT Mode') .. ' (' .. radio_name .. ')'
++	local ht = radio_sec:option(ListValue, 'htmode_' .. radio_name, str_htmode)
++	ht.default = uci:get('gluon', radio_name, 'htmode') or 'default'
 +	ht:value('default', translate("(default)"))
 +
 +	for mode, available in pairs(iwinfo.nl80211.htmodelist(phy)) do
@@ -1340,11 +1554,11 @@ index 9b5c11b8c4..434d5666db 100644
 +		if data == 'default' then
 +			data = nil
 +		end
-+		uci:set('gluon', 'wireless', 'htmode_' .. radio, data)
++		uci:set('gluon', radio_name, 'htmode', data)
  	end
  end)
  
-@@ -146,35 +166,6 @@ if wireless.device_uses_band(uci, '5g') and not wireless.preserve_channels(uci)
+@@ -140,35 +160,6 @@ if wireless.device_uses_band(uci, '5g') and not wireless.preserve_channels(uci)
  	function outdoor:write(data)
  		uci:set('gluon', 'wireless', 'outdoor', data)
  	end
@@ -1359,7 +1573,7 @@ index 9b5c11b8c4..434d5666db 100644
 -
 -		local phy = wireless.find_phy(config)
 -
--		local ht = r:option(ListValue, 'outdoor_htmode', translate('HT Mode') .. ' (' .. radio .. ')')
+-		local ht = r:option(ListValue, 'outdoor_' .. radio .. '_htmode', translate('HT Mode') .. ' (' .. radio .. ')')
 -		ht:depends(outdoor, true)
 -		ht.default = uci:get('gluon', 'wireless', 'outdoor_' .. radio .. '_htmode') or 'default'
 -
@@ -1381,79 +1595,70 @@ index 9b5c11b8c4..434d5666db 100644
  
  
 
-From 8f3cee34b9705ba3a0485b00ce25475e6dad7754 Mon Sep 17 00:00:00 2001
+From 0a3649ad0bd6a750bc2f71b8983362311b150d56 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Sat, 6 Sep 2025 02:51:52 +0200
-Subject: [PATCH 13/14] add vero w6m  to supported devices
+Date: Sat, 4 Oct 2025 13:08:20 +0200
+Subject: [PATCH 16/20] gluon-core: adjust default bandwidth
 
+Set the bandwidth for 5GHz to 40MHz and for 6GHz to 80MHz
 ---
- docs/user/supported_devices.rst                            | 4 ++++
- .../gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac    | 1 +
- targets/mediatek-filogic                                   | 7 +++++++
- 3 files changed, 12 insertions(+)
+ .../luasrc/lib/gluon/upgrade/200-wireless         | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
-index 71d8550909..52d312c962 100644
---- a/docs/user/supported_devices.rst
-+++ b/docs/user/supported_devices.rst
-@@ -313,6 +313,10 @@ lantiq-xway
- mediatek-filogic
- ----------------
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index 662608a97b..b6ca666c8f 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -71,22 +71,29 @@ local function get_htmode(radio)
+ 		return radio.htmode
+ 	end
  
-+* Acer
-+
-+  - Vero-W6M
-+
- * ASUS
+-
+ 	local htmode = uci:get('gluon', radio['.name'], 'htmode')
+ 	if htmode ~= nil then
+ 		return htmode
+ 	end
  
-   - RT-AX52
-diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
-index ebbd746e93..fbd483887c 100755
---- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
-+++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
-@@ -95,6 +95,7 @@ local primary_addrs = {
- 			'netgear,dgn3500b',
- 		}},
- 		{'mediatek', 'filogic', {
-+			'acer,vero-w6m',
- 			'asus,tuf-ax4200',
- 			'asus,tuf-ax6000',
- 		}},
-diff --git a/targets/mediatek-filogic b/targets/mediatek-filogic
-index 2a399c500b..818bb01114 100644
---- a/targets/mediatek-filogic
-+++ b/targets/mediatek-filogic
-@@ -1,6 +1,13 @@
- config('TARGET_ROOTFS_INITRAMFS', true)
- config('TARGET_INITRAMFS_COMPRESSION_LZMA', true)
++	local bandwidth = '20'
++
++	if radio.band == '5g' then
++		bandwidth = '40'
++	elseif radio.band == '6g' then
++		bandwidth = '80'
++	end
++
+ 	local phy = wireless.find_phy(radio)
+ 	if iwinfo.nl80211.hwmodelist(phy).ax then
+-		return 'HE20'
++		return 'HE' .. bandwidth
+ 	end
  
-+-- Acer
-+
-+device('acer-vero-w6m', 'acer_vero-w6m', {
-+	factory = false,
-+})
-+
-+
- -- ASUS
+ 	if iwinfo.nl80211.hwmodelist(phy).ac then
+-		return 'VHT20'
++		return 'VHT' .. bandwidth
+ 	end
  
- device('asus-rt-ax52', 'asus_rt-ax52', {
+-	return 'HT20'
++	return 'HT' .. bandwidth
+ end
+ 
+ local function configure_mesh(radio, index, mesh_config)
 
-From 65dbec8c535815d80c0cf7d95ab2a532a6ecb637 Mon Sep 17 00:00:00 2001
+From 7cf6dee6b1484991bf6152350cc1514a13bc7a36 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Mon, 18 Aug 2025 10:50:37 +0200
-Subject: [PATCH 14/14] gluon-core: add basic support for 6GHz wifi
+Subject: [PATCH 17/20] gluon-core: add basic support for 6GHz wifi
 
 ---
  package/gluon-client-bridge/check_site.lua         |  2 +-
  .../gluon/upgrade/320-gluon-client-bridge-wireless | 14 ++++++++++----
  package/gluon-core/check_site.lua                  |  8 +++++++-
  .../luasrc/lib/gluon/upgrade/022-wireless-roles    |  4 ++++
- .../luasrc/lib/gluon/upgrade/200-wireless          |  7 +++++--
+ .../luasrc/lib/gluon/upgrade/200-wireless          |  9 ++++++++-
  .../luasrc/usr/lib/lua/gluon/wireless.lua          |  4 ++++
  .../luasrc/lib/gluon/upgrade/205-wireless-mesh-sae |  2 +-
- .../gluon/config-mode/model/admin/privatewifi.lua  |  5 +++++
  .../gluon/config-mode/model/admin/wifi-config.lua  |  2 ++
- 9 files changed, 39 insertions(+), 9 deletions(-)
+ 8 files changed, 37 insertions(+), 8 deletions(-)
 
 diff --git a/package/gluon-client-bridge/check_site.lua b/package/gluon-client-bridge/check_site.lua
 index b077f87bb5..8cbf2ffca0 100644
@@ -1469,19 +1674,19 @@ index b077f87bb5..8cbf2ffca0 100644
  		need_boolean({config, 'ap', 'disabled'}, false)
  		if need_boolean({config, 'ap', 'owe_transition_mode'}, false) then
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-index fad008f385..15b8af24af 100755
+index e86170085b..041d5d25cf 100755
 --- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 +++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
-@@ -5,7 +5,7 @@ local util = require 'gluon.util'
- 
+@@ -4,7 +4,7 @@ local wireless = require 'gluon.wireless'
  local uci = require('simple-uci').cursor()
+ local util = require "gluon.util"
  
 -local client_only_radio = {band_2g=0, band_5g=0}
 +local client_only_radio = {band_2g=0, band_5g=0, band_6g=0}
  
  local function count_band(band)
  	client_only_radio[band] = client_only_radio[band] + 1
-@@ -115,11 +115,17 @@ end
+@@ -110,11 +110,17 @@ end
  
  wireless.foreach_radio(uci, function(radio, index, config)
  	local radio_name = radio['.name']
@@ -1529,29 +1734,29 @@ index cf72f05fc8..c72dab3774 100644
  
  		obsolete({config, 'supported_rates'}, '802.11b rates are disabled by default.')
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
-index 5f17dea8a2..b11c029b21 100755
+index ee66486c62..f9624a113a 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
 @@ -9,6 +9,7 @@ local wireless = require 'gluon.wireless'
  local default_wifi_roles = {
- 	band_2g = {},
- 	band_5g = {},
-+	band_6g = {},
+ 	["2g"] = {},
+ 	["5g"] = {},
++	["6g"] = {},
  }
  
  -- enable client if it is not disabled
 @@ -27,6 +28,9 @@ end
  if site.wifi5.mesh() and not site.wifi5.mesh.disabled(false) then
- 	util.add_to_set(default_wifi_roles['band_5g'], 'mesh')
+ 	util.add_to_set(default_wifi_roles['5g'], 'mesh')
  end
 +if not site.wifi6.mesh.disabled(false) then
-+	util.add_to_set(default_wifi_roles['band_6g'], 'mesh')
++	util.add_to_set(default_wifi_roles['6g'], 'mesh')
 +end
  
  local role_iface_names = {
- 	client = 'client_radio',
+ 	client = 'client_',
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 786640ba71..995a35a5f0 100755
+index b6ca666c8f..5c42b6bbb9 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -9,7 +9,7 @@ local uci = require('simple-uci').cursor()
@@ -1573,17 +1778,19 @@ index 786640ba71..995a35a5f0 100755
  	end
  end)
  
-@@ -191,7 +194,7 @@ wireless.foreach_radio(uci, function(radio, index, config)
- 	end
- 
- 	if util.contains(roles, 'mesh') then
--		if band == '2g' then
-+		if band == '2g' or band == '6g' then
- 			configure_mesh_wireless(radio, index, config)
- 		elseif band == '5g' then
- 			if is_outdoor() or not wireless.supports_channel(radio, config.channel()) then
+@@ -189,6 +192,10 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 		if enable_mesh then
+ 			configure_mesh(radio, index, config.mesh())
+ 		end
++	elseif band == '6g' then
++		if util.contains(roles, 'mesh') then
++			configure_mesh(radio, index, config.mesh())
++		end
+ 	elseif band == '5g' then
+ 		if is_outdoor() or not wireless.supports_channel(radio, config.channel()) then
+ 			-- enforce outdoor channels by filtering the regdom for outdoor channels
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index 0d455c0ef5..9faec746b1 100644
+index acf9956881..9b656cb64e 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 @@ -89,6 +89,8 @@ function M.foreach_radio(uci, f)
@@ -1599,7 +1806,7 @@ index 0d455c0ef5..9faec746b1 100644
  			ret = true
  		elseif band == '5g' and (hwmodes.a or hwmodes.ac) then
  			ret = true
-+		elseif band == '6g' and (hwmodes.ax and not hwmodes.ac) then
++		elseif band == '6g' and (hwmodes.ax and not hwmodes.ac and not hwmodes.g) then
 +			ret = true
  		end
  	end)
@@ -1617,47 +1824,217 @@ index a229896694..99f69f3ca1 100755
  			configure_sae(vif)
  		end
  	end
-diff --git a/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua b/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
-index 30c7350431..01f860d4d7 100644
---- a/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
-+++ b/package/gluon-web-private-wifi/luasrc/lib/gluon/config-mode/model/admin/privatewifi.lua
-@@ -67,8 +67,10 @@ mfp.default = uci:get('gluon', 'wireless', 'private_mfp') or "0"
- function f:write()
- 	local roles_2g = uci:get_list('gluon', 'band_2g', 'role')
- 	local roles_5g = uci:get_list('gluon', 'band_5g', 'role')
-+	local roles_6g = uci:get_list('gluon', 'band_6g', 'role')
- 	if enabled.data then
- 		-- set new private wifi configuration
-+		-- TODO should this be set everytime? To reset this with empty values?
- 		uci:set('gluon', 'wireless', 'private_ssid', ssid.data)
- 		uci:set('gluon', 'wireless', 'private_key', key.data)
- 		uci:set('gluon', 'wireless', 'private_encryption', encryption.data)
-@@ -76,12 +78,15 @@ function f:write()
- 
- 		util.add_to_set(roles_2g, 'private')
- 		util.add_to_set(roles_5g, 'private')
-+		util.add_to_set(roles_6g, 'private')
- 	else
- 		util.remove_from_set(roles_2g, 'private')
- 		util.remove_from_set(roles_5g, 'private')
-+		util.remove_from_set(roles_6g, 'private')
- 	end
- 	uci:set_list('gluon', 'band_2g', 'role', roles_2g)
- 	uci:set_list('gluon', 'band_5g', 'role', roles_5g)
-+	uci:set_list('gluon', 'band_6g', 'role', roles_6g)
- 
- 	uci:commit('gluon')
- 	os.execute('/usr/bin/gluon-reconfigure')
 diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-index 434d5666db..2a74c73ef1 100644
+index 0ec26351a6..fc599eb535 100644
 --- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
 +++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
-@@ -77,6 +77,8 @@ uci:foreach('wireless', 'wifi-device', function(config)
+@@ -71,6 +71,8 @@ uci:foreach('gluon', 'wireless_band', function(band_config)
+ 	elseif band == 'band_5g' then
+ 		is_5ghz = true
+ 		title = translate("5GHz WLAN")
++	elseif band == '6g' then
++		title = translate("6GHz WLAN")
  	else
- 		if band == '2g' then
- 			title = translate("2.4GHz WLAN")
-+		elseif band == '6g' then
-+			title = translate("6GHz WLAN")
- 		elseif band == '5g' then
- 			is_5ghz = true
- 			title = translate("5GHz WLAN")
+ 		return
+ 	end
+
+From 62c063b9105014c7cfa7c0234183ddebde7cb010 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Tue, 30 Sep 2025 00:52:18 +0200
+Subject: [PATCH 18/20] configure 6ghz with open SSID instead of OWE ssid
+
+The configured SSID to broadcast needs to be the open, as otherwise you end up with two SSID for the same network in the scan list.
+
+Transition networks are hidden identified by the matching relation thru the transition IE. This is not available on 6GHz, thus the broadcasted SSID of the OWE network on 6GHz needs to be the Open SSID on a/g band.
+---
+ .../upgrade/320-gluon-client-bridge-wireless  | 38 ++++++++-----------
+ 1 file changed, 15 insertions(+), 23 deletions(-)
+
+diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+index 041d5d25cf..0c67a0db2a 100755
+--- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
++++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+@@ -27,15 +27,13 @@ local function is_disabled(radio, config)
+ 	return not util.contains(roles, 'client') or disable_client
+ end
+ 
+-local function configure_ap(radio, index, config, radio_name)
++local function configure_ap(radio, index, radio_name, ssid)
+ 	local name = 'client_' .. radio_name
+ 	local suffix = radio_name:match('^radio(%d+)$')
+ 
+-	local ap = config.ap
+-
+ 	local macaddr = wireless.get_wlan_mac('client', index, radio)
+ 
+-	if not ap.ssid() or not macaddr or not suffix then
++	if not ssid or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -43,18 +41,16 @@ local function configure_ap(radio, index, config, radio_name)
+ 		device = radio_name,
+ 		network = 'client',
+ 		mode = 'ap',
+-		ssid = ap.ssid(),
++		ssid = ssid,
+ 		macaddr = macaddr,
+ 		ifname = 'client' .. suffix,
+ 	})
+ end
+ 
+-local function configure_owe(radio, index, config, radio_name)
++local function configure_owe(radio, index, radio_name, ssid)
+ 	local name = 'owe_' .. radio_name
+ 	local suffix = radio_name:match('^radio(%d+)$')
+ 
+-	local ap = config.ap
+-
+ 	-- Don't configure OWE in case our device
+ 	-- can't do MFP, as it's mandatory for OWE.
+ 	if not wireless.device_supports_mfp(uci) then
+@@ -63,7 +59,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 
+ 	local macaddr = wireless.get_wlan_mac('owe', index, radio)
+ 
+-	if not ap.owe_ssid() or not macaddr or not suffix then
++	if not ssid or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -71,7 +67,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 		device = radio_name,
+ 		network = 'client',
+ 		mode = 'ap',
+-		ssid = ap.owe_ssid(),
++		ssid = ssid,
+ 		macaddr = macaddr,
+ 		ifname = 'owe' .. suffix,
+ 		encryption = 'owe',
+@@ -79,8 +75,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 	})
+ end
+ 
+-local function configure_owe_transition_mode(config, radio_name)
+-	local ap = config.ap
++local function configure_owe_transition_mode(radio_name)
+ 
+ 	-- Don't configure OWE in case our device
+ 	-- can't do MFP, as it's mandatory for OWE.
+@@ -88,10 +83,6 @@ local function configure_owe_transition_mode(config, radio_name)
+ 		return
+ 	end
+ 
+-	if not ap.owe_transition_mode(false) then
+-		return
+-	end
+-
+ 	local name_client = 'client_' .. radio_name
+ 	local name_owe = 'owe_' .. radio_name
+ 
+@@ -113,13 +104,14 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 
+ 	if not is_disabled(radio, config)  then
+ 		-- 6ghz does not support unencrypted client ifaces
+-		if radio.band ~= '6g' then
+-			configure_ap(radio, index, config, radio_name)
+-		end
+-
+-		configure_owe(radio, index, config, radio_name)
+-		if radio.band ~= '6g' then
+-			configure_owe_transition_mode(config, radio_name)
++		if radio.band == '6g' then
++			configure_owe(radio, index, radio_name, config.ap.ssid())
++		else
++			configure_ap(radio, index, radio_name, config.ap.ssid())
++			configure_owe(radio, index, radio_name, config.ap.owe_ssid())
++			if config.ap.owe_transition_mode(false) then
++				configure_owe_transition_mode(radio_name)
++			end
+ 		end
+ 	end
+ end)
+
+From 7746de3e11e5da604fbc178185ff57a4b3f3e89d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 6 Sep 2025 02:51:52 +0200
+Subject: [PATCH 19/20] add vero w6m  to supported devices
+
+---
+ docs/user/supported_devices.rst                            | 4 ++++
+ .../gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac    | 3 +++
+ targets/mediatek-filogic                                   | 7 +++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
+index 71d8550909..52d312c962 100644
+--- a/docs/user/supported_devices.rst
++++ b/docs/user/supported_devices.rst
+@@ -313,6 +313,10 @@ lantiq-xway
+ mediatek-filogic
+ ----------------
+ 
++* Acer
++
++  - Vero-W6M
++
+ * ASUS
+ 
+   - RT-AX52
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+index ebbd746e93..7af7b2a6ff 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+@@ -129,6 +129,9 @@ local primary_addrs = {
+ 			'aerohive,hiveap-330',
+ 			'ocedo,panda',
+ 		}},
++		{'mediatek', 'filogic', {
++			'acer,vero-w6m',
++		}},
+ 		{'mpc85xx', 'p1010', {
+ 			'enterasys,ws-ap3715i',
+ 		}},
+diff --git a/targets/mediatek-filogic b/targets/mediatek-filogic
+index 2a399c500b..818bb01114 100644
+--- a/targets/mediatek-filogic
++++ b/targets/mediatek-filogic
+@@ -1,6 +1,13 @@
+ config('TARGET_ROOTFS_INITRAMFS', true)
+ config('TARGET_INITRAMFS_COMPRESSION_LZMA', true)
+ 
++-- Acer
++
++device('acer-vero-w6m', 'acer_vero-w6m', {
++	factory = false,
++})
++
++
+ -- ASUS
+ 
+ device('asus-rt-ax52', 'asus_rt-ax52', {
+
+From c04692f38d46298666377a703747051694e0a668 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 8 Oct 2025 22:45:38 +0200
+Subject: [PATCH 20/20] fixup private wifi encryption if set to something else
+ than sae
+
+---
+ .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi            | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+index 6d1367fa90..9d45ada8ac 100755
+--- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
++++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+@@ -14,6 +14,9 @@ local function configure_private_wifi(radio, index)
+ 	end
+ 
+ 	local encryption = uci:get('gluon', 'wireless', 'private_encryption')
++	if radio.band == '6g' then
++		encryption = 'sae'
++	end
+ 	local ssid = uci:get('gluon', 'wireless', 'private_ssid')
+ 	local key = uci:get('gluon', 'wireless', 'private_key')
+ 	local mfp = wireless.device_supports_mfp(uci) and uci:get('gluon', 'wireless', 'private_mfp')
