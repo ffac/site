@@ -1,13 +1,12 @@
-diff --git a/patches/openwrt/0019-ath11k-flush.patch b/patches/openwrt/0019-ath11k-flush.patch
+diff --git a/patches/openwrt/0011-ath11k-add-patch-to-fix-transmit-queue-flushing.patch b/patches/openwrt/0011-ath11k-add-patch-to-fix-transmit-queue-flushing.patch
 new file mode 100644
-index 00000000..9417a0ed
+index 00000000..12a6923b
 --- /dev/null
-+++ b/patches/openwrt/0019-ath11k-flush.patch
-@@ -0,0 +1,71 @@
-+From 95a033706bed891683b8142c975d8ac18d8abc87 Mon Sep 17 00:00:00 2001
++++ b/patches/openwrt/0011-ath11k-add-patch-to-fix-transmit-queue-flushing.patch
+@@ -0,0 +1,66 @@
 +From: Florian Maurer <f.maurer@outlook.de>
 +Date: Fri, 3 Oct 2025 09:30:59 +0200
-+Subject: [PATCH] ath11k: add patch to fix transmit queue flushing
++Subject: ath11k: add patch to fix transmit queue flushing
 +
 +warning print "ath11k c000000.wifi: failed to flush mgmt transmit queue 0"
 +is observed during interface down.
@@ -15,14 +14,10 @@ index 00000000..9417a0ed
 +This is fixed with this patch.
 +
 +Signed-off-by: Florian Maurer <f.maurer@outlook.de>
-+---
-+ ...k_mac_op_flush_sta-to-properly-flush.patch | 49 +++++++++++++++++++
-+ 1 file changed, 49 insertions(+)
-+ create mode 100644 package/kernel/mac80211/patches/ath11k/453-ath11k-add-ath11k_mac_op_flush_sta-to-properly-flush.patch
 +
 +diff --git a/package/kernel/mac80211/patches/ath11k/453-ath11k-add-ath11k_mac_op_flush_sta-to-properly-flush.patch b/package/kernel/mac80211/patches/ath11k/453-ath11k-add-ath11k_mac_op_flush_sta-to-properly-flush.patch
 +new file mode 100644
-+index 00000000000000..f03012113ec209
++index 0000000000000000000000000000000000000000..17a6d58b6fc62a83ca1628573a026188ed768580
 +--- /dev/null
 ++++ b/package/kernel/mac80211/patches/ath11k/453-ath11k-add-ath11k_mac_op_flush_sta-to-properly-flush.patch
 +@@ -0,0 +1,49 @@

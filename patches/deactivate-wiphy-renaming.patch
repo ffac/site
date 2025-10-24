@@ -1,0 +1,26 @@
+diff --git a/patches/openwrt/0012-Disable-wiphy-renaming.patch b/patches/openwrt/0012-Disable-wiphy-renaming.patch
+new file mode 100644
+index 00000000..9704dd31
+--- /dev/null
++++ b/patches/openwrt/0012-Disable-wiphy-renaming.patch
+@@ -0,0 +1,20 @@
++From: Felix Baumann <felix.bau@gmx.de>
++Date: Fri, 17 Oct 2025 19:52:51 +0200
++Subject: Disable wiphy-renaming
++
++based on suggestion by neocturne
++
++Signed-off-by: Felix Baumann <felix.bau@gmx.de>
++
++diff --git a/package/base-files/files/lib/functions/uci-defaults.sh b/package/base-files/files/lib/functions/uci-defaults.sh
++index 5293ce12c0e08f2d211999e4f00fcbac6639a774..c55ff3fd681150adc9456b992a3c315c0950fb4f 100644
++--- a/package/base-files/files/lib/functions/uci-defaults.sh
+++++ b/package/base-files/files/lib/functions/uci-defaults.sh
++@@ -757,6 +757,7 @@ ucidef_set_poe() {
++ }
++ 
++ ucidef_add_wlan() {
+++	return 0
++ 	local path="$1"; shift
++ 
++ 	ucidef_wlan_idx=${ucidef_wlan_idx:-0}

@@ -1,8 +1,8 @@
 diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
-index 80dbbf4a..19a187a5 100644
+index 80dbbf4a..043b60f3 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -86,13 +86,26 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
+@@ -86,6 +86,15 @@ device('gl.inet-gl-b1300', 'glinet_gl-b1300', {
  
  device('linksys-ea6350v3', 'linksys_ea6350v3')
  
@@ -12,25 +12,26 @@ index 80dbbf4a..19a187a5 100644
 +
 +device('linksys-whw03', 'linksys_whw03')
 +
-+device('linksys-whw03v2', 'linksys_whw03v2')
++device('linksys-whw03-v2-velop', 'linksys_whw03v2', {
++	packages = ATH10K_PACKAGES_IPQ40XX_QCA9888,
++})
  
  -- Meraki
  
- device('meraki-mr33-access-point', 'meraki_mr33', {
- 	packages = {
--		-- radio0 is monitoring radio - removed for now
+@@ -95,6 +104,12 @@ device('meraki-mr33-access-point', 'meraki_mr33', {
  		-- the -ct firmware does not have working mesh
+ 		'-ath10k-firmware-qca9887-ct',
+ 		'-ath10k-board-qca9887',
 +		-- use non ct for now
 +		'kmod-ath10k',
 +		'-kmod-ath10k-ct',
 +		'-kmod-ath10k-ct-smallbuffers',
 +		'ath10k-firmware-qca4019',
 +		'-ath10k-firmware-qca4019-ct',
-+		-- radio0 is monitoring radio - removed for now
- 		'-ath10k-firmware-qca9887-ct',
- 		'-ath10k-board-qca9887',
  	},
-@@ -136,6 +149,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
+ 	factory = false,
+ 	broken = true,
+@@ -136,6 +151,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
  -- ZTE
  
  device('zte-mf289f', 'zte_mf289f', {
