@@ -198,7 +198,7 @@ end
 if device({
     'zyxel-nwa55axe',
 }) then
-    packages {'ffda-network-setup-mode'}
+    packages {'ffda-network-setup-mode', 'ffac-mt7915-maxinactivity'}
     broken(false)
 end
 
