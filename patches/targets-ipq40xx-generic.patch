@@ -2,23 +2,6 @@ diff --git a/targets/ipq40xx-generic b/targets/ipq40xx-generic
 index 126122e3..ceac1d89 100644
 --- a/targets/ipq40xx-generic
 +++ b/targets/ipq40xx-generic
-@@ -92,6 +92,16 @@ device('linksys-whw01', 'linksys_whw01', {
- 	},
- })
- 
-+ device('linksys-ea8300-dallas', 'linksys_ea8300')
-+
-+device('linksys-mr8300-dallas', 'linksys_mr8300')
-+
-+device('linksys-whw03', 'linksys_whw03')
-+
-+device('linksys-whw03-v2-velop', 'linksys_whw03v2', {
-+       packages = ATH10K_PACKAGES_IPQ40XX_QCA9888,
-+})
-+
- 
- -- Meraki
- 
 @@ -142,6 +152,7 @@ device('plasma-cloud-pa2200', 'plasmacloud_pa2200', {
  -- ZTE
  
