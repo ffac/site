@@ -1,9 +1,30 @@
-diff --git a/patches/openwrt/0010-mt7915-detect-and-purge-stuck-PLE-queues.patch b/patches/openwrt/0010-mt7915-detect-and-purge-stuck-PLE-queues.patch
+From d74b71bb836d1fa963b1a6f192a052af75849a9a Mon Sep 17 00:00:00 2001
+From: David Bauer <mail@david-bauer.net>
+Date: Sat, 15 Nov 2025 14:37:19 +0100
+Subject: [PATCH] mt7915: detect and purge stuck PLE queues
+
+When stations leave the area of service while there are transmissions
+pending inside the hardware, these queues can become stuck.
+
+This results in missing TXRX free / TXS events to the host. Also the
+throughput of other connected stations substantially decreases and
+latency massively increases.
+
+Periodically poll the queue state of connected station from hardware and
+purge queues detected as stuck.
+
+Signed-off-by: David Bauer <mail@david-bauer.net>
+---
+ ...15-detect-and-purge-stuck-PLE-queues.patch | 368 ++++++++++++++++++
+ 1 file changed, 368 insertions(+)
+ create mode 100644 patches/openwrt/0012-mt7915-detect-and-purge-stuck-PLE-queues.patch
+
+diff --git a/patches/openwrt/0012-mt7915-detect-and-purge-stuck-PLE-queues.patch b/patches/openwrt/0012-mt7915-detect-and-purge-stuck-PLE-queues.patch
 new file mode 100644
-index 0000000000..f6f04542ae
+index 0000000000..d3428830cb
 --- /dev/null
-+++ b/patches/openwrt/0010-mt7915-detect-and-purge-stuck-PLE-queues.patch
-@@ -0,0 +1,354 @@
++++ b/patches/openwrt/0012-mt7915-detect-and-purge-stuck-PLE-queues.patch
+@@ -0,0 +1,368 @@
 +From: David Bauer <mail@david-bauer.net>
 +Date: Sat, 15 Nov 2025 14:37:05 +0100
 +Subject: mt7915: detect and purge stuck PLE queues
@@ -22,11 +43,11 @@ index 0000000000..f6f04542ae
 +
 +diff --git a/package/kernel/mt76/patches/0001-mt7915-detect-and-purge-stuck-PLE-queues.patch b/package/kernel/mt76/patches/0001-mt7915-detect-and-purge-stuck-PLE-queues.patch
 +new file mode 100644
-+index 0000000000000000000000000000000000000000..8855b7b8a2d50a7d141f8f7e28e495516f75e8d0
++index 0000000000000000000000000000000000000000..4fc679ec71c68e70e17d4955ca8f8090ac27d6de
 +--- /dev/null
 ++++ b/package/kernel/mt76/patches/0001-mt7915-detect-and-purge-stuck-PLE-queues.patch
-+@@ -0,0 +1,332 @@
-++From 0a11af599b13ec0dee41f837ba7c5483fa74d879 Mon Sep 17 00:00:00 2001
++@@ -0,0 +1,346 @@
+++From c27fac7cc200f9b4fa8de44ba03695d5ccf35f92 Mon Sep 17 00:00:00 2001
 ++From: David Bauer <mail@david-bauer.net>
 ++Date: Sat, 15 Nov 2025 14:36:38 +0100
 ++Subject: [PATCH] mt7915: detect and purge stuck PLE queues
@@ -43,13 +64,13 @@ index 0000000000..f6f04542ae
 ++
 ++Signed-off-by: David Bauer <mail@david-bauer.net>
 ++---
-++ mt7915/debugfs.c |  11 ++++-
+++ mt7915/debugfs.c |  11 +++-
 ++ mt7915/init.c    |   1 +
-++ mt7915/mac.c     | 123 +++++++++++++++++++++++++++++++++++++++++++++++
+++ mt7915/mac.c     | 129 +++++++++++++++++++++++++++++++++++++++++++++++
 ++ mt7915/mmio.c    |   4 ++
 ++ mt7915/mt7915.h  |  15 ++++++
-++ mt7915/regs.h    |  22 +++++++++
-++ 6 files changed, 174 insertions(+), 2 deletions(-)
+++ mt7915/regs.h    |  22 ++++++++
+++ 6 files changed, 180 insertions(+), 2 deletions(-)
 ++
 ++diff --git a/mt7915/debugfs.c b/mt7915/debugfs.c
 ++index b287b7d9..841938ee 100644
@@ -97,10 +118,10 @@ index 0000000000..f6f04542ae
 ++ 	dev->dbdc_support = mt7915_band_config(dev);
 ++ 
 ++diff --git a/mt7915/mac.c b/mt7915/mac.c
-++index 1c0d3101..75938c4e 100644
+++index 1c0d3101..b8974d7b 100644
 ++--- a/mt7915/mac.c
 +++++ b/mt7915/mac.c
-++@@ -1994,6 +1994,123 @@ void mt7915_mac_sta_rc_work(struct work_struct *work)
+++@@ -1994,14 +1994,132 @@ void mt7915_mac_sta_rc_work(struct work_struct *work)
 ++ 	spin_unlock_bh(&dev->mt76.sta_poll_lock);
 ++ }
 ++ 
@@ -177,7 +198,6 @@ index 0000000000..f6f04542ae
 +++{
 +++	struct mt7915_sta *msta = (struct mt7915_sta *)sta->drv_priv;
 +++	struct mt7915_dev *dev = msta->vif->phy->dev;
-+++	struct mt76_dev *mdev = &dev->mt76;
 +++	struct mt7915_hw_queue_state *hwq;
 +++
 +++	u16 head_frame_id, tail_frame_id, q_len;
@@ -185,6 +205,7 @@ index 0000000000..f6f04542ae
 +++	u8 ac;
 +++
 +++	int required_purge_iterations;
++++	bool *purged = data;
 +++
 +++	for (ac = 0; ac < 4; ac++) {
 +++		hwq = &msta->hwq_state[ac];
@@ -211,26 +232,40 @@ index 0000000000..f6f04542ae
 +++		if (time_is_after_jiffies(hwq->last_update + MT7915_PLE_QUEUE_TIMEOUT))
 +++			continue;
 +++
-+++		/* Lock MCU Lock to avoid command timeouts */
-+++		mutex_lock(&mdev->mcu.mutex);
 +++		required_purge_iterations = mt7915_sta_purge_hw_queue(sta, ac);
++++		*purged = true;
 +++		dev_warn(dev->mt76.dev,
 +++			 "%pM AC%d: HW queue stuck q_len=%d purge_iterations=%d\n",
 +++			 sta->addr, ac, q_len, required_purge_iterations);
-+++		mutex_unlock(&mdev->mcu.mutex);
 +++	}
 +++}
 +++
 ++ void mt7915_mac_work(struct work_struct *work)
 ++ {
 ++ 	struct mt7915_phy *phy;
-++@@ -2020,6 +2137,12 @@ void mt7915_mac_work(struct work_struct *work)
+++ 	struct mt76_phy *mphy;
++++	struct mt76_dev *mdev;
++++	bool purged = false;
+++ 
+++ 	mphy = (struct mt76_phy *)container_of(work, struct mt76_phy,
+++ 					       mac_work.work);
+++ 	phy = mphy->priv;
++++	mdev = &phy->dev->mt76;
+++ 
+++ 	mutex_lock(&mphy->dev->mutex);
+++ 
+++@@ -2020,6 +2138,17 @@ void mt7915_mac_work(struct work_struct *work)
 ++ 
 ++ 	mt76_tx_status_check(mphy->dev, false);
 ++ 
 +++	if (++phy->stuck_queue_check >= 5) {
++++		/* Lock MCU Lock to avoid command timeouts */
++++		mutex_lock(&mdev->mcu.mutex);
 +++		ieee80211_iterate_stations_atomic(mphy->hw,
-+++					  mt7915_sta_check_hw_queues, NULL);
++++					  mt7915_sta_check_hw_queues, &purged);
++++		if (purged)
++++			usleep_range(10000, 15000);
++++		mutex_unlock(&mdev->mcu.mutex);
 +++		phy->stuck_queue_check = 0;
 +++	}
 +++

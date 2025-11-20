@@ -1,8 +1,8 @@
 diff --git a/targets/mediatek-mt7622 b/targets/mediatek-mt7622
-index 81440d50..78f0ba5b 100644
+index d4e9cbe6..9283d8ff 100644
 --- a/targets/mediatek-mt7622
 +++ b/targets/mediatek-mt7622
-@@ -13,3 +13,17 @@ device('ubiquiti-unifi-6-lr-v1', 'ubnt_unifi-6-lr-v1', {
+@@ -20,3 +20,11 @@ device('ubiquiti-unifi-6-lr-v1', 'ubnt_unifi-6-lr-v1', {
  	manifest_aliases = {'ubiquiti-unifi-6-lr'}, -- Upgrade from OpenWrt 22.03
  })
  
@@ -14,9 +14,3 @@ index 81440d50..78f0ba5b 100644
 +	factory = false,
 +})
 +
-+
-+-- Netgear
-+
-+device('netgear-wax206', 'netgear_wax206', {
-+	factory_ext = '.img',
-+})
