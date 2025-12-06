@@ -1,0 +1,566 @@
+From 70744e78a5c75e772982f994ddf8755326824382 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 29 Oct 2025 09:36:22 +0100
+Subject: [PATCH 1/6] gluon-core: add basic support for 6GHz wifi
+
+various places did not yet consider band_6g or 6g
+---
+ docs/package/gluon-client-bridge.rst              |  2 +-
+ docs/site-example/site.conf                       | 15 +++++++++++++++
+ package/gluon-client-bridge/check_site.lua        |  2 +-
+ .../upgrade/320-gluon-client-bridge-wireless      |  2 +-
+ package/gluon-core/check_site.lua                 |  8 +++++++-
+ .../luasrc/lib/gluon/upgrade/022-wireless-roles   |  8 ++++++++
+ .../luasrc/lib/gluon/upgrade/200-wireless         |  9 ++++++++-
+ .../luasrc/usr/lib/lua/gluon/wireless.lua         |  5 ++++-
+ package/gluon-web-wifi-config/i18n/de.po          |  3 +++
+ package/gluon-web-wifi-config/i18n/fr.po          |  3 +++
+ .../i18n/gluon-web-wifi-config.pot                |  3 +++
+ .../gluon/config-mode/model/admin/wifi-config.lua |  2 ++
+ 12 files changed, 56 insertions(+), 6 deletions(-)
+
+diff --git a/docs/package/gluon-client-bridge.rst b/docs/package/gluon-client-bridge.rst
+index 131072f65f..10f69ff7cd 100644
+--- a/docs/package/gluon-client-bridge.rst
++++ b/docs/package/gluon-client-bridge.rst
+@@ -7,5 +7,5 @@ also setup a wireless interface, provided it is configured in *site.conf*.
+ site.conf
+ ---------
+ 
+-wifi24.ap.ssid / wifi5.ap.ssid
++wifi24.ap.ssid / wifi5.ap.ssid / wifi6.ap.ssid
+     SSID for the client network
+diff --git a/docs/site-example/site.conf b/docs/site-example/site.conf
+index 4a2f55f622..d04e306076 100644
+--- a/docs/site-example/site.conf
++++ b/docs/site-example/site.conf
+@@ -76,6 +76,21 @@
+     },
+   },
+ 
++  -- Wireless configuration for 6 GHz interfaces.
++  -- This should be equal to the 2.4 GHz variant, except
++  -- for channel.
++  wifi6 = {
++    channel = 33,
++    ap = {
++      ssid = 'alpha-centauri.freifunk.net',
++    },
++    mesh = {
++      -- Adjust these values!
++      id = 'ueH3uXjdp',
++      mcast_rate = 12000,
++    },
++  },
++
+   mesh = {
+     vxlan = true,
+     batman_adv = {
+diff --git a/package/gluon-client-bridge/check_site.lua b/package/gluon-client-bridge/check_site.lua
+index b077f87bb5..8cbf2ffca0 100644
+--- a/package/gluon-client-bridge/check_site.lua
++++ b/package/gluon-client-bridge/check_site.lua
+@@ -7,7 +7,7 @@ end
+ need_string_match(in_domain({'next_node', 'ip6'}), '^[%x:]+$', false)
+ 
+ 
+-for _, config in ipairs({'wifi24', 'wifi5'}) do
++for _, config in ipairs({'wifi24', 'wifi5', 'wifi6'}) do
+ 	if need_table({config, 'ap'}, nil, false) then
+ 		need_boolean({config, 'ap', 'disabled'}, false)
+ 		if need_boolean({config, 'ap', 'owe_transition_mode'}, false) then
+diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+index 0f3d91256d..b697301266 100755
+--- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
++++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+@@ -4,7 +4,7 @@ local wireless = require 'gluon.wireless'
+ local uci = require('simple-uci').cursor()
+ local util = require "gluon.util"
+ 
+-local client_only_radio = {band_2g=0, band_5g=0}
++local client_only_radio = {band_2g=0, band_5g=0, band_6g=0}
+ 
+ local function count_band(band)
+ 	client_only_radio[band] = client_only_radio[band] + 1
+diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
+index cf72f05fc8..59400eb0e5 100644
+--- a/package/gluon-core/check_site.lua
++++ b/package/gluon-core/check_site.lua
+@@ -31,7 +31,7 @@ need_string_match(in_domain({'prefix6'}), '^[%x:]+/64$')
+ need_string_array_match(in_domain({'extra_prefixes6'}), '^[%x:]+/%d+$', false)
+ 
+ local supported_rates = {6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000}
+-for _, config in ipairs({'wifi24', 'wifi5'}) do
++for _, config in ipairs({'wifi24', 'wifi5', 'wifi6'}) do
+ 	if need_table({config}, nil, false) then
+ 		need_string(in_site({'regdom'})) -- regdom is only required when wifi24 or wifi5 is configured
+ 		need_number({config, 'beacon_interval'}, false)
+@@ -48,6 +48,12 @@ for _, config in ipairs({'wifi24', 'wifi5'}) do
+ 			need_one_of({config, 'channel'}, channels)
+ 			need_chanlist({config, 'outdoor_chanlist'}, channels, false)
+ 			need_one_of({config, 'outdoors'}, {true, false, 'preset'}, false)
++		elseif config == 'wifi6' then
++			local channels = {
++				1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33,
++				35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63,
++				65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93 }
++			need_one_of({config, 'channel'}, channels)
+ 		end
+ 
+ 		obsolete({config, 'supported_rates'}, '802.11b rates are disabled by default.')
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
+index b030d3e04e..c7ac41128e 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/022-wireless-roles
+@@ -9,6 +9,7 @@ local wireless = require 'gluon.wireless'
+ local default_wifi_roles = {
+ 	["2g"] = {},
+ 	["5g"] = {},
++	["6g"] = {},
+ }
+ 
+ -- enable client if it is not disabled
+@@ -20,6 +21,10 @@ if site.wifi5.ap() and not site.wifi5.ap.disabled(false) then
+ 	util.add_to_set(default_wifi_roles['5g'], 'client')
+ end
+ 
++if site.wifi6.ap() and not site.wifi6.ap.disabled(false) then
++	util.add_to_set(default_wifi_roles['6g'], 'client')
++end
++
+ -- enable mesh if it is not disabled
+ if site.wifi24.mesh() and not site.wifi24.mesh.disabled(false) then
+ 	util.add_to_set(default_wifi_roles['2g'], 'mesh')
+@@ -27,6 +32,9 @@ end
+ if site.wifi5.mesh() and not site.wifi5.mesh.disabled(false) then
+ 	util.add_to_set(default_wifi_roles['5g'], 'mesh')
+ end
++if site.wifi6.mesh() and not site.wifi6.mesh.disabled(false) then
++	util.add_to_set(default_wifi_roles['6g'], 'mesh')
++end
+ 
+ local role_iface_names = {
+ 	client = 'client_',
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+index 432848691c..f14a55848b 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
+@@ -9,7 +9,7 @@ local uci = require('simple-uci').cursor()
+ 
+ uci:delete_all('wireless', 'wifi-iface')
+ 
+-local radio_band_count = {band_2g=0, band_5g=0}
++local radio_band_count = {band_2g=0, band_5g=0, band_6g=0}
+ 
+ local function count_band(band)
+ 	radio_band_count[band] = radio_band_count[band] + 1
+@@ -27,6 +27,9 @@ wireless.foreach_radio(uci, function(radio)
+ 	elseif (hwmodes.a or hwmodes.ac) and not hwmodes.g then
+ 		-- 5 GHz
+ 		count_band("band_5g")
++	elseif hwmodes.ax and not hwmodes.ac then
++		-- 6 GHz
++		count_band("band_6g")
+ 	end
+ end)
+ 
+@@ -176,6 +179,10 @@ wireless.foreach_radio(uci, function(radio, index, config)
+ 		if enable_mesh then
+ 			configure_mesh(radio, index, config.mesh())
+ 		end
++	elseif band == '6g' then
++		if enable_mesh then
++			configure_mesh(radio, index, config.mesh())
++		end
+ 	elseif band == '5g' then
+ 		if is_outdoor() then
+ 			-- enforce outdoor channels by filtering the regdom for outdoor channels
+diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+index 0575203371..fc559869cc 100644
+--- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
++++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
+@@ -73,7 +73,8 @@ end
+ 
+ -- Iterate over all radios defined in UCI calling
+ -- f(radio, index, site.wifiX) for each radio found while passing
+---  site.wifi24 for 2.4 GHz devices and site.wifi5 for 5 GHz ones.
++--  site.wifi24 for 2.4 GHz devices, site.wifi5 for 5 GHz ones
++--  and site.wifi6 for 6 GHz devices
+ function M.foreach_radio(uci, f)
+ 	local radios = {}
+ 
+@@ -89,6 +90,8 @@ function M.foreach_radio(uci, f)
+ 			f(radio, index-1, site.wifi24)
+ 		elseif band == '5g' then
+ 			f(radio, index-1, site.wifi5)
++		elseif band == '6g' then
++			f(radio, index-1, site.wifi6)
+ 		end
+ 	end
+ end
+diff --git a/package/gluon-web-wifi-config/i18n/de.po b/package/gluon-web-wifi-config/i18n/de.po
+index f0883ad6f4..789480a646 100644
+--- a/package/gluon-web-wifi-config/i18n/de.po
++++ b/package/gluon-web-wifi-config/i18n/de.po
+@@ -19,6 +19,9 @@ msgstr "2,4GHz-WLAN"
+ msgid "5GHz WLAN"
+ msgstr "5GHz-WLAN"
+ 
++msgid "6GHz WLAN"
++msgstr "6GHz-WLAN"
++
+ msgid ""
+ "Configuring the node for outdoor use tunes the 5 GHz radio to a frequency "
+ "and transmission power that conforms with the local regulatory requirements. "
+diff --git a/package/gluon-web-wifi-config/i18n/fr.po b/package/gluon-web-wifi-config/i18n/fr.po
+index eb09694f47..8964d79022 100644
+--- a/package/gluon-web-wifi-config/i18n/fr.po
++++ b/package/gluon-web-wifi-config/i18n/fr.po
+@@ -19,6 +19,9 @@ msgstr "2,4GHz Wi-Fi"
+ msgid "5GHz WLAN"
+ msgstr "5GHz Wi-Fi"
+ 
++msgid "6GHz WLAN"
++msgstr "6GHz Wi-Fi"
++
+ msgid ""
+ "Configuring the node for outdoor use tunes the 5 GHz radio to a frequency "
+ "and transmission power that conforms with the local regulatory requirements. "
+diff --git a/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot b/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
+index 2af9b5f3a5..12f72e219c 100644
+--- a/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
++++ b/package/gluon-web-wifi-config/i18n/gluon-web-wifi-config.pot
+@@ -10,6 +10,9 @@ msgstr ""
+ msgid "5GHz WLAN"
+ msgstr ""
+ 
++msgid "6GHz WLAN"
++msgstr ""
++
+ msgid ""
+ "Configuring the node for outdoor use tunes the 5 GHz radio to a frequency "
+ "and transmission power that conforms with the local regulatory requirements. "
+diff --git a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
+index d7c7da1273..4e71fb45e5 100644
+--- a/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
++++ b/package/gluon-web-wifi-config/luasrc/lib/gluon/config-mode/model/admin/wifi-config.lua
+@@ -71,6 +71,8 @@ uci:foreach('gluon', 'wireless_band', function(band_config)
+ 	elseif band == 'band_5g' then
+ 		is_5ghz = true
+ 		title = translate("5GHz WLAN")
++	elseif band == 'band_6g' then
++		title = translate("6GHz WLAN")
+ 	else
+ 		return
+ 	end
+
+From 3091c7c02e080fc3dba08b9a34ea49b8b12f291b Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 29 Oct 2025 09:38:00 +0100
+Subject: [PATCH 2/6] gluon-client-bridge: configure 6ghz with open SSID
+ instead of OWE ssid
+
+Unencrypted client wifi is not allowed on 6GHz.
+The configured SSID to broadcast needs to be the open SSID instead of OWE, as otherwise you end up with two SSID for the same network in the scan list.
+
+Transition networks are hidden identified by the matching relation thru the transition IE. This is not available on 6GHz, thus the broadcasted SSID of the OWE network on 6GHz needs to be the Open SSID on a/g band.
+---
+ .../upgrade/320-gluon-client-bridge-wireless  | 38 +++++++++----------
+ 1 file changed, 18 insertions(+), 20 deletions(-)
+
+diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+index b697301266..dabb083cfc 100755
+--- a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
++++ b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
+@@ -27,15 +27,13 @@ local function is_disabled(radio, config)
+ 	return not util.contains(roles, 'client') or disable_client
+ end
+ 
+-local function configure_ap(radio, index, config, radio_name)
++local function configure_ap(radio, index, radio_name, ssid)
+ 	local name = 'client_' .. radio_name
+ 	local suffix = radio_name:match('^radio(%d+)$')
+ 
+-	local ap = config.ap
+-
+ 	local macaddr = wireless.get_wlan_mac('client', index, radio)
+ 
+-	if not ap.ssid() or not macaddr or not suffix then
++	if not ssid or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -43,18 +41,16 @@ local function configure_ap(radio, index, config, radio_name)
+ 		device = radio_name,
+ 		network = 'client',
+ 		mode = 'ap',
+-		ssid = ap.ssid(),
++		ssid = ssid,
+ 		macaddr = macaddr,
+ 		ifname = 'client' .. suffix,
+ 	})
+ end
+ 
+-local function configure_owe(radio, index, config, radio_name)
++local function configure_owe(radio, index, radio_name, ssid)
+ 	local name = 'owe_' .. radio_name
+ 	local suffix = radio_name:match('^radio(%d+)$')
+ 
+-	local ap = config.ap
+-
+ 	-- Don't configure OWE in case our device
+ 	-- can't do MFP, as it's mandatory for OWE.
+ 	if not wireless.device_supports_mfp(uci) then
+@@ -63,7 +59,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 
+ 	local macaddr = wireless.get_wlan_mac('owe', index, radio)
+ 
+-	if not ap.owe_ssid() or not macaddr or not suffix then
++	if not ssid or not macaddr or not suffix then
+ 		return
+ 	end
+ 
+@@ -71,7 +67,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 		device = radio_name,
+ 		network = 'client',
+ 		mode = 'ap',
+-		ssid = ap.owe_ssid(),
++		ssid = ssid,
+ 		macaddr = macaddr,
+ 		ifname = 'owe' .. suffix,
+ 		encryption = 'owe',
+@@ -79,8 +75,7 @@ local function configure_owe(radio, index, config, radio_name)
+ 	})
+ end
+ 
+-local function configure_owe_transition_mode(config, radio_name)
+-	local ap = config.ap
++local function configure_owe_transition_mode(radio_name)
+ 
+ 	-- Don't configure OWE in case our device
+ 	-- can't do MFP, as it's mandatory for OWE.
+@@ -88,10 +83,6 @@ local function configure_owe_transition_mode(config, radio_name)
+ 		return
+ 	end
+ 
+-	if not ap.owe_transition_mode(false) then
+-		return
+-	end
+-
+ 	local name_client = 'client_' .. radio_name
+ 	local name_owe = 'owe_' .. radio_name
+ 
+@@ -110,11 +101,18 @@ end
+ 
+ wireless.foreach_radio(uci, function(radio, index, config)
+ 	local radio_name = radio['.name']
+-	if not is_disabled(radio, config) then
+-		configure_ap(radio, index, config, radio_name)
+ 
+-		configure_owe(radio, index, config, radio_name)
+-		configure_owe_transition_mode(config, radio_name)
++	if not is_disabled(radio, config)  then
++		-- 6ghz does not support unencrypted client ifaces
++		if radio.band == '6g' then
++			configure_owe(radio, index, radio_name, config.ap.ssid())
++		else
++			configure_ap(radio, index, radio_name, config.ap.ssid())
++			configure_owe(radio, index, radio_name, config.ap.owe_ssid())
++			if config.ap.owe_transition_mode(false) then
++				configure_owe_transition_mode(radio_name)
++			end
++		end
+ 	end
+ end)
+ 
+
+From fda080aa4a4a241fe29506de6cbd1114ad8b799d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 29 Oct 2025 09:38:51 +0100
+Subject: [PATCH 3/6] gluon-mesh-wireless-sae: enable sae on 6ghz regardless of
+ settings
+
+---
+ .../luasrc/lib/gluon/upgrade/205-wireless-mesh-sae             | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/package/gluon-mesh-wireless-sae/luasrc/lib/gluon/upgrade/205-wireless-mesh-sae b/package/gluon-mesh-wireless-sae/luasrc/lib/gluon/upgrade/205-wireless-mesh-sae
+index a229896694..0fa4cd2b94 100755
+--- a/package/gluon-mesh-wireless-sae/luasrc/lib/gluon/upgrade/205-wireless-mesh-sae
++++ b/package/gluon-mesh-wireless-sae/luasrc/lib/gluon/upgrade/205-wireless-mesh-sae
+@@ -20,7 +20,8 @@ wireless.foreach_radio(uci, function(radio)
+ 		uci:delete('wireless', vif, 'encryption')
+ 		uci:delete('wireless', vif, 'key')
+ 
+-		if enable then
++		-- 6ghz should always use SAE
++		if enable or radio.band == '6g' then
+ 			configure_sae(vif)
+ 		end
+ 	end
+
+From 51a9440eb4547625849fb6aaa179b28c66b1951c Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Wed, 8 Oct 2025 22:45:38 +0200
+Subject: [PATCH 4/6] gluon-private-wifi: fixup private wifi encryption if set
+ to something else than sae
+
+---
+ .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi           | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+index f02377b041..ea97b87721 100755
+--- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
++++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
+@@ -14,6 +14,10 @@ local function configure_private_wifi(radio, index)
+ 	end
+ 
+ 	local encryption = uci:get('gluon', 'wireless', 'private_encryption')
++	-- 6GHz radio requires usage of WPA3/SAE
++	if radio.band == '6g' then
++		encryption = 'sae'
++	end
+ 	local ssid = uci:get('gluon', 'wireless', 'private_ssid')
+ 	local key = uci:get('gluon', 'wireless', 'private_key')
+ 	local mfp = wireless.device_supports_mfp(uci) and uci:get('gluon', 'wireless', 'private_mfp')
+
+From 22b47cebbda9c507b8a97f87104e2efd95258faa Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 6 Sep 2025 02:51:52 +0200
+Subject: [PATCH 5/6] mediatek-filogic: add vero w6m  to supported devices
+
+---
+ docs/user/supported_devices.rst                            | 4 ++++
+ .../gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac    | 3 +++
+ targets/mediatek-filogic                                   | 7 +++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
+index ffe16beaee..650c47f318 100644
+--- a/docs/user/supported_devices.rst
++++ b/docs/user/supported_devices.rst
+@@ -322,6 +322,10 @@ lantiq-xway
+ mediatek-filogic
+ ----------------
+ 
++* Acer
++
++  - Vero-W6M
++
+ * ASUS
+ 
+   - RT-AX52
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+index 49b4bf0aaf..fde406b990 100755
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/010-primary-mac
+@@ -131,6 +131,9 @@ local primary_addrs = {
+ 			'aerohive,hiveap-330',
+ 			'ocedo,panda',
+ 		}},
++		{'mediatek', 'filogic', {
++			'acer,vero-w6m',
++		}},
+ 		{'mpc85xx', 'p1010', {
+ 			'enterasys,ws-ap3715i',
+ 		}},
+diff --git a/targets/mediatek-filogic b/targets/mediatek-filogic
+index ce398bda9e..f13ca1dcc2 100644
+--- a/targets/mediatek-filogic
++++ b/targets/mediatek-filogic
+@@ -1,6 +1,13 @@
+ config('TARGET_ROOTFS_INITRAMFS', true)
+ config('TARGET_INITRAMFS_COMPRESSION_LZMA', true)
+ 
++-- Acer
++
++device('acer-vero-w6m', 'acer_vero-w6m', {
++	factory = false,
++})
++
++
+ -- ASUS
+ 
+ device('asus-rt-ax52', 'asus_rt-ax52', {
+
+From 9705daf5c59d9cfe9585bcd2999ed7d436f66d21 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 6 Dec 2025 01:00:06 +0100
+Subject: [PATCH 6/6] respondd: add support for 6ghz
+
+As 6ghz only supports owe and never uses the non OWE links, it is only counted for OWE
+---
+ .../gluon-respondd/src/respondd-statistics.c  | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/package/gluon-respondd/src/respondd-statistics.c b/package/gluon-respondd/src/respondd-statistics.c
+index 4dbe94378b..e07689e535 100644
+--- a/package/gluon-respondd/src/respondd-statistics.c
++++ b/package/gluon-respondd/src/respondd-statistics.c
+@@ -186,7 +186,7 @@ static struct json_object * get_time(void) {
+ 	return json_object_new_int64(now.tv_sec);
+ }
+ 
+-static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifname) {
++static void count_iface_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, const char *ifname) {
+ 	const struct iwinfo_ops *iw = iwinfo_backend(ifname);
+ 	if (!iw)
+ 		return;
+@@ -198,8 +198,10 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifna
+ 	size_t *wifi;
+ 	if (freq >= 2400 && freq < 2500)
+ 		wifi = wifi24;
+-	else if (freq >= 5000 && freq < 6000)
++	else if (freq >= 5000 && freq < 5900)
+ 		wifi = wifi5;
++	else if (freq >= 5935 && freq < 7000)
++		wifi = wifi6;
+ 	else
+ 		return;
+ 
+@@ -217,7 +219,7 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifna
+ 	}
+ }
+ 
+-static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t *owe5) {
++static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t *owe5, size_t *owe6) {
+ 	struct uci_context *ctx = uci_alloc_context();
+ 	if (!ctx)
+ 		return;
+@@ -248,9 +250,9 @@ static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t
+ 			continue;
+ 
+ 		if (strstr(ifname, "owe") == ifname)
+-			count_iface_stations(owe24, owe5, ifname);
++			count_iface_stations(owe24, owe5, owe6, ifname);
+ 
+-		count_iface_stations(wifi24, wifi5, ifname);
++		count_iface_stations(wifi24, wifi5, owe6, ifname);
+ 	}
+ 
+ end:
+@@ -258,9 +260,9 @@ static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t
+ }
+ 
+ static struct json_object * get_clients(void) {
+-	size_t wifi24 = 0, wifi5 = 0, owe24 = 0, owe5 = 0;
++	size_t wifi24 = 0, wifi5 = 0, owe24 = 0, owe5 = 0, owe6 = 0;
+ 
+-	count_stations(&wifi24, &wifi5, &owe24, &owe5);
++	count_stations(&wifi24, &wifi5, &owe24, &owe5, &owe6);
+ 
+ 	struct json_object *ret = json_object_new_object();
+ 
+@@ -268,9 +270,10 @@ static struct json_object * get_clients(void) {
+ 	json_object_object_add(ret, "wifi24", json_object_new_int(wifi24));
+ 	json_object_object_add(ret, "wifi5", json_object_new_int(wifi5));
+ 
+-	json_object_object_add(ret, "owe", json_object_new_int(owe24 + owe5));
++	json_object_object_add(ret, "owe", json_object_new_int(owe24 + owe5 + owe6));
+ 	json_object_object_add(ret, "owe24", json_object_new_int(owe24));
+ 	json_object_object_add(ret, "owe5", json_object_new_int(owe5));
++	json_object_object_add(ret, "owe6", json_object_new_int(owe6));
+ 
+ 	return ret;
+ }
