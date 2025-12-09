@@ -443,7 +443,7 @@ index 6e76fc30a8..cabbfa4c96 100755
 -		bandwidth = site.wifi5.bandwidth('20')
 +		channel_width = site.wifi5.channel_width(20)
 +	elseif radio.band == '6g' then
-+		channel_width = site.wifi5.channel_width(20)
++		channel_width = site.wifi6.channel_width(20)
  	end
  
  	local phy = wireless.find_phy(radio)
