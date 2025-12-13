@@ -475,7 +475,7 @@ index ce398bda9e..f13ca1dcc2 100644
  
 +-- Acer
 +
-+device('acer-vero-w6m', 'acer_vero-w6m', {
++device('acer-connect-vero-w6m', 'acer_vero-w6m', {
 +	factory = false,
 +})
 +
