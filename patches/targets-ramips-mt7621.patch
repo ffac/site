@@ -1,5 +1,5 @@
 diff --git a/targets/ramips-mt7621 b/targets/ramips-mt7621
-index fdc3c3af..b20f8db3 100644
+index fdc3c3af..cb4aea50 100644
 --- a/targets/ramips-mt7621
 +++ b/targets/ramips-mt7621
 @@ -96,6 +96,10 @@ device('netgear-wac104', 'netgear_wac104', {
@@ -13,3 +13,16 @@ index fdc3c3af..b20f8db3 100644
  device('netgear-wax202', 'netgear_wax202', {
  	factory_ext = '.img',
  })
+@@ -123,6 +127,12 @@ device('tp-link-re500-v1', 'tplink_re500-v1')
+ device('tp-link-re650-v1', 'tplink_re650-v1')
+ 
+ 
++-- Totolink
++
++device('totolink-x5000r', 'totolink_x5000r', {
++       factory = false,
++})
++
+ -- Ubiquiti
+ 
+ device('ubiquiti-unifi-6-lite', 'ubnt_unifi-6-lite', {
