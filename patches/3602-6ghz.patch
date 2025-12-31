@@ -1,7 +1,7 @@
-From 70744e78a5c75e772982f994ddf8755326824382 Mon Sep 17 00:00:00 2001
+From 38263b9791be6f9a39918f8abad361454eede005 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 29 Oct 2025 09:36:22 +0100
-Subject: [PATCH 1/6] gluon-core: add basic support for 6GHz wifi
+Subject: [PATCH 1/7] gluon-core: add basic support for 6GHz wifi
 
 various places did not yet consider band_6g or 6g
 ---
@@ -254,10 +254,10 @@ index d7c7da1273..4e71fb45e5 100644
  		return
  	end
 
-From 3091c7c02e080fc3dba08b9a34ea49b8b12f291b Mon Sep 17 00:00:00 2001
+From 98536470b77f26909ee6778482479757f9ce33af Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 29 Oct 2025 09:38:00 +0100
-Subject: [PATCH 2/6] gluon-client-bridge: configure 6ghz with open SSID
+Subject: [PATCH 2/7] gluon-client-bridge: configure 6ghz with open SSID
  instead of OWE ssid
 
 Unencrypted client wifi is not allowed on 6GHz.
@@ -374,10 +374,10 @@ index b697301266..dabb083cfc 100755
  end)
  
 
-From fda080aa4a4a241fe29506de6cbd1114ad8b799d Mon Sep 17 00:00:00 2001
+From fe8c93681710e7fcee1f1d9f5a884e505631ba29 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 29 Oct 2025 09:38:51 +0100
-Subject: [PATCH 3/6] gluon-mesh-wireless-sae: enable sae on 6ghz regardless of
+Subject: [PATCH 3/7] gluon-mesh-wireless-sae: enable sae on 6ghz regardless of
  settings
 
 ---
@@ -399,36 +399,37 @@ index a229896694..0fa4cd2b94 100755
  		end
  	end
 
-From 51a9440eb4547625849fb6aaa179b28c66b1951c Mon Sep 17 00:00:00 2001
+From c960c8bcdede2b5fea7e1a81de05b45e45102553 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Wed, 8 Oct 2025 22:45:38 +0200
-Subject: [PATCH 4/6] gluon-private-wifi: fixup private wifi encryption if set
+Subject: [PATCH 4/7] gluon-private-wifi: fixup private wifi encryption if set
  to something else than sae
 
 ---
- .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi           | 4 ++++
- 1 file changed, 4 insertions(+)
+ .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi          | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-index f02377b041..ea97b87721 100755
+index f02377b041..b5dc3acb62 100755
 --- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
 +++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-@@ -14,6 +14,10 @@ local function configure_private_wifi(radio, index)
- 	end
- 
- 	local encryption = uci:get('gluon', 'wireless', 'private_encryption')
-+	-- 6GHz radio requires usage of WPA3/SAE
-+	if radio.band == '6g' then
-+		encryption = 'sae'
-+	end
+@@ -17,6 +17,11 @@ local function configure_private_wifi(radio, index)
  	local ssid = uci:get('gluon', 'wireless', 'private_ssid')
  	local key = uci:get('gluon', 'wireless', 'private_key')
  	local mfp = wireless.device_supports_mfp(uci) and uci:get('gluon', 'wireless', 'private_mfp')
++	-- 6GHz radio requires usage of WPA3/SAE and management frame protection
++	if radio.band == '6g' then
++		encryption = 'sae'
++		mfp = 2
++	end
+ 
+ 	local macaddr = wireless.get_wlan_mac('wan_radio', index, radio)
+ 	uci:section('wireless', 'wifi-iface', name, {
 
-From 22b47cebbda9c507b8a97f87104e2efd95258faa Mon Sep 17 00:00:00 2001
+From 5fee12bfcac34c1902c1688395be306f57be62ad Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sat, 6 Sep 2025 02:51:52 +0200
-Subject: [PATCH 5/6] mediatek-filogic: add vero w6m  to supported devices
+Subject: [PATCH 5/7] mediatek-filogic: add vero w6m  to supported devices
 
 ---
  docs/user/supported_devices.rst                            | 4 ++++
@@ -437,10 +438,10 @@ Subject: [PATCH 5/6] mediatek-filogic: add vero w6m  to supported devices
  3 files changed, 14 insertions(+)
 
 diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
-index ffe16beaee..650c47f318 100644
+index b68919eb8c..7514b44532 100644
 --- a/docs/user/supported_devices.rst
 +++ b/docs/user/supported_devices.rst
-@@ -322,6 +322,10 @@ lantiq-xway
+@@ -326,6 +326,10 @@ lantiq-xway
  mediatek-filogic
  ----------------
  
@@ -466,7 +467,7 @@ index 49b4bf0aaf..fde406b990 100755
  			'enterasys,ws-ap3715i',
  		}},
 diff --git a/targets/mediatek-filogic b/targets/mediatek-filogic
-index ce398bda9e..f13ca1dcc2 100644
+index ce398bda9e..debdeeeab7 100644
 --- a/targets/mediatek-filogic
 +++ b/targets/mediatek-filogic
 @@ -1,6 +1,13 @@
@@ -483,3 +484,293 @@ index ce398bda9e..f13ca1dcc2 100644
  -- ASUS
  
  device('asus-rt-ax52', 'asus_rt-ax52', {
+
+From 42d479b0b8c7047a29808de7f212954d8b0c3f89 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Sat, 6 Dec 2025 01:00:06 +0100
+Subject: [PATCH 6/7] respondd: add support for 6ghz
+
+As 6ghz only supports owe and never uses the non OWE links, it is only counted for OWE
+---
+ .../gluon-respondd/src/respondd-statistics.c  | 22 +++++++++++--------
+ .../gluon/status-page/view/status-page.html   |  1 +
+ package/gluon-status-page/i18n/de.po          |  3 +++
+ .../i18n/gluon-status-page.pot                |  3 +++
+ 4 files changed, 20 insertions(+), 9 deletions(-)
+
+diff --git a/package/gluon-respondd/src/respondd-statistics.c b/package/gluon-respondd/src/respondd-statistics.c
+index 4dbe94378b..2fbf6f82e8 100644
+--- a/package/gluon-respondd/src/respondd-statistics.c
++++ b/package/gluon-respondd/src/respondd-statistics.c
+@@ -186,7 +186,7 @@ static struct json_object * get_time(void) {
+ 	return json_object_new_int64(now.tv_sec);
+ }
+ 
+-static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifname) {
++static void count_iface_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, const char *ifname) {
+ 	const struct iwinfo_ops *iw = iwinfo_backend(ifname);
+ 	if (!iw)
+ 		return;
+@@ -198,8 +198,10 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifna
+ 	size_t *wifi;
+ 	if (freq >= 2400 && freq < 2500)
+ 		wifi = wifi24;
+-	else if (freq >= 5000 && freq < 6000)
++	else if (freq >= 5000 && freq < 5900)
+ 		wifi = wifi5;
++	else if (freq >= 5935 && freq < 7000)
++		wifi = wifi6;
+ 	else
+ 		return;
+ 
+@@ -217,7 +219,7 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, const char *ifna
+ 	}
+ }
+ 
+-static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t *owe5) {
++static void count_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, size_t *owe24, size_t *owe5, size_t *owe6) {
+ 	struct uci_context *ctx = uci_alloc_context();
+ 	if (!ctx)
+ 		return;
+@@ -248,9 +250,9 @@ static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t
+ 			continue;
+ 
+ 		if (strstr(ifname, "owe") == ifname)
+-			count_iface_stations(owe24, owe5, ifname);
++			count_iface_stations(owe24, owe5, owe6, ifname);
+ 
+-		count_iface_stations(wifi24, wifi5, ifname);
++		count_iface_stations(wifi24, wifi5, wifi6, ifname);
+ 	}
+ 
+ end:
+@@ -258,19 +260,21 @@ static void count_stations(size_t *wifi24, size_t *wifi5, size_t *owe24, size_t
+ }
+ 
+ static struct json_object * get_clients(void) {
+-	size_t wifi24 = 0, wifi5 = 0, owe24 = 0, owe5 = 0;
++	size_t wifi24 = 0, wifi5 = 0, wifi6 = 0, owe24 = 0, owe5 = 0, owe6 = 0;
+ 
+-	count_stations(&wifi24, &wifi5, &owe24, &owe5);
++	count_stations(&wifi24, &wifi5, &wifi6, &owe24, &owe5, &owe6);
+ 
+ 	struct json_object *ret = json_object_new_object();
+ 
+-	json_object_object_add(ret, "wifi", json_object_new_int(wifi24 + wifi5));
++	json_object_object_add(ret, "wifi", json_object_new_int(wifi24 + wifi5 + wifi6));
+ 	json_object_object_add(ret, "wifi24", json_object_new_int(wifi24));
+ 	json_object_object_add(ret, "wifi5", json_object_new_int(wifi5));
++	json_object_object_add(ret, "wifi6", json_object_new_int(wifi6));
+ 
+-	json_object_object_add(ret, "owe", json_object_new_int(owe24 + owe5));
++	json_object_object_add(ret, "owe", json_object_new_int(owe24 + owe5 + owe6));
+ 	json_object_object_add(ret, "owe24", json_object_new_int(owe24));
+ 	json_object_object_add(ret, "owe5", json_object_new_int(owe5));
++	json_object_object_add(ret, "owe6", json_object_new_int(owe6));
+ 
+ 	return ret;
+ }
+diff --git a/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html b/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
+index 42bb2ae40a..d9238dda06 100644
+--- a/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
++++ b/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
+@@ -231,6 +231,7 @@ <h3><%:Clients%></h3>
+ 						<tr><th><%:Total%></th><td><%= statistics('clients/total') %></td></tr>
+ 						<tr><th><%:Wireless 2.4 GHz%></th><td><%= statistics('clients/wifi24') %></td></tr>
+ 						<tr><th><%:Wireless 5 GHz%></th><td><%= statistics('clients/wifi5') %></td></tr>
++						<tr><th><%:Wireless 6 GHz%></th><td><%= statistics('clients/wifi6') %></td></tr>
+ 					</tbody>
+ 				</table>
+ 				<% if radios[1] then -%>
+diff --git a/package/gluon-status-page/i18n/de.po b/package/gluon-status-page/i18n/de.po
+index 27801e197c..da35cc53cc 100644
+--- a/package/gluon-status-page/i18n/de.po
++++ b/package/gluon-status-page/i18n/de.po
+@@ -142,6 +142,9 @@ msgstr ""
+ msgid "Wireless 5 GHz"
+ msgstr ""
+ 
++msgid "Wireless 6 GHz"
++msgstr ""
++
+ msgid "connected"
+ msgstr "verbunden"
+ 
+diff --git a/package/gluon-status-page/i18n/gluon-status-page.pot b/package/gluon-status-page/i18n/gluon-status-page.pot
+index 50d7d6bee7..acc1b3e452 100644
+--- a/package/gluon-status-page/i18n/gluon-status-page.pot
++++ b/package/gluon-status-page/i18n/gluon-status-page.pot
+@@ -133,6 +133,9 @@ msgstr ""
+ msgid "Wireless 5 GHz"
+ msgstr ""
+ 
++msgid "Wireless 6 GHz"
++msgstr ""
++
+ msgid "connected"
+ msgstr ""
+ 
+
+From 17161c132d2563c869529044e6f9615dee45266a Mon Sep 17 00:00:00 2001
+From: Florian Maurer <f.maurer@outlook.de>
+Date: Tue, 30 Dec 2025 10:22:03 +0100
+Subject: [PATCH 7/7] update respondd to only add stats for existing radio
+ bands
+
+---
+ .../gluon-respondd/src/respondd-statistics.c  | 97 ++++++++++++++-----
+ 1 file changed, 71 insertions(+), 26 deletions(-)
+
+diff --git a/package/gluon-respondd/src/respondd-statistics.c b/package/gluon-respondd/src/respondd-statistics.c
+index 2fbf6f82e8..01fa2f2f70 100644
+--- a/package/gluon-respondd/src/respondd-statistics.c
++++ b/package/gluon-respondd/src/respondd-statistics.c
+@@ -11,6 +11,8 @@
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <stdbool.h>
++#include <stdlib.h>
+ #include <time.h>
+ 
+ #include <sys/vfs.h>
+@@ -186,7 +188,26 @@ static struct json_object * get_time(void) {
+ 	return json_object_new_int64(now.tv_sec);
+ }
+ 
+-static void count_iface_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, const char *ifname) {
++struct station_counts {
++	size_t wifi24;
++	size_t wifi5;
++	size_t wifi6;
++	size_t owe24;
++	size_t owe5;
++	size_t owe6;
++
++	bool has_wifi24;
++	bool has_wifi5;
++	bool has_wifi6;
++	bool has_owe24;
++	bool has_owe5;
++	bool has_owe6;
++};
++
++static void count_iface_stations(struct station_counts *s, const char *ifname) {
++	if (!s)
++		return;
++
+ 	const struct iwinfo_ops *iw = iwinfo_backend(ifname);
+ 	if (!iw)
+ 		return;
+@@ -195,15 +216,29 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, c
+ 	if (iw->frequency(ifname, &freq) < 0)
+ 		return;
+ 
+-	size_t *wifi;
+-	if (freq >= 2400 && freq < 2500)
+-		wifi = wifi24;
+-	else if (freq >= 5000 && freq < 5900)
+-		wifi = wifi5;
+-	else if (freq >= 5935 && freq < 7000)
+-		wifi = wifi6;
+-	else
++	size_t *wifi = NULL;
++	size_t *owe = NULL;
++	if (freq >= 2400 && freq < 2500) {
++		wifi = &s->wifi24;
++		owe = &s->owe24;
++		s->has_wifi24 = true;
++		if (strstr(ifname, "owe") == ifname)
++			s->has_owe24 = true;
++	} else if (freq >= 5000 && freq < 5900) {
++		wifi = &s->wifi5;
++		owe = &s->owe5;
++		s->has_wifi5 = true;
++		if (strstr(ifname, "owe") == ifname)
++			s->has_owe5 = true;
++	} else if (freq >= 5935 && freq < 7000) {
++		wifi = &s->wifi6;
++		owe = &s->owe6;
++		s->has_wifi6 = true;
++		if (strstr(ifname, "owe") == ifname)
++			s->has_owe6 = true;
++	} else {
+ 		return;
++	}
+ 
+ 	int len;
+ 	char buf[IWINFO_BUFSIZE];
+@@ -216,13 +251,17 @@ static void count_iface_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, c
+ 			continue;
+ 
+ 		(*wifi)++;
++
++		if (strstr(ifname, "owe") == ifname && owe)
++			(*owe)++;
+ 	}
+ }
+ 
+-static void count_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, size_t *owe24, size_t *owe5, size_t *owe6) {
++static struct station_counts *count_stations(void) {
++	struct station_counts *counts = calloc(1, sizeof(*counts));
+ 	struct uci_context *ctx = uci_alloc_context();
+ 	if (!ctx)
+-		return;
++		return counts;
+ 	ctx->flags &= ~UCI_FLAG_STRICT;
+ 
+ 
+@@ -249,32 +288,38 @@ static void count_stations(size_t *wifi24, size_t *wifi5, size_t *wifi6, size_t
+ 		if (!ifname)
+ 			continue;
+ 
+-		if (strstr(ifname, "owe") == ifname)
+-			count_iface_stations(owe24, owe5, owe6, ifname);
+-
+-		count_iface_stations(wifi24, wifi5, wifi6, ifname);
++		count_iface_stations(counts, ifname);
+ 	}
+ 
+ end:
+ 	uci_free_context(ctx);
++	return counts;
+ }
+ 
+ static struct json_object * get_clients(void) {
+-	size_t wifi24 = 0, wifi5 = 0, wifi6 = 0, owe24 = 0, owe5 = 0, owe6 = 0;
++	struct station_counts *stat_counts = count_stations();
+ 
+-	count_stations(&wifi24, &wifi5, &wifi6, &owe24, &owe5, &owe6);
+ 
+ 	struct json_object *ret = json_object_new_object();
+ 
+-	json_object_object_add(ret, "wifi", json_object_new_int(wifi24 + wifi5 + wifi6));
+-	json_object_object_add(ret, "wifi24", json_object_new_int(wifi24));
+-	json_object_object_add(ret, "wifi5", json_object_new_int(wifi5));
+-	json_object_object_add(ret, "wifi6", json_object_new_int(wifi6));
+-
+-	json_object_object_add(ret, "owe", json_object_new_int(owe24 + owe5 + owe6));
+-	json_object_object_add(ret, "owe24", json_object_new_int(owe24));
+-	json_object_object_add(ret, "owe5", json_object_new_int(owe5));
+-	json_object_object_add(ret, "owe6", json_object_new_int(owe6));
++	json_object_object_add(ret, "wifi", json_object_new_int(stat_counts->wifi24 + stat_counts->wifi5 + stat_counts->wifi6));
++	if (stat_counts->has_wifi24)
++		json_object_object_add(ret, "wifi24", json_object_new_int(stat_counts->wifi24));
++	if (stat_counts->has_wifi5)
++		json_object_object_add(ret, "wifi5", json_object_new_int(stat_counts->wifi5));
++	if (stat_counts->has_wifi6)
++		json_object_object_add(ret, "wifi6", json_object_new_int(stat_counts->wifi6));
++
++	if (stat_counts->has_owe24 || stat_counts->has_owe5 || stat_counts->has_owe6)
++		json_object_object_add(ret, "owe", json_object_new_int(stat_counts->owe24 + stat_counts->owe5 + stat_counts->owe6));
++	if (stat_counts->has_owe24)
++		json_object_object_add(ret, "owe24", json_object_new_int(stat_counts->owe24));
++	if (stat_counts->has_owe5)
++		json_object_object_add(ret, "owe5", json_object_new_int(stat_counts->owe5));
++	if (stat_counts->has_owe6)
++		json_object_object_add(ret, "owe6", json_object_new_int(stat_counts->owe6));
++
++	free(stat_counts);
+ 
+ 	return ret;
+ }

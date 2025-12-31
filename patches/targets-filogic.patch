@@ -2,20 +2,6 @@ diff --git a/targets/mediatek-filogic b/targets/mediatek-filogic
 index ce398bda..217256e5 100644
 --- a/targets/mediatek-filogic
 +++ b/targets/mediatek-filogic
-@@ -1,6 +1,13 @@
- config('TARGET_ROOTFS_INITRAMFS', true)
- config('TARGET_INITRAMFS_COMPRESSION_LZMA', true)
- 
-+-- Acer
-+
-+device('acer-connect-vero-w6m', 'acer_vero-w6m', {
-+	factory = false,
-+})
-+
-+
- -- ASUS
- 
- device('asus-rt-ax52', 'asus_rt-ax52', {
 @@ -51,6 +58,24 @@ device('cudy-wr3000e-v1', 'cudy_wr3000e-v1', {
  	factory = false,
  })

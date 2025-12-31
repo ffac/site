@@ -1,15 +1,15 @@
-From c15898b51a7655c082feedc2e5c5d76493acea37 Mon Sep 17 00:00:00 2001
+From f2dc718464d38761503c2556c17e69cee9a1aaeb Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Sat, 4 Oct 2025 11:16:20 +0200
 Subject: [PATCH 1/4] gluon-core: retrieve roles per radio with new radio_roles
  helper function
 
 ---
- .../upgrade/320-gluon-client-bridge-wireless    |  2 +-
- .../luasrc/lib/gluon/upgrade/200-wireless       |  6 ++----
- .../luasrc/usr/lib/lua/gluon/wireless.lua       | 17 +++++++++++++++++
- .../lib/gluon/upgrade/325-gluon-private-wifi    |  2 +-
- 4 files changed, 21 insertions(+), 6 deletions(-)
+ .../lib/gluon/upgrade/320-gluon-client-bridge-wireless    | 2 +-
+ package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless  | 6 ++----
+ package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua  | 8 ++++++++
+ .../luasrc/lib/gluon/upgrade/325-gluon-private-wifi       | 2 +-
+ 4 files changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless b/package/gluon-client-bridge/luasrc/lib/gluon/upgrade/320-gluon-client-bridge-wireless
 index dabb083cfc..0c67a0db2a 100755
@@ -25,7 +25,7 @@ index dabb083cfc..0c67a0db2a 100755
  	-- in this case, the other radio on the same band supporting the channel turns off its client radio and is mesh only
  	local disable_client = wireless.supports_channel(radio, config.channel()) and client_only_radio['band_' .. band] > 0
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index f14a55848b..4ad221f7d1 100755
+index f14a55848b..462992fa72 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -106,11 +106,9 @@ local function configure_mesh(radio, index, mesh_config)
@@ -37,7 +37,7 @@ index f14a55848b..4ad221f7d1 100755
  	uci:section('network', 'interface', name, {
  		proto = 'gluon_mesh',
 -		hop_penalty = batadv_hop_penalty,
-+		hop_penalty = wireless.radio_hop_penalty(uci, radio)
++		hop_penalty = wireless.radio_option(uci, radio, 'batadv_hop_penalty')
  	})
  
  	uci:section('wireless', 'wifi-iface', name, {
@@ -51,36 +51,27 @@ index f14a55848b..4ad221f7d1 100755
  
  	if band == '2g' then
 diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index fc559869cc..fa56a5e7f8 100644
+index fc559869cc..778595fe47 100644
 --- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
 +++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-@@ -148,4 +148,21 @@ function M.device_uses_band(uci, band)
+@@ -148,4 +148,12 @@ function M.device_uses_band(uci, band)
  	return ret
  end
  
 +function M.radio_roles(uci, radio)
-+	local band = radio.band
-+	local radio_name = radio['.name']
-+	local radio_roles = uci:get_list('gluon', radio_name, 'role')
-+
-+	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
-+	if next(radio_roles) == nil then
-+		return roles
-+	else
-+		return radio_roles
-+	end
++	return uci:get_list('gluon', 'band_' .. radio.band, 'role')
 +end
 +
-+function M.radio_hop_penalty(uci, radio)
-+	return uci:get('gluon', 'band_' .. radio.band, 'batadv_hop_penalty') or 0
++function M.radio_option(uci, radio, option, default)
++	return uci:get('gluon', 'band_' .. radio.band, option) or default
 +end
 +
  return M
 diff --git a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-index ea97b87721..45cbbcaee1 100755
+index b5dc3acb62..37faaba0af 100755
 --- a/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
 +++ b/package/gluon-private-wifi/luasrc/lib/gluon/upgrade/325-gluon-private-wifi
-@@ -41,7 +41,7 @@ local function configure_private_wifi(radio, index)
+@@ -42,7 +42,7 @@ local function configure_private_wifi(radio, index)
  end
  
  wireless.foreach_radio(uci, function(radio, index)
@@ -90,7 +81,7 @@ index ea97b87721..45cbbcaee1 100755
  	if util.contains(roles, 'private') then
  		configure_private_wifi(radio, index)
 
-From 0d26d92c046f7f32e7506244a4a5d56d28545369 Mon Sep 17 00:00:00 2001
+From 2194b9250e4da3ced3d8d273e48d3f5139814e37 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Tue, 28 Oct 2025 18:02:02 +0100
 Subject: [PATCH 2/4] gluon-core: migrate txpower setting and allow setting of
@@ -178,7 +169,7 @@ index c7ac41128e..df64da9909 100755
  	end
  end
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 4ad221f7d1..f7abfaa3f5 100755
+index 462992fa72..f840834a13 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -65,16 +65,19 @@ local function get_channel(radio, config)
@@ -314,10 +305,10 @@ index 4e71fb45e5..4de509f02f 100644
  
  
 
-From 38eb0a0aff63e0ca5eedae5d616ffb2411ccc3c7 Mon Sep 17 00:00:00 2001
+From a5b493d4d555e77b1c164460cce34c0053002008 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
 Date: Tue, 28 Oct 2025 18:09:50 +0100
-Subject: [PATCH 3/4] gluon-core: add setting of htmode bandwidth per radio
+Subject: [PATCH 3/4] gluon-core: add setting of htmode channel_width per radio
 
 allow setting a custom bandwidth per band
 can be 20, 40, 80 or 160 MHz
@@ -330,10 +321,10 @@ Depends on the supported bandwidth on the device
  3 files changed, 22 insertions(+), 5 deletions(-)
 
 diff --git a/docs/user/site.rst b/docs/user/site.rst
-index b053cfeacb..bd30d93ebb 100644
+index 4379ac090a..e5bb63da28 100644
 --- a/docs/user/site.rst
 +++ b/docs/user/site.rst
-@@ -103,6 +103,7 @@ regdom \: optional
+@@ -104,6 +104,7 @@ regdom \: optional
  wifi24 \: optional
    WLAN configuration for 2.4 GHz devices.
    ``channel`` must be set to a valid wireless channel for your radio.
@@ -342,19 +333,19 @@ index b053cfeacb..bd30d93ebb 100644
    time units (TU). A time unit is equivalent to 1024 µs.
    If not set, the default value of 100 TU (=102.4 ms) is used.
 diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
-index 59400eb0e5..d7715fb2de 100644
+index 59400eb0e5..da9c10ed52 100644
 --- a/package/gluon-core/check_site.lua
 +++ b/package/gluon-core/check_site.lua
 @@ -35,6 +35,7 @@ for _, config in ipairs({'wifi24', 'wifi5', 'wifi6'}) do
  	if need_table({config}, nil, false) then
  		need_string(in_site({'regdom'})) -- regdom is only required when wifi24 or wifi5 is configured
  		need_number({config, 'beacon_interval'}, false)
-+		need_one_of({config, 'bandwidth'}, {20, 40, 80, 160}, false)
++		need_one_of({config, 'channel_width'}, {20, 40, 80, 160}, false)
  
  		if config == "wifi24" then
  			local channels = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index f7abfaa3f5..6e76fc30a8 100755
+index f840834a13..56b0d8b910 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -74,22 +74,37 @@ local function get_htmode(radio)
@@ -367,22 +358,22 @@ index f7abfaa3f5..6e76fc30a8 100755
  		return htmode
  	end
  
-+	local bandwidth
++	local channel_width = 20
 +
 +	if radio.band == '2g' then
-+		bandwidth = site.wifi24.bandwidth('20')
++		channel_width = site.wifi24.channel_width(20)
 +	elseif radio.band == '5g' then
-+		bandwidth = site.wifi5.bandwidth('20')
++		channel_width = site.wifi5.channel_width(20)
 +	end
 +
  	local phy = wireless.find_phy(radio)
  	if iwinfo.nl80211.hwmodelist(phy).ax then
 -		return 'HE20'
-+		htmode = 'HE' .. bandwidth
++		htmode = 'HE' .. channel_width
 +	elseif iwinfo.nl80211.hwmodelist(phy).ac then
-+		htmode = 'VHT' .. bandwidth
++		htmode = 'VHT' .. channel_width
 +	else
-+		htmode = 'HT' .. bandwidth
++		htmode = 'HT' .. channel_width
  	end
  
 -	if iwinfo.nl80211.hwmodelist(phy).ac then
@@ -401,98 +392,25 @@ index f7abfaa3f5..6e76fc30a8 100755
  
  local function configure_mesh(radio, index, mesh_config)
 
-From aae0986cba93759bc2bcbc4d65dce4ad53759218 Mon Sep 17 00:00:00 2001
+From 3fddb59348ce4c1f53b6251f3f45d0ee0c011737 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <f.maurer@outlook.de>
-Date: Fri, 28 Nov 2025 09:05:05 +0100
-Subject: [PATCH 4/4] updates from review
+Date: Tue, 30 Dec 2025 21:08:23 +0100
+Subject: [PATCH 4/4] core: adjust htmode for 6ghz
 
 ---
- package/gluon-core/check_site.lua                |  2 +-
- .../luasrc/lib/gluon/upgrade/200-wireless        | 16 +++++++++-------
- .../luasrc/usr/lib/lua/gluon/wireless.lua        | 15 +++------------
- 3 files changed, 13 insertions(+), 20 deletions(-)
+ package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
-index d7715fb2de..da9c10ed52 100644
---- a/package/gluon-core/check_site.lua
-+++ b/package/gluon-core/check_site.lua
-@@ -35,7 +35,7 @@ for _, config in ipairs({'wifi24', 'wifi5', 'wifi6'}) do
- 	if need_table({config}, nil, false) then
- 		need_string(in_site({'regdom'})) -- regdom is only required when wifi24 or wifi5 is configured
- 		need_number({config, 'beacon_interval'}, false)
--		need_one_of({config, 'bandwidth'}, {20, 40, 80, 160}, false)
-+		need_one_of({config, 'channel_width'}, {20, 40, 80, 160}, false)
- 
- 		if config == "wifi24" then
- 			local channels = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 6e76fc30a8..cabbfa4c96 100755
+index 56b0d8b910..6e5f8e5b33 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-@@ -79,21 +79,23 @@ local function get_htmode(radio)
- 		return htmode
- 	end
- 
--	local bandwidth
-+	local channel_width = 20
- 
- 	if radio.band == '2g' then
--		bandwidth = site.wifi24.bandwidth('20')
-+		channel_width = site.wifi24.channel_width(20)
+@@ -85,6 +85,8 @@ local function get_htmode(radio)
+ 		channel_width = site.wifi24.channel_width(20)
  	elseif radio.band == '5g' then
--		bandwidth = site.wifi5.bandwidth('20')
-+		channel_width = site.wifi5.channel_width(20)
+ 		channel_width = site.wifi5.channel_width(20)
 +	elseif radio.band == '6g' then
 +		channel_width = site.wifi6.channel_width(20)
  	end
  
  	local phy = wireless.find_phy(radio)
- 	if iwinfo.nl80211.hwmodelist(phy).ax then
--		htmode = 'HE' .. bandwidth
-+		htmode = 'HE' .. channel_width
- 	elseif iwinfo.nl80211.hwmodelist(phy).ac then
--		htmode = 'VHT' .. bandwidth
-+		htmode = 'VHT' .. channel_width
- 	else
--		htmode = 'HT' .. bandwidth
-+		htmode = 'HT' .. channel_width
- 	end
- 
- 	for mode, available in pairs(iwinfo.nl80211.htmodelist(phy)) do
-@@ -126,7 +128,7 @@ local function configure_mesh(radio, index, mesh_config)
- 
- 	uci:section('network', 'interface', name, {
- 		proto = 'gluon_mesh',
--		hop_penalty = wireless.radio_hop_penalty(uci, radio)
-+		hop_penalty = wireless.radio_option(uci, radio, 'batadv_hop_penalty')
- 	})
- 
- 	uci:section('wireless', 'wifi-iface', name, {
-diff --git a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-index fa56a5e7f8..778595fe47 100644
---- a/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-+++ b/package/gluon-core/luasrc/usr/lib/lua/gluon/wireless.lua
-@@ -149,20 +149,11 @@ function M.device_uses_band(uci, band)
- end
- 
- function M.radio_roles(uci, radio)
--	local band = radio.band
--	local radio_name = radio['.name']
--	local radio_roles = uci:get_list('gluon', radio_name, 'role')
--
--	local roles = uci:get_list('gluon', 'band_' .. band, 'role')
--	if next(radio_roles) == nil then
--		return roles
--	else
--		return radio_roles
--	end
-+	return uci:get_list('gluon', 'band_' .. radio.band, 'role')
- end
- 
--function M.radio_hop_penalty(uci, radio)
--	return uci:get('gluon', 'band_' .. radio.band, 'batadv_hop_penalty') or 0
-+function M.radio_option(uci, radio, option, default)
-+	return uci:get('gluon', 'band_' .. radio.band, option) or default
- end
- 
- return M
