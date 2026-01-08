@@ -1,0 +1,56 @@
+diff --git a/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html b/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
+index 42bb2ae40a..b70eb9c1da 100644
+--- a/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
++++ b/package/gluon-status-page/files/lib/gluon/status-page/view/status-page.html
+@@ -50,10 +50,15 @@
+ 
+ 		wireless.foreach_radio(uci, function(radio)
+ 			local channel = iwinfo.nl80211.channel(wireless.find_phy(radio))
++			local radio_name = radio['.name']
++			local suffix = radio_name:match('^radio(%d+)$')
++			local ssid = iwinfo.nl80211.ssid('client' .. suffix) 
+ 			if channel then
+ 				table.insert(ret, {
+-					name = radio['.name'],
++					name = radio_name,
+ 					channel = channel,
++					ssid = ssid,
++					htmode = radio.htmode
+ 				})
+ 			end
+ 		end)
+@@ -159,10 +164,11 @@ <h2><%:Overview%></h2>
+ 							<%| nodeinfo.location.latitude %>, <%| nodeinfo.location.longitude %>
+ 						</a></dd>
+ 					<%- end %>
+-					<dt><%:Model%></dt><dd><%| nodeinfo.hardware.model %></dd>
++					<dt><%:Model%></dt><dd><%| nodeinfo.hardware.model %> (<%| nodeinfo.hardware.nproc %> CPUs)</dd>
+ 					<dt><%:Primary MAC address%></dt><dd><%| nodeinfo.network.mac %></dd>
+ 					<dt><%:IP address%></dt><dd><%= pcdata(table.concat(sorted(nodeinfo.network.addresses), '\n')):gsub('\n', '<br>') %></dd>
+-					<dt><%:Firmware%></dt><dd><%| nodeinfo.software.firmware.release %></dd>
++					<dt><%:Firmware%></dt><dd><%| nodeinfo.software.firmware.release %> (<%| nodeinfo.software.firmware.base %>)</dd>
++					<dd><%| nodeinfo.software.firmware.target %> (<%| nodeinfo.software.firmware.subtarget %>)</dd>
+ 					<% if nodeinfo.network.mesh_vpn then -%>
+ 						<dt><%:Mesh VPN%></dt>
+ 						<dd>
+@@ -241,6 +247,11 @@ <h3><%:Radios%></h3>
+ 								<tr>
+ 									<th><%| radio.name %></th>
+ 									<td><%| translatef('Channel %u', radio.channel) %></td>
++									<td>(<%| radio.htmode %>)</td>
++								</tr>
++								<tr>
++									<th></th>
++									<td><%| translate('SSID') %>: <%| radio.ssid %></td>
+ 								</tr>
+ 							<%- end %>
+ 						</tbody>
+@@ -272,7 +283,7 @@ <h2><%:Neighbors%></h2>
+ 						local address = util.readfile('/sys/class/net/' .. iface .. '/address')
+ 						if address then
+ 				%>
+-					<h3><%| iface %></h3>
++					<h3><%| iface %> <sub>MAC: <%| util.trim(address) %></sub></h3>
+ 					<div data-interface="<%| iface %>" data-interface-address="<%| util.trim(address) %>"<%= attr('data-interface-wireless', wireless) %>>
+ 						<table class="datatable">
+ 							<tbody>

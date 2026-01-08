@@ -15,7 +15,7 @@ index e6339261..329032a0 100755
  	'avm,fritz7430',
  }) then
  	lan_ifname, wan_ifname = 'lan2 lan3 lan4', 'lan1'
-+elseif platform.match('lantiq', 'xrx200', {
++elseif platform.match('lantiq', 'xrx200_legacy', {
 +	'tplink,tdw8970',
 +	'tplink,tdw8980',
 +}) then
