@@ -192,6 +192,14 @@ ffac-patch: gluon-update
 		echo 'Installing your opkg keys'; \
 		cp $(OPKG_KEY_FOLDER)/key-build* $(GLUON_BUILD_DIR)/openwrt/; \
 	fi
+	@if [ -f "$(OWRT_VERSION_FOLDER)/version.date" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/version.date" ]; then \
+			echo 'Installing version date'; \
+			cp $(OWRT_VERSION_FOLDER)/version.date $(GLUON_BUILD_DIR)/openwrt/version.date; \
+	fi
+	@if [ -f "$(OWRT_VERSION_FOLDER)/version" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/version" ]; then \
+			echo 'Installing version revision'; \
+			cp $(OWRT_VERSION_FOLDER)/version $(GLUON_BUILD_DIR)/openwrt/version; \
+	fi
 	@touch .modules
 
 
