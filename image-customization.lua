@@ -9,7 +9,6 @@ features {
     'status-page',
     'web-advanced',
     'web-wizard',
-    'config-mode-geo-location-osm',
     'radv-filterd',
     'radvd',
     'web-private-wifi',
@@ -57,6 +56,7 @@ if not device_class('tiny') and not tiny_like then
         'tls',
         'wireless-encryption-wpa3',
         'web-logging',
+        'config-mode-geo-location-osm',
     }
     packages {
         'openssh-sftp-server',
