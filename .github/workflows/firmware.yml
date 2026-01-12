@@ -1,3 +1,4 @@
+---
 name: Build firmware
 
 on:
@@ -6,25 +7,36 @@ on:
     tags:
       - v*
   pull_request:
-    paths-ignore:
-      - '**.md'
-      - '**/CODEOWNERS'
-      - '.github/ISSUE_TEMPLATE'
-      - '.github/*.yml'
-      - '.github/workflows/backport.yml'
-      - '.github/workflows/bump-modules.yml'
-      - 'contrib/sign.sh'
-      - 'contrib/actions/update-modules.sh'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
+  changed:
+    permissions:
+      contents: read  # for dorny/paths-filter to fetch a list of changed files
+      pull-requests: read  # for dorny/paths-filter to read pull requests
+    runs-on: ubuntu-latest
+    outputs:
+      firmware_changed: ${{ steps.filter.outputs.firmware }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        id: filter
+        with:
+          filters: .github/filters.yml
+
   generate_target_matrix:
+    needs: [changed]
+    if: needs.changed.outputs.firmware_changed == 'true' || github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     outputs:
       target_json: ${{ steps.set_target.outputs.target }}
       build_target_json: ${{ steps.set_target.outputs.build_target }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Set target matrix
         id: set_target
         shell: bash
@@ -34,11 +46,11 @@ jobs:
           echo "build_target={\"target\": $(echo $target_list)}" >> $GITHUB_OUTPUT
 
   build_firmware:
-    needs: generate_target_matrix
+    needs: [changed, generate_target_matrix]
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate_target_matrix.outputs.build_target_json) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Maximize build space
         run: |
@@ -46,25 +58,39 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
-          fetch-tags: true
       - name: Install build dependencies
         run: |
           sudo -E ./scripts/install_build_dependencies.sh
       - name: build target ${{ matrix.target }}
         id: compile
         run: |
-          git checkout -b patched ${GITHUB_SHA}
-          make BROKEN=1 GLUON_TARGETS=${{ matrix.target }} V=s
+          git checkout -b patched ${{ github.event.pull_request.head.sha || github.sha }}
+          make BROKEN=1 GLUON_TARGETS=${{ matrix.target }} BUILD_NUMBER=${{ github.event.pull_request.number && format('pr{0}', github.event.pull_request.number) || github.run_id && format('run{0}', github.run_id) }} V=s
           echo "status=success" >> $GITHUB_OUTPUT
       - name: Upload firmware ${{ matrix.target }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: steps.compile.outputs.status == 'success'
         with:
           name: ${{ matrix.target }}_output
           path: ./output
+
+  # Workaround job so that there is a single job for the required status check
+  build_firmware_complete:
+    name: All Targets Build
+    runs-on: ubuntu-22.04
+    if: ${{ !cancelled() }}
+    needs: [build_firmware]
+    steps:
+      - name: Error out if there is a failure
+        if: needs.build_firmware.result != 'skipped' && needs.build_firmware.result != 'success'
+        run: |
+          echo "::error title=X Test failed::Build Matrix Result: ${{ needs.build_firmware.result }}"
+          exit 1
+      - name: All firmware builds succeeded or skipped
+        run: echo "::notice title=✓ Test passed or skipped::Build was successful or skipped due to no relevant changes."
 
   create_release:
     runs-on: ubuntu-latest
@@ -73,7 +99,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       - name: Display structure of artifacts
         run: ls -R
       - name: Create tar.gz files
@@ -83,7 +109,7 @@ jobs:
             tar zcvf "${output}.tar.gz" "${output}"
           done
       - name: Create Release & Upload Release Assets
-        uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2.0.6
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           # Note: If there is no release name specified, releases created in
           # the GitHub UI do not trigger a failure and are modified instead.

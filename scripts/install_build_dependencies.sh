@@ -22,6 +22,7 @@ apt-get -y --no-install-recommends install \
     bash \
     bzip2 \
     curl \
+    clang \
     diffutils \
     file \
     g++ \
@@ -29,12 +30,18 @@ apt-get -y --no-install-recommends install \
     gcc \
     git \
     libncurses5-dev \
+    llvm \
     make \
     patch \
     perl \
     python3 \
+    python3-dev \
+    python3-pyelftools \
+    python3-setuptools \
     qemu-utils \
     rsync \
+    swig \
     tar \
     unzip \
-    wget
+    wget \
+    xz-utils
