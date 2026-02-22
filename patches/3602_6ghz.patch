@@ -35,18 +35,6 @@ index 4a2f55f622..d04e306076 100644
    mesh = {
      vxlan = true,
      batman_adv = {
-diff --git a/docs/user/site.rst b/docs/user/site.rst
-index 4379ac090a..e5bb63da28 100644
---- a/docs/user/site.rst
-+++ b/docs/user/site.rst
-@@ -104,6 +104,7 @@ regdom \: optional
- wifi24 \: optional
-   WLAN configuration for 2.4 GHz devices.
-   ``channel`` must be set to a valid wireless channel for your radio.
-+  ``bandwidth`` can be specified to set a custom bandwidth per radio band in MHz. Can be 20, 40, 80 or 160.
-   ``beacon_interval`` can be specified to set a custom beacon interval in
-   time units (TU). A time unit is equivalent to 1024 µs.
-   If not set, the default value of 100 TU (=102.4 ms) is used.
 diff --git a/docs/user/supported_devices.rst b/docs/user/supported_devices.rst
 index b68919eb8c..7514b44532 100644
 --- a/docs/user/supported_devices.rst
@@ -190,10 +178,10 @@ index 0f3d91256d..dabb083cfc 100755
  end)
  
 diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
-index cf72f05fc8..da9c10ed52 100644
+index cf72f05fc8..59400eb0e5 100644
 --- a/package/gluon-core/check_site.lua
 +++ b/package/gluon-core/check_site.lua
-@@ -31,10 +31,11 @@ need_string_match(in_domain({'prefix6'}), '^[%x:]+/64$')
+@@ -31,7 +31,7 @@ need_string_match(in_domain({'prefix6'}), '^[%x:]+/64$')
  need_string_array_match(in_domain({'extra_prefixes6'}), '^[%x:]+/%d+$', false)
  
  local supported_rates = {6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000}
@@ -202,11 +190,7 @@ index cf72f05fc8..da9c10ed52 100644
  	if need_table({config}, nil, false) then
  		need_string(in_site({'regdom'})) -- regdom is only required when wifi24 or wifi5 is configured
  		need_number({config, 'beacon_interval'}, false)
-+		need_one_of({config, 'channel_width'}, {20, 40, 80, 160}, false)
- 
- 		if config == "wifi24" then
- 			local channels = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
-@@ -48,6 +49,12 @@ for _, config in ipairs({'wifi24', 'wifi5'}) do
+@@ -48,6 +48,12 @@ for _, config in ipairs({'wifi24', 'wifi5'}) do
  			need_one_of({config, 'channel'}, channels)
  			need_chanlist({config, 'outdoor_chanlist'}, channels, false)
  			need_one_of({config, 'outdoors'}, {true, false, 'preset'}, false)
@@ -267,7 +251,7 @@ index b030d3e04e..c7ac41128e 100755
  local role_iface_names = {
  	client = 'client_',
 diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
-index 432848691c..1f310bcc09 100755
+index 432848691c..f14a55848b 100755
 --- a/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 +++ b/package/gluon-core/luasrc/lib/gluon/upgrade/200-wireless
 @@ -9,7 +9,7 @@ local uci = require('simple-uci').cursor()
@@ -289,51 +273,7 @@ index 432848691c..1f310bcc09 100755
  	end
  end)
  
-@@ -74,16 +77,39 @@ local function get_htmode(radio)
- 		end
- 	end
- 
-+	local channel_width = 20
-+
-+	if radio.band == '2g' then
-+		channel_width = site.wifi24.channel_width(20)
-+	elseif radio.band == '5g' then
-+		channel_width = site.wifi5.channel_width(20)
-+	elseif radio.band == '6g' then
-+		channel_width = site.wifi6.channel_width(20)
-+	end
-+
- 	local phy = wireless.find_phy(radio)
-+	local htmode
- 	if iwinfo.nl80211.hwmodelist(phy).ax then
--		return 'HE20'
-+		htmode = 'HE' .. channel_width
-+	elseif iwinfo.nl80211.hwmodelist(phy).ac then
-+		htmode = 'VHT' .. channel_width
-+	else
-+		htmode = 'HT' .. channel_width
- 	end
- 
--	if iwinfo.nl80211.hwmodelist(phy).ac then
--		return 'VHT20'
-+	local last_mode
-+
-+	for mode, available in pairs(iwinfo.nl80211.htmodelist(phy)) do
-+		if available and mode == htmode then
-+			return htmode
-+		end
-+
-+		last_mode = mode
- 	end
- 
--	return 'HT20'
-+	-- if preferred htmode is not available
-+	-- select the last one we got
-+	return last_mode
- end
- 
- local function configure_mesh(radio, index, mesh_config)
-@@ -176,6 +202,10 @@ wireless.foreach_radio(uci, function(radio, index, config)
+@@ -176,6 +179,10 @@ wireless.foreach_radio(uci, function(radio, index, config)
  		if enable_mesh then
  			configure_mesh(radio, index, config.mesh())
  		end
