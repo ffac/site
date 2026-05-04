@@ -1,23 +1,29 @@
-diff --git a/patches/openwrt/0014-add-aruba-ap325.patch b/patches/openwrt/0014-add-aruba-ap325.patch
+From 3ae7f3d091c690c497bd60fdc2a758378a8a89c5 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Wed, 29 Apr 2026 20:13:00 +0200
+Subject: [PATCH] ipq806x-generic: add support for aruba-ap325
+
+---
+ ...parate-UBI-partition-for-rootfs_data.patch | 164 ++++
+ ...h-appsblenv-label-case-insensitively.patch |  26 +
+ ...ipq806x-add-support-for-Aruba-AP-325.patch | 809 ++++++++++++++++++
+ 3 files changed, 999 insertions(+)
+ create mode 100644 patches/openwrt/0018-Support-a-separate-UBI-partition-for-rootfs_data.patch
+ create mode 100644 patches/openwrt/0019-ipq806x-uboot-envtools-match-appsblenv-label-case-insensitively.patch
+ create mode 100644 patches/openwrt/0020-ipq806x-add-support-for-Aruba-AP-325.patch
+
+diff --git a/patches/openwrt/0018-Support-a-separate-UBI-partition-for-rootfs_data.patch b/patches/openwrt/0018-Support-a-separate-UBI-partition-for-rootfs_data.patch
 new file mode 100644
-index 00000000..0a4e8c3e
+index 0000000000..80b9b9283d
 --- /dev/null
-+++ b/patches/openwrt/0014-add-aruba-ap325.patch
-@@ -0,0 +1,971 @@
-+From ec52f6ab0f53bd2a4b11d0818256d431b414e833 Mon Sep 17 00:00:00 2001
++++ b/patches/openwrt/0018-Support-a-separate-UBI-partition-for-rootfs_data.patch
+@@ -0,0 +1,164 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Sat, 14 Mar 2026 03:32:49 +0100
-+Subject: [PATCH 1/2] Support a separate UBI partition for rootfs_data
-+
-+---
-+ package/base-files/files/lib/upgrade/nand.sh  | 43 ++++++++++---------
-+ .../base-files/lib/upgrade/platform.sh        |  1 +
-+ .../base-files/lib/upgrade/platform.sh        |  1 +
-+ .../base-files/lib/upgrade/platform.sh        |  3 ++
-+ 4 files changed, 28 insertions(+), 20 deletions(-)
++Subject: Support a separate UBI partition for rootfs_data
 +
 +diff --git a/package/base-files/files/lib/upgrade/nand.sh b/package/base-files/files/lib/upgrade/nand.sh
-+index ca302557c8ea0f..087e4e2b9fc09d 100644
++index ca302557c8ea0f566307171cf9d3a1ac906257db..087e4e2b9fc09deb91f0213feeee422e8f0d4679 100644
 +--- a/package/base-files/files/lib/upgrade/nand.sh
 ++++ b/package/base-files/files/lib/upgrade/nand.sh
 +@@ -7,8 +7,9 @@
@@ -125,7 +131,7 @@ index 00000000..0a4e8c3e
 + 	if [ "$kernel_length" ]; then
 + 		if [ "$kernel_mtd" ]; then
 +diff --git a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh b/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
-+index 8af61b0289263d..a589db3a8f73d6 100755
++index 8af61b0289263d28e508eaaa2f7a62a4f771dd7a..a589db3a8f73d6d92c9874689c5529763ae3ab2c 100755
 +--- a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
 +@@ -179,6 +179,7 @@ platform_do_upgrade() {
@@ -137,7 +143,7 @@ index 00000000..0a4e8c3e
 + 		;;
 + 	*)
 +diff --git a/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh b/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
-+index 13d8e77c93cc6a..185c19afc43b4f 100755
++index 13d8e77c93cc6a642b15f534368ec625b35dcd7c..185c19afc43b4f0219f3f8f891b5a15effec6060 100755
 +--- a/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
 +@@ -29,6 +29,7 @@ platform_do_upgrade() {
@@ -149,7 +155,7 @@ index 00000000..0a4e8c3e
 + 		;;
 + 	buffalo,ls421de|\
 +diff --git a/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh b/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
-+index 871f29e90294dd..f3049b782b99ad 100644
++index 871f29e90294ddf2f6afc58fd513d9929e7b711a..f3049b782b99add5ad24c6485837ef0c1985b67a 100644
 +--- a/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
 +@@ -187,6 +187,7 @@ platform_do_upgrade() {
@@ -176,27 +182,71 @@ index 00000000..0a4e8c3e
 + 		nand_do_upgrade "$1"
 + 		;;
 + 	zyxel,nbg7815)
+diff --git a/patches/openwrt/0019-ipq806x-uboot-envtools-match-appsblenv-label-case-insensitively.patch b/patches/openwrt/0019-ipq806x-uboot-envtools-match-appsblenv-label-case-insensitively.patch
+new file mode 100644
+index 0000000000..a16afd8cbf
+--- /dev/null
++++ b/patches/openwrt/0019-ipq806x-uboot-envtools-match-appsblenv-label-case-insensitively.patch
+@@ -0,0 +1,26 @@
++From: Florian Maurer <fmaurer@disroot.org>
++Date: Sun, 19 Apr 2026 16:29:40 +0000
++Subject: ipq806x: uboot-envtools: match appsblenv label case-insensitively
 +
-+From 2068dbbcb0bd1f9f50065a1871e3ad2ca6eaa413 Mon Sep 17 00:00:00 2001
-+From: Lukas Stockner <lukas@lukasstockner.de>
-+Date: Sat, 14 Mar 2026 03:55:40 +0100
-+Subject: [PATCH 2/2] ipq806x: add support for Aruba AP-325
++The Aruba AP-325 DTS labels its U-Boot env partition "0:appsblenv"
++(lowercase) via qcom,smem-part, so the grep in ubootenv_mtdinfo never
++matches and /etc/config/ubootenv stays empty.  Making the grep
++case-insensitive keeps the existing uppercase-APPSBLENV consumers
++(qcom,ipq8064-ap148, qcom,ipq8064-db149) working and lets the AP-325
++stanza auto-configure fw_printenv/fw_setenv.
 +
-+---
-+ package/boot/uboot-envtools/files/ipq806x     |   9 +-
-+ scripts/aruba-header.py                       | 223 ++++++++++
-+ .../ipq806x/base-files/etc/board.d/02_network |   9 +-
-+ .../ipq806x/base-files/etc/init.d/bootcount   |   7 +-
-+ .../base-files/lib/upgrade/platform.sh        |  13 +
-+ target/linux/ipq806x/config-6.6               |   2 +
-+ .../arm/boot/dts/qcom/qcom-ipq8068-ap-325.dts | 385 ++++++++++++++++++
-+ target/linux/ipq806x/image/generic.mk         |  30 ++
-+ 8 files changed, 667 insertions(+), 11 deletions(-)
-+ create mode 100755 scripts/aruba-header.py
-+ create mode 100644 target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-325.dts
++Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 +
 +diff --git a/package/boot/uboot-envtools/files/ipq806x b/package/boot/uboot-envtools/files/ipq806x
-+index 443a0e13d40deb..c01fc662497579 100644
++index 443a0e13d40deb95ba1e5ca44c1cce632baed574..c0d11b70d7d6c15348b87742b89e5c2a7d4061bb 100644
++--- a/package/boot/uboot-envtools/files/ipq806x
+++++ b/package/boot/uboot-envtools/files/ipq806x
++@@ -12,7 +12,7 @@ touch /etc/config/ubootenv
++ board=$(board_name)
++ 
++ ubootenv_mtdinfo () {
++-	UBOOTENV_PART=$(cat /proc/mtd | grep APPSBLENV)
+++	UBOOTENV_PART=$(cat /proc/mtd | grep -i APPSBLENV)
++ 	mtd_dev=$(echo $UBOOTENV_PART | awk '{print $1}' | sed 's/:$//')
++ 	mtd_size=$(echo $UBOOTENV_PART | awk '{print "0x"$2}')
++ 	mtd_erase=$(echo $UBOOTENV_PART | awk '{print "0x"$3}')
+diff --git a/patches/openwrt/0020-ipq806x-add-support-for-Aruba-AP-325.patch b/patches/openwrt/0020-ipq806x-add-support-for-Aruba-AP-325.patch
+new file mode 100644
+index 0000000000..b3f0297d0c
+--- /dev/null
++++ b/patches/openwrt/0020-ipq806x-add-support-for-Aruba-AP-325.patch
+@@ -0,0 +1,809 @@
++From: Lukas Stockner <lukas@lukasstockner.de>
++Date: Sat, 14 Mar 2026 03:55:40 +0100
++Subject: ipq806x: add support for Aruba AP-325
++
++Hardware:
++  SoC:      Qualcomm IPQ8068 (2x Cortex-A15)
++  RAM:      512 MiB (~491 MiB usable)
++  SPI-NOR:  4 MiB (SBL stages, bootloader, env, ART)
++  NAND:     128 MiB (2x 32 MiB aos0/aos1, 64 MiB ubifs overlay;
++                     UBI volume names enforced by APBoot)
++  Ethernet: 2x Gigabit
++  WiFi:     QCA9984 2.4 GHz + 5 GHz (ath10k)
++  USB:      1x USB 3.0 (second port routed to internal BLE SoC,
++                        disabled)
++  TPM:      Atmel AT97SC3205T (uses at97sc3204t driver)
++  LEDs:     power (red/green/orange), wlan (green/orange)
++  Buttons:  reset
++
++Installation is via the stock APBoot bootloader; images are
++wrapped with scripts/aruba-header.py (512-byte ARUBA header +
++32-bit checksum). APBoot validates the header and falls back to
++the alternate aos partition on verify failure.
++
++Co-authored-by: Florian Maurer <fmaurer@disroot.org>
++
++diff --git a/package/boot/uboot-envtools/files/ipq806x b/package/boot/uboot-envtools/files/ipq806x
++index c0d11b70d7d6c15348b87742b89e5c2a7d4061bb..e67032e53fe56c33f726cbd7ad84523175a3824b 100644
 +--- a/package/boot/uboot-envtools/files/ipq806x
 ++++ b/package/boot/uboot-envtools/files/ipq806x
 +@@ -35,6 +35,11 @@ arris,tr4400-v2|\
@@ -224,10 +274,10 @@ index 00000000..0a4e8c3e
 + 	ubootenv_add_uci_config "/dev/mtdblock9" "0x0" "0x10000" "0x10000"
 +diff --git a/scripts/aruba-header.py b/scripts/aruba-header.py
 +new file mode 100755
-+index 00000000000000..e0e4bc21cb82f4
++index 0000000000000000000000000000000000000000..0d24a441b5811f0029d61d991e4c9d87314c1973
 +--- /dev/null
 ++++ b/scripts/aruba-header.py
-+@@ -0,0 +1,223 @@
++@@ -0,0 +1,226 @@
 ++#!/usr/bin/python3
 ++# SPDX-License-Identifier: GPL-2.0-or-later
 ++#
@@ -359,15 +409,18 @@ index 00000000..0a4e8c3e
 ++
 ++def make_header(data: bytes, build: str, version: str, oem: str, imageType: int, machine: int) -> bytes:
 ++    buildBytes = build.encode(encoding='ascii')
-++    assert len(buildBytes) < LEN_BUILD
+++    if len(buildBytes) >= LEN_BUILD:
+++        raise ValueError(f"build string too long ({len(buildBytes)} >= {LEN_BUILD})")
 ++    buildBytes += b'\0' * (LEN_BUILD - len(buildBytes))
 ++
 ++    versionBytes = version.encode(encoding='ascii')
-++    assert len(versionBytes) < LEN_VERSION
+++    if len(versionBytes) >= LEN_VERSION:
+++        raise ValueError(f"version string too long ({len(versionBytes)} >= {LEN_VERSION})")
 ++    versionBytes += b'\0' * (LEN_VERSION - len(versionBytes))
 ++
 ++    oemBytes = oem.encode(encoding='ascii')
-++    assert len(oemBytes) < LEN_OEM
+++    if len(oemBytes) >= LEN_OEM:
+++        raise ValueError(f"oem string too long ({len(oemBytes)} >= {LEN_OEM})")
 ++    oemBytes += b'\0' * (LEN_OEM - len(oemBytes))
 ++
 ++    header = b''
@@ -425,7 +478,7 @@ index 00000000..0a4e8c3e
 ++
 ++if __name__ == "__main__":
 ++    parser = argparse.ArgumentParser(description='Generate Aruba header.')
-++    parser.add_argument('source', type=argparse.FileType('r+b'))
+++    parser.add_argument('source', type=argparse.FileType('rb'))
 ++    parser.add_argument('dest', type=argparse.FileType('wb'))
 ++    parser.add_argument('build')
 ++    parser.add_argument('version')
@@ -452,7 +505,7 @@ index 00000000..0a4e8c3e
 ++    args.dest.write(header)
 ++    args.dest.write(image)
 +diff --git a/target/linux/ipq806x/base-files/etc/board.d/02_network b/target/linux/ipq806x/base-files/etc/board.d/02_network
-+index 93ccc961f38130..1b62fce6f7412a 100644
++index 93ccc961f3813037e44d4f66fe586daf9e72fbc5..1b62fce6f7412acbc35a3230d83a5a5562e76f5c 100644
 +--- a/target/linux/ipq806x/base-files/etc/board.d/02_network
 ++++ b/target/linux/ipq806x/base-files/etc/board.d/02_network
 +@@ -14,6 +14,11 @@ ipq806x_setup_interfaces()
@@ -479,7 +532,7 @@ index 00000000..0a4e8c3e
 + 		ucidef_set_interface_lan "eth1 eth2 lan1 lan2 lan3 lan4" "wan"
 + 		;;
 +diff --git a/target/linux/ipq806x/base-files/etc/init.d/bootcount b/target/linux/ipq806x/base-files/etc/init.d/bootcount
-+index ef3c6894e44adb..918203e1a04477 100755
++index ef3c6894e44adbaf293e42f8abf57693678a2013..918203e1a04477c20fc8f6d94e90f35e17481674 100755
 +--- a/target/linux/ipq806x/base-files/etc/init.d/bootcount
 ++++ b/target/linux/ipq806x/base-files/etc/init.d/bootcount
 +@@ -6,12 +6,13 @@ START=99
@@ -500,18 +553,16 @@ index 00000000..0a4e8c3e
 + 		fw_setenv WATCHDOG_COUNT 0x00000000
 + 		;;
 +diff --git a/target/linux/ipq806x/base-files/lib/upgrade/platform.sh b/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
-+index f26f118d548077..96c96a54257bb3 100644
++index f26f118d548077c7d2192fee29f1b8ebd453b854..b6272977f9e5e9d494fe6c2444d35790db7b5a4f 100644
 +--- a/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
-+@@ -26,6 +26,19 @@ platform_do_upgrade() {
++@@ -26,6 +26,17 @@ platform_do_upgrade() {
 + 	qcom,ipq8064-ap161)
 + 		nand_do_upgrade "$1"
 + 		;;
 ++	aruba,ap-325)
-++		# The bootloader on this device unfortunately enforces a particular set of UBI volumes,
-++		# and will mess with the partitioning if it doesn't find it.
-++		# Therefore, we have to make do with the stock layout, which is a set of three
-++		# MTD partitions, each containing a single UBI volume with the same name.
+++		# APBoot enforces fixed UBI volume names (aos0/aos1/ubifs); the
+++		# MTD partition labels match, so skip MTD-based kernel update.
 ++		CI_KERNPART="aos0"
 ++		CI_ROOTPART="aos1"
 ++		CI_KERN_UBIPART="aos0"
@@ -524,7 +575,7 @@ index 00000000..0a4e8c3e
 + 		asrock_upgrade_prepare
 + 		nand_do_upgrade "$1"
 +diff --git a/target/linux/ipq806x/config-6.6 b/target/linux/ipq806x/config-6.6
-+index 7e9558ad75206c..59ab8b3c054009 100644
++index 7e9558ad75206cb62058f72b9e9d84398f629936..59ab8b3c054009cc8bf96e87717713c1d955e319 100644
 +--- a/target/linux/ipq806x/config-6.6
 ++++ b/target/linux/ipq806x/config-6.6
 +@@ -184,6 +184,8 @@ CONFIG_GENERIC_VDSO_32=y
@@ -538,10 +589,10 @@ index 00000000..0a4e8c3e
 + CONFIG_HARDIRQS_SW_RESEND=y
 +diff --git a/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-325.dts b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-325.dts
 +new file mode 100644
-+index 00000000000000..19fe473093e05b
++index 0000000000000000000000000000000000000000..5474211dec680b32b3aab4047b5438df7a1d48bb
 +--- /dev/null
 ++++ b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-325.dts
-+@@ -0,0 +1,385 @@
++@@ -0,0 +1,388 @@
 ++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 ++
 ++#include "qcom-ipq8064-v2.0.dtsi"
@@ -554,6 +605,7 @@ index 00000000..0a4e8c3e
 ++	model = "Aruba AP-325";
 ++	compatible = "aruba,ap-325", "qcom,ipq8064";
 ++
+++	/* APBoot does not populate /memory, so hardcode it here. */
 ++	memory@0 {
 ++		reg = <0x41500000 0x1eb00000>;
 ++		device_type = "memory";
@@ -616,14 +668,16 @@ index 00000000..0a4e8c3e
 ++			gpios = <&qcom_pinmux 30 GPIO_ACTIVE_HIGH>;
 ++		};
 ++
-++		led_wlan_green {
-++			label = "green:wlan";
+++		wlan_green {
+++			function = LED_FUNCTION_WLAN;
+++			color = <LED_COLOR_ID_GREEN>;
 ++			gpios = <&qcom_pinmux 31 GPIO_ACTIVE_HIGH>;
 ++			linux,default-trigger = "phy0tpt";
 ++		};
 ++
-++		led_wlan_orange {
-++			label = "orange:wlan";
+++		wlan_orange {
+++			function = LED_FUNCTION_WLAN;
+++			color = <LED_COLOR_ID_ORANGE>;
 ++			gpios = <&qcom_pinmux 32 GPIO_ACTIVE_HIGH>;
 ++			linux,default-trigger = "phy1tpt";
 ++		};
@@ -649,8 +703,8 @@ index 00000000..0a4e8c3e
 ++		#address-cells = <1>;
 ++		#size-cells = <0>;
 ++
-++		at97sc3205t@29 {
-++			compatible = "tpm,tpm_i2c_atmel";
+++		tpm@29 {
+++			compatible = "atmel,at97sc3204t";
 ++			reg = <0x29>;
 ++		};
 ++	};
@@ -928,47 +982,47 @@ index 00000000..0a4e8c3e
 ++	status = "okay";
 ++};
 +diff --git a/target/linux/ipq806x/image/generic.mk b/target/linux/ipq806x/image/generic.mk
-+index 112793d5fdeff3..72e71c26f17168 100644
++index 112793d5fdeff3b08c1357c0806f113ac57d3594..f1c80b406b0484a1f6a82b258c379b79821cb1e1 100644
 +--- a/target/linux/ipq806x/image/generic.mk
 ++++ b/target/linux/ipq806x/image/generic.mk
-+@@ -47,6 +47,18 @@ define Build/linksys-addfwhdr
++@@ -47,6 +47,17 @@ define Build/linksys-addfwhdr
 +        	;mv "$@.new" "$@"
 + endef
 + 
 ++define Build/apboot-addfwhdr
-++       $(SCRIPT_DIR)/aruba-header.py \
-++       $@ $@.new \
-++       "$(call toupper,$(LINUX_KARCH)) $(VERSION_DIST) Linux-$(LINUX_VERSION), $(VERSION_NUMBER) $(VERSION_CODE)"\
-++       "$(VERSION_NUMBER)" \
-++       "$(VERSION_DIST)" \
-++       os \
-++       "$(word 1,$(1))"
-++
-++       mv "$@.new" "$@"
+++	$(SCRIPT_DIR)/aruba-header.py \
+++		$@ $@.new \
+++		"$(call toupper,$(LINUX_KARCH)) $(VERSION_DIST) Linux-$(LINUX_VERSION), $(VERSION_NUMBER) $(VERSION_CODE)" \
+++		"$(VERSION_NUMBER)" \
+++		"$(VERSION_DIST)" \
+++		os \
+++		"$(word 1,$(1))"
+++	mv "$@.new" "$@"
 ++endef
 ++
 + define Device/DniImage
 + 	KERNEL_SUFFIX := -uImage
 + 	KERNEL = kernel-bin | append-dtb | uImage none
-+@@ -101,6 +113,24 @@ define Device/arris_tr4400-v2
++@@ -101,6 +112,25 @@ define Device/arris_tr4400-v2
 + endef
 + TARGET_DEVICES += arris_tr4400-v2
 + 
 ++define Device/aruba_ap-325
-++       $(call Device/LegacyImage)
-++       DEVICE_VENDOR := Aruba
-++       DEVICE_MODEL := AP-325
-++       DEVICE_ALT0_VENDOR := Aruba
-++       DEVICE_ALT0_MODEL := AP-324
-++       DEVICE_ALT1_VENDOR := Siemens
-++       DEVICE_ALT1_MODEL := Scalance W1750D
-++       SOC := qcom-ipq8068
-++       PAGESIZE := 2048
-++       BLOCKSIZE := 128k
-++       KERNEL_SUFFIX := .ari
-++       KERNEL = kernel-bin | append-dtb | uImage none | apboot-addfwhdr Octomore
-++       KERNEL_LOADADDR = 0x41508000
-++       DEVICE_PACKAGES := ath10k-firmware-qca99x0-ct kmod-i2c-gpio kmod-tpm-i2c-atmel kmod-ramoops
+++	$(call Device/LegacyImage)
+++	DEVICE_VENDOR := Aruba
+++	DEVICE_MODEL := AP-325
+++	DEVICE_ALT0_VENDOR := Aruba
+++	DEVICE_ALT0_MODEL := AP-324
+++	DEVICE_ALT1_VENDOR := Siemens
+++	DEVICE_ALT1_MODEL := Scalance W1750D
+++	SOC := qcom-ipq8068
+++	PAGESIZE := 2048
+++	BLOCKSIZE := 128k
+++	KERNEL_SUFFIX := .ari
+++	KERNEL = kernel-bin | append-dtb | uImage none | apboot-addfwhdr Octomore
+++	KERNEL_LOADADDR = 0x41508000
+++	KERNEL_SIZE := 30720k
+++	DEVICE_PACKAGES := ath10k-firmware-qca99x0-ct kmod-i2c-gpio kmod-tpm-i2c-atmel
 ++endef
 ++TARGET_DEVICES += aruba_ap-325
 ++

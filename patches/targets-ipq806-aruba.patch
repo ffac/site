@@ -9,7 +9,7 @@ index 641d89ce..d149750d 100644
 +-- Aruba
 +
 +device('aruba-ap-325', 'aruba_ap-325', {
-+	packages = QCA9980_PACKAGES,
++	packages = QCA9980_PACKAGES, factory = false,
 +})
 +
  -- Extreme Networks
