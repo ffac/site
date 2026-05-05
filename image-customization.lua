@@ -70,7 +70,6 @@ if not device_class('tiny') and not tiny_like then
         'ffac-ssid-changer',
         'ff-web-ap-timer',
         'ffda-gluon-usteer',
-        'ffda-node-whisperer',
     }
     -- usb is only default available for non-tiny devices
     include_usb = true

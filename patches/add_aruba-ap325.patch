@@ -1,25 +1,25 @@
-From c43ddf04cd7a5d89e0eb92406db9e57b6ecf7f72 Mon Sep 17 00:00:00 2001
+From 75654cf1fbdbb39497191889cf00bc7e92fa6c16 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <fmaurer@disroot.org>
-Date: Mon, 1 Jun 2026 15:04:47 +0200
-Subject: [PATCH] ipq806x-generic: add support for aruba-ap32x
+Date: Mon, 1 Jun 2026 15:06:50 +0200
+Subject: [PATCH] ipq806x-generic: add support for aruba-ap325
 
 ---
- ...ort-rootfs_data-on-its-own-partition.patch | 168 +++
+ ...ort-rootfs_data-on-its-own-partition.patch | 180 ++++
  ...-kernel-UBI-volume-and-MTD-partition.patch |  27 +
- ...021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch |  22 +
- ...ipq806x-add-support-for-Aruba-AP-32x.patch | 981 ++++++++++++++++++
- 4 files changed, 1198 insertions(+)
- create mode 100644 patches/openwrt/0019-base-files-support-rootfs_data-on-its-own-partition.patch
- create mode 100644 patches/openwrt/0020-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
- create mode 100644 patches/openwrt/0021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
- create mode 100644 patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch
+ ...015-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch |  22 +
+ ...ipq806x-add-support-for-Aruba-AP-32x.patch | 984 ++++++++++++++++++
+ 4 files changed, 1213 insertions(+)
+ create mode 100644 patches/openwrt/0013-base-files-support-rootfs_data-on-its-own-partition.patch
+ create mode 100644 patches/openwrt/0014-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
+ create mode 100644 patches/openwrt/0015-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
+ create mode 100644 patches/openwrt/0016-ipq806x-add-support-for-Aruba-AP-32x.patch
 
-diff --git a/patches/openwrt/0019-base-files-support-rootfs_data-on-its-own-partition.patch b/patches/openwrt/0019-base-files-support-rootfs_data-on-its-own-partition.patch
+diff --git a/patches/openwrt/0013-base-files-support-rootfs_data-on-its-own-partition.patch b/patches/openwrt/0013-base-files-support-rootfs_data-on-its-own-partition.patch
 new file mode 100644
-index 0000000000..ac4cc3de3e
+index 0000000000..e3e0a443ca
 --- /dev/null
-+++ b/patches/openwrt/0019-base-files-support-rootfs_data-on-its-own-partition.patch
-@@ -0,0 +1,168 @@
++++ b/patches/openwrt/0013-base-files-support-rootfs_data-on-its-own-partition.patch
+@@ -0,0 +1,180 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Sat, 2 May 2026 19:31:43 +0200
 +Subject: base-files: support rootfs_data on its own partition
@@ -36,7 +36,7 @@ index 0000000000..ac4cc3de3e
 +Signed-off-by: Lukas Stockner <lukas@lukasstockner.de>
 +
 +diff --git a/package/base-files/files/lib/upgrade/nand.sh b/package/base-files/files/lib/upgrade/nand.sh
-+index ca302557c8ea0f566307171cf9d3a1ac906257db..bfe6027f24565c8342d962ed30489804f340be5b 100644
++index 22f9cce42a5b79047effa2f66cc62200a0bb8766..e4a255b9c0ec53e75020c97b007e82d2491e1b5a 100644
 +--- a/package/base-files/files/lib/upgrade/nand.sh
 ++++ b/package/base-files/files/lib/upgrade/nand.sh
 +@@ -7,8 +7,9 @@
@@ -103,9 +103,9 @@ index 0000000000..ac4cc3de3e
 +-	[ "$data_ubivol" ] && ubirmvol /dev/$root_ubidev -N rootfs_data || :
 ++	[ "$data_ubivol" ] && ubirmvol /dev/$data_ubidev -N rootfs_data || :
 + 
-+ 	# create kernel vol
-+ 	if [ -n "$kernel_length" ]; then
-+@@ -245,8 +245,8 @@ nand_upgrade_prepare_ubi() {
++ 	# create provisioning vol
++ 	if [ "${UPGRADE_OPT_ADD_PROVISIONING:-0}" -gt 0 ]; then
++@@ -255,8 +255,8 @@ nand_upgrade_prepare_ubi() {
 + 		if [ -n "$rootfs_data_max" ]; then
 + 			rootfs_data_size_param="-s $rootfs_data_max"
 + 		fi
@@ -116,7 +116,7 @@ index 0000000000..ac4cc3de3e
 + 				echo "cannot initialize rootfs_data volume"
 + 				return 1
 + 			fi
-+@@ -278,8 +278,8 @@ nand_upgrade_ubifs() {
++@@ -288,8 +288,8 @@ nand_upgrade_ubifs() {
 + 
 + 	nand_upgrade_prepare_ubi "$ubifs_length" "ubifs" "" "" || return 1
 + 
@@ -127,7 +127,7 @@ index 0000000000..ac4cc3de3e
 + 	$cmd < "$ubifs_file" | ubiupdatevol /dev/$root_ubivol -s "$ubifs_length" -
 + }
 + 
-+@@ -292,7 +292,7 @@ nand_upgrade_fit() {
++@@ -302,7 +302,7 @@ nand_upgrade_fit() {
 + 
 + 	nand_upgrade_prepare_ubi "" "" "$fit_length" "1" || return 1
 + 
@@ -137,10 +137,10 @@ index 0000000000..ac4cc3de3e
 + 	$cmd < "$fit_file" | ubiupdatevol /dev/$fit_ubivol -s "$fit_length" -
 + }
 +diff --git a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh b/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
-+index 8af61b0289263d28e508eaaa2f7a62a4f771dd7a..5372d27c01c9fdcc37a63ab968a53a422908b671 100755
++index b2e5a6fc52923d17fe9f8253a418e19e0b6cb713..4efa8d5e0431e0bdc7cb5e3110b4c04d94d5871f 100644
 +--- a/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/mediatek/filogic/base-files/lib/upgrade/platform.sh
-+@@ -179,6 +179,7 @@ platform_do_upgrade() {
++@@ -263,6 +263,7 @@ platform_do_upgrade() {
 + 	xiaomi,redmi-router-ax6000-stock)
 + 		CI_KERN_UBIPART=ubi_kernel
 + 		CI_ROOT_UBIPART=ubi
@@ -149,7 +149,7 @@ index 0000000000..ac4cc3de3e
 + 		;;
 + 	*)
 +diff --git a/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh b/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
-+index 13d8e77c93cc6a642b15f534368ec625b35dcd7c..185c19afc43b4f0219f3f8f891b5a15effec6060 100755
++index a30f4bc1e22ca3ebc7ac1437d259e7fdb9473f7a..10078eec9a94730cf3a7c04072f108cef1fca0eb 100755
 +--- a/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/mvebu/cortexa9/base-files/lib/upgrade/platform.sh
 +@@ -29,6 +29,7 @@ platform_do_upgrade() {
@@ -160,11 +160,23 @@ index 0000000000..ac4cc3de3e
 + 		nand_do_upgrade "$1"
 + 		;;
 + 	buffalo,ls421de|\
++diff --git a/target/linux/qualcommax/ipq50xx/base-files/lib/upgrade/platform.sh b/target/linux/qualcommax/ipq50xx/base-files/lib/upgrade/platform.sh
++index c6e8d0fb0dc31bc1ce22db48065a06721f75ddc2..bda42786b238a5eec6ca5226df918575e255cbe3 100644
++--- a/target/linux/qualcommax/ipq50xx/base-files/lib/upgrade/platform.sh
+++++ b/target/linux/qualcommax/ipq50xx/base-files/lib/upgrade/platform.sh
++@@ -226,6 +226,7 @@ platform_do_upgrade() {
++ 		# Kernel and rootfs are placed in 2 different UBI
++ 		CI_KERN_UBIPART="ubi_kernel"
++ 		CI_ROOT_UBIPART="rootfs"
+++		CI_DATA_UBIPART="rootfs"
++ 		nand_do_upgrade "$1"
++ 		;;
++ 	yuncore,ax830|\
 +diff --git a/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh b/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
-+index 871f29e90294ddf2f6afc58fd513d9929e7b711a..f3049b782b99add5ad24c6485837ef0c1985b67a 100644
++index 1ddc73f09ec464b4fbeca05ece60ca44b1197cf6..6962b276728610186b67a97da5616e224a24e859 100644
 +--- a/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/qualcommax/ipq807x/base-files/lib/upgrade/platform.sh
-+@@ -187,6 +187,7 @@ platform_do_upgrade() {
++@@ -197,6 +197,7 @@ platform_do_upgrade() {
 + 	buffalo,wxr-5950ax12)
 + 		CI_KERN_UBIPART="rootfs"
 + 		CI_ROOT_UBIPART="user_property"
@@ -172,7 +184,7 @@ index 0000000000..ac4cc3de3e
 + 		buffalo_upgrade_prepare
 + 		nand_do_flash_file "$1" || nand_do_upgrade_failed
 + 		nand_do_restore_config || nand_do_upgrade_failed
-+@@ -245,6 +246,7 @@ platform_do_upgrade() {
++@@ -255,6 +256,7 @@ platform_do_upgrade() {
 + 		# Kernel and rootfs are placed in 2 different UBI
 + 		CI_KERN_UBIPART="ubi_kernel"
 + 		CI_ROOT_UBIPART="rootfs"
@@ -180,7 +192,7 @@ index 0000000000..ac4cc3de3e
 + 		nand_do_upgrade "$1"
 + 		;;
 + 	spectrum,sax1v1k)
-+@@ -283,6 +285,7 @@ platform_do_upgrade() {
++@@ -295,6 +297,7 @@ platform_do_upgrade() {
 + 	zte,mf269)
 + 		CI_KERN_UBIPART="ubi_kernel"
 + 		CI_ROOT_UBIPART="rootfs"
@@ -188,11 +200,11 @@ index 0000000000..ac4cc3de3e
 + 		nand_do_upgrade "$1"
 + 		;;
 + 	zyxel,nbg7815)
-diff --git a/patches/openwrt/0020-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch b/patches/openwrt/0020-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
+diff --git a/patches/openwrt/0014-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch b/patches/openwrt/0014-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
 new file mode 100644
-index 0000000000..07c8cac52e
+index 0000000000..922919e60e
 --- /dev/null
-+++ b/patches/openwrt/0020-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
++++ b/patches/openwrt/0014-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
 @@ -0,0 +1,27 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Sat, 2 May 2026 19:32:23 +0200
@@ -207,10 +219,10 @@ index 0000000000..07c8cac52e
 +Signed-off-by: Lukas Stockner <lukas@lukasstockner.de>
 +
 +diff --git a/package/base-files/files/lib/upgrade/nand.sh b/package/base-files/files/lib/upgrade/nand.sh
-+index bfe6027f24565c8342d962ed30489804f340be5b..0faa0349346cba19ad86be23a0badf9da5076163 100644
++index e4a255b9c0ec53e75020c97b007e82d2491e1b5a..4bf9fc993eff5386faa769a772aaffb24703991e 100644
 +--- a/package/base-files/files/lib/upgrade/nand.sh
 ++++ b/package/base-files/files/lib/upgrade/nand.sh
-+@@ -318,6 +318,10 @@ nand_upgrade_tar() {
++@@ -328,6 +328,10 @@ nand_upgrade_tar() {
 + 	local rootfs_type
 + 	[ "$rootfs_length" ] && rootfs_type="$(identify_tar "$tar_file" "$cmd" "$board_dir/root")"
 + 
@@ -221,11 +233,11 @@ index 0000000000..07c8cac52e
 + 	local ubi_kernel_length
 + 	if [ "$kernel_length" ]; then
 + 		if [ "$kernel_mtd" ]; then
-diff --git a/patches/openwrt/0021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch b/patches/openwrt/0021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
+diff --git a/patches/openwrt/0015-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch b/patches/openwrt/0015-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
 new file mode 100644
-index 0000000000..86207528bb
+index 0000000000..21db719293
 --- /dev/null
-+++ b/patches/openwrt/0021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
++++ b/patches/openwrt/0015-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
 @@ -0,0 +1,22 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Sat, 2 May 2026 20:11:04 +0200
@@ -236,11 +248,11 @@ index 0000000000..86207528bb
 +
 +Signed-off-by: Lukas Stockner <lukas@lukasstockner.de>
 +
-+diff --git a/target/linux/ipq806x/config-6.6 b/target/linux/ipq806x/config-6.6
-+index 7e9558ad75206cb62058f72b9e9d84398f629936..59ab8b3c054009cc8bf96e87717713c1d955e319 100644
-+--- a/target/linux/ipq806x/config-6.6
-++++ b/target/linux/ipq806x/config-6.6
-+@@ -184,6 +184,8 @@ CONFIG_GENERIC_VDSO_32=y
++diff --git a/target/linux/ipq806x/config-6.12 b/target/linux/ipq806x/config-6.12
++index 6ade610d56a3440afbf24166d7657e5706bc95bc..954e5b063a246ab597de49d22837f4ad1811805d 100644
++--- a/target/linux/ipq806x/config-6.12
+++++ b/target/linux/ipq806x/config-6.12
++@@ -186,6 +186,8 @@ CONFIG_GENERIC_VDSO_32=y
 + CONFIG_GLOB=y
 + CONFIG_GPIOLIB_IRQCHIP=y
 + CONFIG_GPIO_CDEV=y
@@ -249,12 +261,12 @@ index 0000000000..86207528bb
 + CONFIG_GRO_CELLS=y
 + CONFIG_HARDEN_BRANCH_PREDICTOR=y
 + CONFIG_HARDIRQS_SW_RESEND=y
-diff --git a/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch b/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch
+diff --git a/patches/openwrt/0016-ipq806x-add-support-for-Aruba-AP-32x.patch b/patches/openwrt/0016-ipq806x-add-support-for-Aruba-AP-32x.patch
 new file mode 100644
-index 0000000000..542ba29ad6
+index 0000000000..b0b4bc76b5
 --- /dev/null
-+++ b/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch
-@@ -0,0 +1,981 @@
++++ b/patches/openwrt/0016-ipq806x-add-support-for-Aruba-AP-32x.patch
+@@ -0,0 +1,984 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Wed, 5 Nov 2025 23:41:57 +0100
 +Subject: ipq806x: add support for Aruba AP-32x
@@ -472,10 +484,10 @@ index 0000000000..542ba29ad6
 +
 +Signed-off-by: Lukas Stockner <lukas@lukasstockner.de>
 +
-+diff --git a/package/boot/uboot-envtools/files/ipq806x b/package/boot/uboot-envtools/files/ipq806x
-+index 443a0e13d40deb95ba1e5ca44c1cce632baed574..3e653fd30e702627117d273b99f74ecd2c4b8004 100644
-+--- a/package/boot/uboot-envtools/files/ipq806x
-++++ b/package/boot/uboot-envtools/files/ipq806x
++diff --git a/package/boot/uboot-tools/uboot-envtools/files/ipq806x b/package/boot/uboot-tools/uboot-envtools/files/ipq806x
++index 44dae17c1b26fcff408483d504a8be3dd616b982..a018d0d7e502d179fe3b0c2a7e301ce6dc6e237d 100644
++--- a/package/boot/uboot-tools/uboot-envtools/files/ipq806x
+++++ b/package/boot/uboot-tools/uboot-envtools/files/ipq806x
 +@@ -35,6 +35,12 @@ arris,tr4400-v2|\
 + askey,rt4230w-rev6)
 + 	ubootenv_add_uci_config "/dev/mtd9" "0x0" "0x40000" "0x20000"
@@ -489,6 +501,18 @@ index 0000000000..542ba29ad6
 + edgecore,ecw5410)
 + 	ubootenv_add_uci_config "/dev/mtd11" "0x0" "0x10000" "0x10000"
 + 	;;
++@@ -42,11 +48,6 @@ extreme,ap3935)
++ 	ubootenv_add_uci_config "/dev/mtd1" "0x0" "0x10000" "0x10000"
++ 	ubootenv_add_uci_config "/dev/mtd3" "0x0" "0x10000" "0x10000"
++ 	;;
++-ignitenet,ss-w2-ac2600|\
++-qcom,ipq8064-ap148|\
++-qcom,ipq8064-db149)
++-	ubootenv_add_uci_config $(ubootenv_mtdinfo)
++-	;;
++ linksys,ea7500-v1|\
++ linksys,ea8500)
++ 	ubootenv_add_uci_config "/dev/mtd10" "0x0" "0x20000" "0x20000"
 +diff --git a/scripts/aruba-header.py b/scripts/aruba-header.py
 +new file mode 100755
 +index 0000000000000000000000000000000000000000..e7dfa62e14e66b454f42ccb8da59e525a8270d98
@@ -721,7 +745,7 @@ index 0000000000..542ba29ad6
 ++    dest.write(header)
 ++    dest.write(image)
 +diff --git a/target/linux/ipq806x/base-files/etc/board.d/02_network b/target/linux/ipq806x/base-files/etc/board.d/02_network
-+index 93ccc961f3813037e44d4f66fe586daf9e72fbc5..5a0e210ea0b1193446e768ad4391cef08a6f04d0 100644
++index e09a12af8726005185b4e64fd812ae4058e629ba..a2b2ee3767095c7422f50f0906324f517f9a0260 100644
 +--- a/target/linux/ipq806x/base-files/etc/board.d/02_network
 ++++ b/target/linux/ipq806x/base-files/etc/board.d/02_network
 +@@ -14,6 +14,11 @@ ipq806x_setup_interfaces()
@@ -733,25 +757,25 @@ index 0000000000..542ba29ad6
 ++	extreme,ap3935)
 ++		ucidef_set_interfaces_lan_wan "eth1" "eth0"
 ++		;;
-+ 	askey,rt4230w-rev6 |\
-+ 	asrock,g10 |\
-+ 	nec,wg2600hp |\
++ 	askey,rt4230w-rev6|\
++ 	asrock,g10|\
++ 	buffalo,wxr-2533dhp|\
 +@@ -47,10 +52,6 @@ ipq806x_setup_interfaces()
 + 		ucidef_set_network_device_conduit "lan1" "eth1"
 + 		ucidef_set_network_device_conduit "wan" "eth0"
 + 		;;
-+-	edgecore,ecw5410 |\
++-	edgecore,ecw5410|\
 +-	extreme,ap3935)
 +-		ucidef_set_interfaces_lan_wan "eth1" "eth0"
 +-		;;
-+ 	qcom,ipq8064-ap161)
-+ 		ucidef_set_interface_lan "eth1 eth2 lan1 lan2 lan3 lan4" "wan"
-+ 		;;
++ 	fortinet,fap-421e|\
++ 	ignitenet,ss-w2-ac2600|\
++ 	ubnt,unifi-ac-hd)
 +diff --git a/target/linux/ipq806x/base-files/etc/init.d/bootcount b/target/linux/ipq806x/base-files/etc/init.d/bootcount
-+index ef3c6894e44adbaf293e42f8abf57693678a2013..81bbb80bc2b0f1149a135769294f9269f37ab8ab 100755
++index 669b815e3972d1428873276c759c54d47e9481f6..1b9ace9f63bcb682d8b0bcf463c8c961aa7c2b2c 100755
 +--- a/target/linux/ipq806x/base-files/etc/init.d/bootcount
 ++++ b/target/linux/ipq806x/base-files/etc/init.d/bootcount
-+@@ -6,12 +6,13 @@ START=99
++@@ -6,13 +6,14 @@ START=99
 + 
 + boot() {
 + 	case $(board_name) in
@@ -759,7 +783,8 @@ index 0000000000..542ba29ad6
 +-		asrock_bootconfig_mangle "bootcheck" && reboot
 +-		;;
 ++	aruba,ap-32x|\
-+ 	edgecore,ecw5410)
++ 	edgecore,ecw5410|\
++ 	ignitenet,ss-w2-ac2600)
 + 		fw_setenv bootcount 0
 + 		;;
 ++	asrock,g10)
@@ -769,7 +794,7 @@ index 0000000000..542ba29ad6
 + 		fw_setenv WATCHDOG_COUNT 0x00000000
 + 		;;
 +diff --git a/target/linux/ipq806x/base-files/lib/upgrade/platform.sh b/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
-+index f26f118d548077c7d2192fee29f1b8ebd453b854..a8a11144db26fc7087b44ccfd907199355f9a03e 100644
++index 972aa41a8531ed07a296de2599a3dba6dc0180c0..e980598a387928445251e80f9af8e9d556c97d39 100644
 +--- a/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
 ++++ b/target/linux/ipq806x/base-files/lib/upgrade/platform.sh
 +@@ -26,6 +26,21 @@ platform_do_upgrade() {
@@ -794,12 +819,12 @@ index 0000000000..542ba29ad6
 + 	asrock,g10)
 + 		asrock_upgrade_prepare
 + 		nand_do_upgrade "$1"
-+diff --git a/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
++diff --git a/target/linux/ipq806x/files-6.12/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts b/target/linux/ipq806x/files-6.12/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
 +new file mode 100644
-+index 0000000000000000000000000000000000000000..fc232a56ffb765fb72ff9514b95ea2561d0286f5
++index 0000000000000000000000000000000000000000..b6f1b7b110127791f1db439be46c709fef0d6e61
 +--- /dev/null
-++++ b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
-+@@ -0,0 +1,387 @@
+++++ b/target/linux/ipq806x/files-6.12/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
++@@ -0,0 +1,377 @@
 ++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 ++
 ++#include "qcom-ipq8064-v2.0.dtsi"
@@ -1042,41 +1067,31 @@ index 0000000000..542ba29ad6
 ++
 ++&pcie0 {
 ++	status = "okay";
+++};
 ++
-++	bridge@0,0 {
-++		reg = <0x00000000 0 0 0 0>;
-++		#address-cells = <3>;
-++		#size-cells = <2>;
-++		ranges;
+++&pcie_bridge0 {
+++	wifi@0,0 {
+++		compatible = "qcom,ath10k";
+++		status = "okay";
+++		reg = <0x10000 0 0 0 0>;
 ++
-++		wifi@1,0 {
-++			compatible = "qcom,ath10k";
-++			status = "okay";
-++			reg = <0x00010000 0 0 0 0>;
-++
-++			nvmem-cells = <&precal_art_1000>;
-++			nvmem-cell-names = "pre-calibration";
-++		};
+++		nvmem-cells = <&precal_art_1000>;
+++		nvmem-cell-names = "pre-calibration";
 ++	};
 ++};
 ++
 ++&pcie1 {
 ++	status = "okay";
+++};
 ++
-++	bridge@0,0 {
-++		reg = <0x00000000 0 0 0 0>;
-++		#address-cells = <3>;
-++		#size-cells = <2>;
-++		ranges;
+++&pcie_bridge1 {
+++	wifi@0,0 {
+++		compatible = "qcom,ath10k";
+++		status = "okay";
+++		reg = <0x10000 0 0 0 0>;
 ++
-++		wifi@1,0 {
-++			compatible = "qcom,ath10k";
-++			status = "okay";
-++			reg = <0x00010000 0 0 0 0>;
-++
-++			nvmem-cells = <&precal_art_5000>;
-++			nvmem-cell-names = "pre-calibration";
-++		};
+++		nvmem-cells = <&precal_art_5000>;
+++		nvmem-cell-names = "pre-calibration";
 ++	};
 ++};
 ++
@@ -1188,7 +1203,7 @@ index 0000000000..542ba29ad6
 ++	status = "okay";
 ++};
 +diff --git a/target/linux/ipq806x/image/generic.mk b/target/linux/ipq806x/image/generic.mk
-+index 112793d5fdeff3b08c1357c0806f113ac57d3594..b8d7a187a982f43cd92b15643aa02f987ce59e3e 100644
++index b7608019f068305cd2efc198c7bb65c66e036bd8..53f154979c464f4fad598ec5d2a49c3ca825a9a8 100644
 +--- a/target/linux/ipq806x/image/generic.mk
 ++++ b/target/linux/ipq806x/image/generic.mk
 +@@ -47,6 +47,18 @@ define Build/linksys-addfwhdr
