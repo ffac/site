@@ -1,0 +1,78 @@
+diff --git a/patches/openwrt/0040-kernel-6.6-report-dying-CPU-to-RCU-from-ipi_cpu_stop.patch b/patches/openwrt/0040-kernel-6.6-report-dying-CPU-to-RCU-from-ipi_cpu_stop.patch
+new file mode 100644
+index 00000000..f094b050
+--- /dev/null
++++ b/patches/openwrt/0040-kernel-6.6-report-dying-CPU-to-RCU-from-ipi_cpu_stop.patch
+@@ -0,0 +1,72 @@
++From 4a7c38bdbfa8f133ce6924e0990b6950f4990a31 Mon Sep 17 00:00:00 2001
++From: Florian Maurer <fmaurer@disroot.org>
++Date: Tue, 19 May 2026 23:35:09 +0000
++Subject: [PATCH] kernel: 6.6: report dying CPU to RCU from ipi_cpu_stop()
++
++ARM smp_send_stop() bypasses normal CPU-hotplug teardown: ipi_cpu_stop()
++clears cpu_online_mask but never calls rcu_report_dead(), leaving RCU's
++per-CPU bitmasks stale. This causes a ~21s RCU stall and a WARN in
++irq_work_queue_on() on poweroff/halt on dual-core IPQ806x (e.g. AP-325).
++
++Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
++---
++ ...call-rcu_report_dead-in-ipi_cpu_stop.patch | 47 +++++++++++++++++++
++ 1 file changed, 47 insertions(+)
++ create mode 100644 target/linux/generic/pending-6.6/311-ARM-smp-call-rcu_report_dead-in-ipi_cpu_stop.patch
++
++diff --git a/target/linux/generic/pending-6.6/311-ARM-smp-call-rcu_report_dead-in-ipi_cpu_stop.patch b/target/linux/generic/pending-6.6/311-ARM-smp-call-rcu_report_dead-in-ipi_cpu_stop.patch
++new file mode 100644
++index 0000000000..560bd231d9
++--- /dev/null
+++++ b/target/linux/generic/pending-6.6/311-ARM-smp-call-rcu_report_dead-in-ipi_cpu_stop.patch
++@@ -0,0 +1,47 @@
+++From: Florian Maurer <fmaurer@disroot.org>
+++Subject: ARM: smp: call rcu_report_dead() in ipi_cpu_stop()
+++
+++When the system is halted or powered off, machine_halt() and
+++machine_power_off() use smp_send_stop() to take secondary CPUs offline.
+++The IPI handler ipi_cpu_stop() clears the dying CPU from cpu_online_mask
+++via set_cpu_online(cpu, false) and then spins forever in
+++"cpu_relax(); wfe();" from interrupt context.
+++
+++This bypasses the normal CPU-hotplug teardown path: rcu_report_dead()
+++and rcutree_offline_cpu() are never called, so RCU's qsmaskinitnext and
+++ffmask bits for the stopped CPU remain set. Meanwhile cpu_is_offline()
+++returns true. The two views disagree.
+++
+++If the RCU grace-period kthread had armed a schedule_timeout() timer on
+++the stopped CPU just before the IPI arrived, the timer can never be
+++serviced (the CPU is wedged in IRQ context with IRQs masked), so the
+++kthread starves until CONFIG_RCU_CPU_STALL_TIMEOUT fires. The stall
+++detector then kicks the kthread alive on another CPU, where
+++force_qs_rnp() -> rcu_implicit_dynticks_qs() reaches an
+++irq_work_queue_on() targeting the offline CPU and trips
+++WARN_ON_ONCE(cpu_is_offline(cpu)) in kernel/irq_work.c.
+++
+++Reproduced on Aruba AP-325 (Qualcomm IPQ8068, dual-core Krait, 6.6.x)
+++by issuing "poweroff": 21-second stall followed by the WARN.
+++
+++Call rcu_report_dead(cpu) before the wait loop so that RCU's per-CPU
+++bitmasks match the now-offline state. This reports a quiescent state on
+++behalf of the stopping CPU, releases the current grace period, and
+++prevents the subsequent irq_work_queue_on() from being attempted.
+++
+++Signed-off-by: Florian Maurer <fmaurer@disroot.org>
+++---
+++ arch/arm/kernel/smp.c | 2 ++
+++ 1 file changed, 2 insertions(+)
+++
+++--- a/arch/arm/kernel/smp.c
++++++ b/arch/arm/kernel/smp.c
+++@@ -608,6 +608,8 @@ static void ipi_cpu_stop(unsigned int cp
+++
+++ 	set_cpu_online(cpu, false);
+++
++++	rcu_report_dead(cpu);
++++
+++ 	while (1) {
+++ 		cpu_relax();
+++ 		wfe();
++-- 
++2.51.2
++
