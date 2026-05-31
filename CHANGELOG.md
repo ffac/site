@@ -1,5 +1,18 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2025.1.x
+  - fix ubiquiti-rocket-m-xm
+  - reduce size of openmesh devices
+
+## v2025.1.1
+  - update gluon to v2025.1.1
+  - set autoupdater default branch to stable
+  - add aruba ap325 support
+  - add support for ipv6 cellular
+
+## v2025.1.0
+  - update gluon to v2025.1.0
+
 ## v2023.2.6-1
   - update to latest gluon release
   - various fixes
