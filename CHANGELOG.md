@@ -1,5 +1,28 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2023.2.6-1
+  - update to latest gluon release
+  - various fixes
+  - updated patches
+
+## v2023.2.3-6
+  - update gluon packages to latest main, update gluon to latest v2023.2.x
+  - stable release
+
+## v2023.2.3-5
+  - add usb-hotplug and usb location package
+
+## v2023.2.3-4
+  - update gluon-ffac packages
+
+## v2023.2.3-3
+  - add mt7915 hotfix package for filogic and mt7621 devices
+  - add ffmuc-custom banner
+  - add ffac-private-wan-dhcp for cellular
+
+## v2023.2.3-2
+  - update modules
+
 ## v2023.2.3-1
   - update gluon to v2023.2.2
   - add driver error based workaround for mt7915
