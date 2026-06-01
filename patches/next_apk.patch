@@ -1,0 +1,566 @@
+From e561db9eb7da91b5a4abdad970ec8d51835ab7be Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Wed, 10 Jun 2026 23:59:58 +0200
+Subject: [PATCH 1/7] gluon-core: port distfeeds rewriter from opkg to apk
+
+OpenWrt 25.12 replaces opkg with apk. The upgrade script now writes
+/etc/apk/repositories.d/gluon.list for extra feeds.
+---
+ .../luasrc/lib/gluon/upgrade/500-apk          | 87 +++++++++++++++++++
+ .../luasrc/lib/gluon/upgrade/500-opkg         | 75 ----------------
+ 2 files changed, 87 insertions(+), 75 deletions(-)
+ create mode 100755 package/gluon-core/luasrc/lib/gluon/upgrade/500-apk
+ delete mode 100755 package/gluon-core/luasrc/lib/gluon/upgrade/500-opkg
+
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/500-apk b/package/gluon-core/luasrc/lib/gluon/upgrade/500-apk
+new file mode 100755
+index 0000000000..cace35e47e
+--- /dev/null
++++ b/package/gluon-core/luasrc/lib/gluon/upgrade/500-apk
+@@ -0,0 +1,87 @@
++#!/usr/bin/lua
++
++local unistd = require 'posix.unistd'
++
++local distfeeds_path = '/etc/apk/repositories.d/distfeeds.list'
++local gluonfeeds_path = '/etc/apk/repositories.d/gluon.list'
++
++if not unistd.access(distfeeds_path) then
++	os.exit(0)
++end
++
++
++local site = require 'gluon.site'
++local util = require 'gluon.util'
++
++
++local subst = {}
++
++
++local f = io.popen('. /etc/os-release; echo "$ID"; echo "$VERSION_ID"; echo "$OPENWRT_BOARD"; echo "$OPENWRT_ARCH"')
++subst['%%d'] = f:read()
++subst['%%v'] = f:read():gsub('-snapshot', '')
++subst['%%S'] = f:read()
++subst['%%A'] = f:read()
++f:close()
++
++subst['%%GS'] = site.site_code()
++subst['%%GV'] = util.trim(util.readfile('/lib/gluon/gluon-version'))
++subst['%%GR'] = util.trim(util.readfile('/lib/gluon/release'))
++
++
++local function replace_patterns(url)
++	for k, v in pairs(subst) do
++		url = url:gsub(k, v)
++	end
++
++	return url
++end
++
++
++local openwrt = site.apk.openwrt()
++local extra = site.apk.extra({})
++
++
++local distfeeds = {}
++for line in io.lines(distfeeds_path) do
++	table.insert(distfeeds, line)
++end
++
++f = io.open(distfeeds_path, 'w')
++
++for _, line in ipairs(distfeeds) do
++	-- Only rewrite uncommented URL lines. base-files emits `# <url>` for
++	-- per-feed entries disabled via `CONFIG_FEED_<name>=m` (e.g. the
++	-- FEED_gluon_base toggle in targets/generic); those must pass through.
++	if openwrt and line:match('^https?://') then
++		if line:match('/targets/.-/packages/packages%.adb$') then
++			-- core/board line: an architecture-derived custom mirror cannot
++			-- serve target distfeeds paths, so disable it.
++			f:write('# ' .. line .. '\n')
++		else
++			local name = line:match('/packages/[^/]+/([^/]+)/packages%.adb$')
++			if name then
++				f:write(string.format('%s/%s/packages.adb\n', replace_patterns(openwrt), name))
++			else
++				f:write(line .. '\n')
++			end
++		end
++	else
++		f:write(line .. '\n')
++	end
++end
++
++f:close()
++
++if next(extra) then
++	f = io.open(gluonfeeds_path, 'w')
++
++	for _, v in pairs(extra) do
++		f:write(replace_patterns(v) .. '/packages.adb\n')
++	end
++
++	f:close()
++
++else
++	os.remove(gluonfeeds_path)
++end
+diff --git a/package/gluon-core/luasrc/lib/gluon/upgrade/500-opkg b/package/gluon-core/luasrc/lib/gluon/upgrade/500-opkg
+deleted file mode 100755
+index bf0d15dcb7..0000000000
+--- a/package/gluon-core/luasrc/lib/gluon/upgrade/500-opkg
++++ /dev/null
+@@ -1,75 +0,0 @@
+-#!/usr/bin/lua
+-
+-local unistd = require 'posix.unistd'
+-
+-if not unistd.access('/etc/opkg/distfeeds.conf') then
+-	os.exit(0)
+-end
+-
+-
+-local site = require 'gluon.site'
+-local util = require 'gluon.util'
+-
+-
+-local subst = {}
+-
+-
+-local f = io.popen('. /etc/os-release; echo "$ID"; echo "$VERSION_ID"; echo "$OPENWRT_BOARD"; echo "$OPENWRT_ARCH"')
+-subst['%%d'] = f:read()
+-subst['%%v'] = f:read():gsub('-snapshot', '')
+-subst['%%S'] = f:read()
+-subst['%%A'] = f:read()
+-f:close()
+-
+-subst['%%GS'] = site.site_code()
+-subst['%%GV'] = util.trim(util.readfile('/lib/gluon/gluon-version'))
+-subst['%%GR'] = util.trim(util.readfile('/lib/gluon/release'))
+-
+-local prefix = subst['%%d'] .. '_'
+-
+-
+-local function replace_patterns(url)
+-	for k, v in pairs(subst) do
+-		url = url:gsub(k, v)
+-	end
+-
+-	return url
+-end
+-
+-
+-local openwrt = site.opkg.openwrt()
+-local extra = site.opkg.extra({})
+-
+-
+-local distfeeds = {}
+-for line in io.lines('/etc/opkg/distfeeds.conf') do
+-	table.insert(distfeeds, line)
+-end
+-
+-f = io.open('/etc/opkg/distfeeds.conf', 'w')
+-
+-for _, line in ipairs(distfeeds) do
+-	local name = line:match('^src/gz%s' .. prefix .. '(%S+)%s')
+-	if name == 'core' then
+-		f:write('# ' .. line .. '\n')
+-	elseif name and openwrt then
+-		f:write(string.format('src/gz %s %s/%s\n', prefix .. name, replace_patterns(openwrt), name))
+-	else
+-		f:write(line .. '\n')
+-	end
+-end
+-
+-f:close()
+-
+-if next(extra) then
+-	f = io.open('/etc/opkg/gluon.conf', 'w')
+-
+-	for k, v in pairs(extra) do
+-		f:write(string.format('src/gz %s %s\n', k, replace_patterns(v)))
+-	end
+-
+-	f:close()
+-
+-else
+-	os.remove('/etc/opkg/gluon.conf')
+-end
+
+From f12ba665930470a1e181c8109be32989b100a94d Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Wed, 10 Jun 2026 23:59:59 +0200
+Subject: [PATCH 2/7] gluon-core: rename site.conf opkg key to apk
+
+OpenWrt 25.12 replaces opkg with apk, so the schema follows. The
+existing obsolete({'opkg', 'lede'}, ...) check is absorbed into a
+broader obsolete({'opkg'}, 'Use apk instead.'), which catches any
+leftover opkg = { ... } block in a downstream site.conf.
+---
+ package/gluon-core/check_site.lua | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/package/gluon-core/check_site.lua b/package/gluon-core/check_site.lua
+index da9c10ed52..1ac8a986b8 100644
+--- a/package/gluon-core/check_site.lua
++++ b/package/gluon-core/check_site.lua
+@@ -14,9 +14,9 @@ end
+ 
+ need_string_match(in_domain({'domain_seed'}), '^' .. ('%x'):rep(64) .. '$')
+ 
+-need_string({'opkg', 'openwrt'}, false)
+-obsolete({'opkg', 'lede'}, 'Use opkg.openwrt instead.')
+-need_table({'opkg', 'extra'}, function(extra_repo)
++need_string({'apk', 'openwrt'}, false)
++obsolete({'opkg'}, 'Use apk instead.')
++need_table({'apk', 'extra'}, function(extra_repo)
+ 	need_alphanumeric_key(extra_repo)
+ 	need_string(extra_repo)
+ end, false)
+
+From e90d00efa55e905574c185e8785349965025d35e Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Thu, 11 Jun 2026 00:00:00 +0200
+Subject: [PATCH 3/7] docs: rename site.conf opkg key to apk
+
+Follow the schema/runtime rename: the section heading becomes apk, the
+example URLs end in /packages.adb, and the prose spells out that
+apk.openwrt and apk.extra are directory prefix (no trailing slash, no packages.adb
+suffix).
+---
+ docs/user/site.rst | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/docs/user/site.rst b/docs/user/site.rst
+index 8c4df2b9ea..75424abe7d 100644
+--- a/docs/user/site.rst
++++ b/docs/user/site.rst
+@@ -64,23 +64,27 @@ ntp_servers
+   These NTP servers must be reachable via IPv6 from the nodes. If you don't want to set an IPv6 address
+   explicitly, but use a hostname (which is recommended), see also the :ref:`FAQ <faq-dns>`.
+ 
+-opkg \: optional
+-  ``opkg`` package manager configuration.
++apk \: optional
++  ``apk`` package manager configuration.
+ 
+-  There are two optional fields in the ``opkg`` section:
++  There are two optional fields in the ``apk`` section:
+ 
+   - ``openwrt`` overrides the default OpenWrt repository URL. The default URL would
+     correspond to ``http://downloads.openwrt.org/snapshots/packages/%A``
+     and usually doesn't need to be changed when nodes are expected to have IPv6
+-    internet connectivity.
+-  - ``extra`` specifies a table of additional repositories (with arbitrary keys)
++    internet connectivity. The value is treated as a directory prefix; the per-feed
++    component and the ``/packages.adb`` index name are appended automatically, so
++    the URL must **not** end in a slash or in ``packages.adb``.
++  - ``extra`` specifies a table of additional repositories (with arbitrary keys).
++    Each entry is a URL pointing at an apk index folder, so
++    the URL must **not** end in a slash or in ``packages.adb``.
+ 
+   ::
+ 
+-    opkg = {
+-      openwrt = 'http://opkg.services.ffac/openwrt/snapshots/packages/%A',
++    apk = {
++      openwrt = 'http://apk.services.ffac/openwrt/snapshots/packages/%A',
+       extra = {
+-        gluon = 'http://opkg.services.ffac/modules/gluon-%GS-%GR/%S',
++        gluon = 'http://apk.services.ffac/modules/gluon-%GS-%GR/%S/packages.adb',
+       },
+     }
+ 
+
+From e80f81f41e103b44a65c6128ab99811a715b1f24 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Thu, 11 Jun 2026 00:00:00 +0200
+Subject: [PATCH 4/7] contrib: port push_pkg.sh from opkg to apk
+
+OpenWrt 25.12 replaces opkg with apk. The package-search glob switches
+from <name>_*.ipk to <name>-*.apk to match the apk filename format
+confirmed in scripts/ipkg-remove. Install is `apk add --allow-untrusted
+--force-reinstall` (the --force-reinstall option is added by
+openwrt-25.12's apk patches). When -P is passed the script adds
+--force-overwrite as a best-effort analog of opkg's --force-maintainer,
+overriding apk's default protected-paths preservation.
+
+Assisted-by: Claude:claude-opus-4-6
+---
+ contrib/push_pkg.sh | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+diff --git a/contrib/push_pkg.sh b/contrib/push_pkg.sh
+index 4b3bc64885..771624f89e 100755
+--- a/contrib/push_pkg.sh
++++ b/contrib/push_pkg.sh
+@@ -89,10 +89,10 @@ while [ $# -gt 0 ]; do
+ 		exit 1
+ 	fi
+ 
+-	opkg_packages="$(make TOPDIR="${topdir}" -C "${pkgdir}" DUMP=1 | awk '/^Package: / { print $2 }')"
++	pkg_names="$(make TOPDIR="${topdir}" -C "${pkgdir}" DUMP=1 | awk '/^Package: / { print $2 }')"
+ 
+ 	search_package() {
+-		find "$2" -name "$1_*.ipk" -printf '%f\n'
++		find "$2" -name "$1-*.apk" -printf '%f\n'
+ 	}
+ 
+ 	make TOPDIR="${topdir}" -C "${pkgdir}" clean
+@@ -108,7 +108,7 @@ while [ $# -gt 0 ]; do
+ 		BR=]
+ 	fi
+ 
+-	for pkg in ${opkg_packages}; do
++	for pkg in ${pkg_names}; do
+ 
+ 		for feed in "${topdir}/bin/packages/${REMOTE_OPENWRT_ARCH}/"*/ "${topdir}/bin/targets/${REMOTE_OPENWRT_BOARD}/packages/"; do
+ 			printf "%s" "searching ${pkg} in ${feed}: "
+@@ -121,8 +121,12 @@ while [ $# -gt 0 ]; do
+ 			fi
+ 		done
+ 
++		apk_flags=""
+ 		if [ "$preserve_config" -eq 0 ]; then
+-			opkg_flags=" --force-maintainer"
++			# Best-effort analog of opkg's --force-maintainer: apk preserves
++			# files in protected paths by default, so to actually overwrite
++			# /etc/config we force overwriting owned files.
++			apk_flags=" --force-overwrite"
+ 		fi
+ 
+ 		# shellcheck disable=SC2029
+@@ -130,19 +134,19 @@ while [ $# -gt 0 ]; do
+ 			scp -O -P "${ssh_port}" "$feed/$filename" "root@${BL}${ssh_host}${BR}:/tmp/${filename}"
+ 			ssh -p "${ssh_port}" "root@${ssh_host}" "
+ 				set -e
+-				echo Running opkg:
+-				opkg install --force-reinstall ${opkg_flags} '/tmp/${filename}'
++				echo Running apk:
++				apk add --allow-untrusted --force-reinstall${apk_flags} '/tmp/${filename}'
+ 				rm '/tmp/${filename}'
+ 				gluon-reconfigure
+ 			"
+ 		else
+ 			# Some packages (e.g. procd-seccomp) seem to contain BuildPackage commands
+-			# which do not generate *.ipk files. Till this point, I am not aware why
++			# which do not generate *.apk files. Till this point, I am not aware why
+ 			# this is happening. However, dropping a warning if the corresponding
+-			# *.ipk is not found (maybe due to other reasons as well), seems to
++			# *.apk is not found (maybe due to other reasons as well), seems to
+ 			# be more reasonable than aborting. Before this commit, the command
+ 			# has failed.
+-			echo "Warning: ${pkg}*.ipk not found! Ignoring." 1>&2
++			echo "Warning: ${pkg}*.apk not found! Ignoring." 1>&2
+ 		fi
+ 
+ 	done
+
+From d8ad129405f322ea51ded3c5a4c3c2cf5bd9ceeb Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Thu, 11 Jun 2026 00:00:01 +0200
+Subject: [PATCH 5/7] build: refresh stale opkg comments in scripts/targets
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The opkg → apk migration leaves two now-misleading comments behind:
+copy_output.lua still labels the package repo copy "opkg" and
+targets/generic still says "distfeeds.conf" where the on-device file is
+now distfeeds.list. The actual code in both files is index-format-
+agnostic and needs no other change.
+---
+ scripts/copy_output.lua | 2 +-
+ targets/generic         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/copy_output.lua b/scripts/copy_output.lua
+index 70a3917c95..a40387e8b1 100755
+--- a/scripts/copy_output.lua
++++ b/scripts/copy_output.lua
+@@ -90,7 +90,7 @@ local profile_json_dest = string.format('%s/openwrt-profiles/%s.json',
+ 	target)
+ lib.exec {'cp', profile_json_source, profile_json_dest}
+ 
+--- Copy opkg repo
++-- Copy apk repo
+ if (env.GLUON_DEVICES or '') == '' then
+ 	local package_prefix = string.format('gluon-%s-%s', lib.site_code, env.GLUON_RELEASE)
+ 	local function dest_dir(prefix)
+diff --git a/targets/generic b/targets/generic
+index 612153e9e6..874e61d3bc 100644
+--- a/targets/generic
++++ b/targets/generic
+@@ -18,7 +18,7 @@ if env.SUBTARGET ~= '' then
+ 	config(string.format('TARGET_%s_%s', env.BOARD, env.SUBTARGET), true)
+ end
+ 
+--- Disable non-default feeds in distfeeds.conf
++-- Disable non-default feeds in distfeeds.list
+ config('FEED_gluon_base', false)
+ 
+ local default_feeds = {}
+
+From 342ed9e2b2798e27d86d97600eac8b818e626acd Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Thu, 11 Jun 2026 00:00:02 +0200
+Subject: [PATCH 6/7] docs: refresh opkg references for apk
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Renames "opkg repositories" → "apk repositories", swaps /etc/opkg/keys
+for /etc/apk/keys, drops the now-incorrect "Gluon does not support
+HTTPS for downloading packages" claim (apk supports HTTPS), and updates
+the dev-packages and tls docs to talk about apk where appropriate.
+---
+ docs/dev/packages.rst         |  6 +++---
+ docs/features/tls.rst         |  2 +-
+ docs/user/getting_started.rst | 15 +++++++--------
+ 3 files changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/docs/dev/packages.rst b/docs/dev/packages.rst
+index 2be2dc0051..7a5bc15f6d 100644
+--- a/docs/dev/packages.rst
++++ b/docs/dev/packages.rst
+@@ -65,17 +65,17 @@ Features of ``push_pkg.sh``:
+ 
+ Implementation details of ``push_pkg.sh``:
+ 
+-* First, the script builds an opkg package using the OpenWrt build system.
++* First, the script builds an apk package using the OpenWrt build system.
+ * This package is pushed to a *target machine* using scp:
+ 
+   * By default the *target machine* is a locally running x86 qemu started using ``run_qemu.sh``.
+   * The *target machine* can also be remote machine. (See the cli switch ``-r``)
+   * Remote machines are not limited to a specific architecture. All architectures supported by gluon can be used as remote machines.
+ 
+-* Finally opkg is used to install/update the packages in the target machine.
++* Finally apk is used to install/update the packages in the target machine.
+ 
+   * While doing this, it will not override ``/etc/config`` with package defaults by default. (See the cli switch ``-P``).
+-  * While doing this, opkg calls the ``check_site.lua`` from the package as post_install script to validate the ``site.conf``. This means that the ``site.conf`` of the target machine is used for this validation.
++  * While doing this, apk calls the ``check_site.lua`` from the package as post-install script to validate the ``site.conf``. This means that the ``site.conf`` of the target machine is used for this validation.
+ 
+ Note that:
+ 
+diff --git a/docs/features/tls.rst b/docs/features/tls.rst
+index d6b2a396a3..90810c2fed 100644
+--- a/docs/features/tls.rst
++++ b/docs/features/tls.rst
+@@ -7,4 +7,4 @@ This removes the need for community packages to depend on a specific TLS impleme
+ This package is an alias for the current TLS implementation used.
+ To allow for easy usage of communicating through HTTPS from the node, typical Certificate Authorities (CAs) are included through the package ``ca-bundle`` .
+ 
+-* Starting with OpenWRT 23.05, mbedtls is the default TLS layer - this is reflected in Gluon :ref:`v2023.2 <releases-v2023.2-minor-changes>`. HTTPS is used by default to communicate with OpenWRT opkg servers.
++* Starting with OpenWRT 23.05, mbedtls is the default TLS layer - this is reflected in Gluon :ref:`v2023.2 <releases-v2023.2-minor-changes>`. HTTPS is used by default to communicate with OpenWRT package servers.
+diff --git a/docs/user/getting_started.rst b/docs/user/getting_started.rst
+index 72f3951d58..c0a9ed3156 100644
+--- a/docs/user/getting_started.rst
++++ b/docs/user/getting_started.rst
+@@ -166,22 +166,21 @@ necessary, but may fix certain kinds of build failures.
+ 
+ will clean the entire tree, so the toolchain will be rebuilt as well, which will take a while.
+ 
+-opkg repositories
+------------------
++apk repositories
++----------------
+ 
+ Gluon is mostly compatible with OpenWrt, so the normal OpenWrt package repositories
+ can be used for Gluon as well.
+ 
+ This is not true for kernel modules; the Gluon kernel is incompatible with the
+ kernel of the default OpenWrt images. Therefore, Gluon will not only generate images,
+-but also an opkg repository containing all core packages provided by OpenWrt,
++but also an apk repository containing all core packages provided by OpenWrt,
+ including modules for the kernel of the generated images.
+ 
+ Signing keys
+ ............
+ 
+-Gluon does not support HTTPS for downloading packages; fortunately, opkg deploys
+-public-key cryptography to ensure package integrity.
++apk deploys public-key cryptography to ensure package integrity.
+ 
+ The Gluon images will contain public keys from two sources: the official OpenWrt keyring
+ (to allow installing userspace packages) and a Gluon-specific key (which is used
+@@ -190,8 +189,8 @@ to sign the generated package repository).
+ OpenWrt will handle the generation and handling of the keys itself.
+ When making firmware releases based on Gluon, it might make sense to store
+ the keypair, so updating the module repository later is possible.
+-In fact you should take care to reuse the same opkg keypair, so you don't pollute the key
+-store (see ``/etc/opkg/keys``) on the node.
++In fact you should take care to reuse the same signing keypair, so you don't pollute the key
++store (see ``/etc/apk/keys``) on the node.
+ 
+ The signing-key is stored at ``openwrt/key-build.pub``, ``openwrt/key-build``,
+ ``key-build.ucert`` and  ``key-build.ucert.revoke``.
+@@ -295,7 +294,7 @@ GLUON_IMAGEDIR
+   Path where images will be stored. Defaults to ``$(GLUON_OUTPUTDIR)/images``.
+ 
+ GLUON_PACKAGEDIR
+-  Path where the opkg package repository will be stored. Defaults to ``$(GLUON_OUTPUTDIR)/packages``.
++  Path where the apk package repository will be stored. Defaults to ``$(GLUON_OUTPUTDIR)/packages``.
+ 
+ GLUON_OUTPUTDIR
+   Path where output files will be stored. Defaults to ``output``.
+
+From ec3e92ab048d0565d048afc60baf984bdaa529a4 Mon Sep 17 00:00:00 2001
+From: Florian Maurer <fmaurer@disroot.org>
+Date: Thu, 11 Jun 2026 00:00:03 +0200
+Subject: [PATCH 7/7] docs: refresh GLUON_RELEASE comparison hint for apk
+
+The site.mk examples (and the olsr CI fixture) all carry a comment
+documenting the version-comparison rule that GLUON_RELEASE strings
+must satisfy. opkg compare-versions no longer exists on 25.12; point
+to apk version -t instead. The autoupdater's actual comparison logic
+lives outside this repo, but the comment's purpose - to tell community
+admins what ordering their release strings must follow - still holds.
+
+Assisted-by: Claude:claude-opus-4-6
+---
+ contrib/ci/olsr-site/site.mk          | 2 +-
+ docs/multidomain-site-example/site.mk | 2 +-
+ docs/site-example/site.mk             | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/contrib/ci/olsr-site/site.mk b/contrib/ci/olsr-site/site.mk
+index e50d404dae..273a0561c5 100644
+--- a/contrib/ci/olsr-site/site.mk
++++ b/contrib/ci/olsr-site/site.mk
+@@ -3,7 +3,7 @@
+ ##	DEFAULT_GLUON_RELEASE
+ #		version string to use for images
+ #		gluon relies on
+-#			opkg compare-versions "$1" '>>' "$2"
++#			apk version -t "$1" "$2"  # prints '>' when $1 is newer than $2
+ #		to decide if a version is newer or not.
+ 
+ DEFAULT_GLUON_RELEASE := 0.6+exp$(shell date '+%Y%m%d')
+diff --git a/docs/multidomain-site-example/site.mk b/docs/multidomain-site-example/site.mk
+index 50931c3380..943c5963d7 100644
+--- a/docs/multidomain-site-example/site.mk
++++ b/docs/multidomain-site-example/site.mk
+@@ -8,7 +8,7 @@ GLUON_MULTIDOMAIN=1
+ ##	DEFAULT_GLUON_RELEASE
+ #		version string to use for images
+ #		gluon relies on
+-#			opkg compare-versions "$1" '>>' "$2"
++#			apk version -t "$1" "$2"  # prints '>' when $1 is newer than $2
+ #		to decide if a version is newer or not.
+ 
+ DEFAULT_GLUON_RELEASE := 0.6+exp$(shell date '+%Y%m%d')
+diff --git a/docs/site-example/site.mk b/docs/site-example/site.mk
+index e50d404dae..273a0561c5 100644
+--- a/docs/site-example/site.mk
++++ b/docs/site-example/site.mk
+@@ -3,7 +3,7 @@
+ ##	DEFAULT_GLUON_RELEASE
+ #		version string to use for images
+ #		gluon relies on
+-#			opkg compare-versions "$1" '>>' "$2"
++#			apk version -t "$1" "$2"  # prints '>' when $1 is newer than $2
+ #		to decide if a version is newer or not.
+ 
+ DEFAULT_GLUON_RELEASE := 0.6+exp$(shell date '+%Y%m%d')
