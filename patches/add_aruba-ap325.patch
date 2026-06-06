@@ -1,4 +1,4 @@
-From a8771cd9d8e0127ad154480851639494d8cfa210 Mon Sep 17 00:00:00 2001
+From c43ddf04cd7a5d89e0eb92406db9e57b6ecf7f72 Mon Sep 17 00:00:00 2001
 From: Florian Maurer <fmaurer@disroot.org>
 Date: Mon, 1 Jun 2026 15:04:47 +0200
 Subject: [PATCH] ipq806x-generic: add support for aruba-ap32x
@@ -7,8 +7,8 @@ Subject: [PATCH] ipq806x-generic: add support for aruba-ap32x
  ...ort-rootfs_data-on-its-own-partition.patch | 168 +++
  ...-kernel-UBI-volume-and-MTD-partition.patch |  27 +
  ...021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch |  22 +
- ...ipq806x-add-support-for-Aruba-AP-32x.patch | 971 ++++++++++++++++++
- 4 files changed, 1188 insertions(+)
+ ...ipq806x-add-support-for-Aruba-AP-32x.patch | 981 ++++++++++++++++++
+ 4 files changed, 1198 insertions(+)
  create mode 100644 patches/openwrt/0019-base-files-support-rootfs_data-on-its-own-partition.patch
  create mode 100644 patches/openwrt/0020-base-files-handle-name-collision-between-kernel-UBI-volume-and-MTD-partition.patch
  create mode 100644 patches/openwrt/0021-ipq806x-add-CONFIG_GPIO_WATCHDOG.patch
@@ -251,10 +251,10 @@ index 0000000000..86207528bb
 + CONFIG_HARDIRQS_SW_RESEND=y
 diff --git a/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch b/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch
 new file mode 100644
-index 0000000000..996473522f
+index 0000000000..542ba29ad6
 --- /dev/null
 +++ b/patches/openwrt/0022-ipq806x-add-support-for-Aruba-AP-32x.patch
-@@ -0,0 +1,971 @@
+@@ -0,0 +1,981 @@
 +From: Lukas Stockner <lukas@lukasstockner.de>
 +Date: Wed, 5 Nov 2025 23:41:57 +0100
 +Subject: ipq806x: add support for Aruba AP-32x
@@ -796,10 +796,10 @@ index 0000000000..996473522f
 + 		nand_do_upgrade "$1"
 +diff --git a/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
 +new file mode 100644
-+index 0000000000000000000000000000000000000000..b6f1b7b110127791f1db439be46c709fef0d6e61
++index 0000000000000000000000000000000000000000..fc232a56ffb765fb72ff9514b95ea2561d0286f5
 +--- /dev/null
 ++++ b/target/linux/ipq806x/files-6.6/arch/arm/boot/dts/qcom/qcom-ipq8068-ap-32x.dts
-+@@ -0,0 +1,377 @@
++@@ -0,0 +1,387 @@
 ++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 ++
 ++#include "qcom-ipq8064-v2.0.dtsi"
@@ -1042,31 +1042,41 @@ index 0000000000..996473522f
 ++
 ++&pcie0 {
 ++	status = "okay";
-++};
 ++
-++&pcie_bridge0 {
-++	wifi@0,0 {
-++		compatible = "qcom,ath10k";
-++		status = "okay";
-++		reg = <0x10000 0 0 0 0>;
+++	bridge@0,0 {
+++		reg = <0x00000000 0 0 0 0>;
+++		#address-cells = <3>;
+++		#size-cells = <2>;
+++		ranges;
 ++
-++		nvmem-cells = <&precal_art_1000>;
-++		nvmem-cell-names = "pre-calibration";
+++		wifi@1,0 {
+++			compatible = "qcom,ath10k";
+++			status = "okay";
+++			reg = <0x00010000 0 0 0 0>;
+++
+++			nvmem-cells = <&precal_art_1000>;
+++			nvmem-cell-names = "pre-calibration";
+++		};
 ++	};
 ++};
 ++
 ++&pcie1 {
 ++	status = "okay";
-++};
 ++
-++&pcie_bridge1 {
-++	wifi@0,0 {
-++		compatible = "qcom,ath10k";
-++		status = "okay";
-++		reg = <0x10000 0 0 0 0>;
+++	bridge@0,0 {
+++		reg = <0x00000000 0 0 0 0>;
+++		#address-cells = <3>;
+++		#size-cells = <2>;
+++		ranges;
 ++
-++		nvmem-cells = <&precal_art_5000>;
-++		nvmem-cell-names = "pre-calibration";
+++		wifi@1,0 {
+++			compatible = "qcom,ath10k";
+++			status = "okay";
+++			reg = <0x00010000 0 0 0 0>;
+++
+++			nvmem-cells = <&precal_art_5000>;
+++			nvmem-cell-names = "pre-calibration";
+++		};
 ++	};
 ++};
 ++
