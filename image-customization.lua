@@ -52,8 +52,8 @@ tiny_like = device({
     'ubiquiti-unifi-ap',
     'ubiquiti-nanostation-m-xw',
     'ubiquiti-rocket-m-xm',
-    'tplink-cpe710-v1',
-    'tplink-cpe710-v2',
+    'tp-link-cpe710-v1',
+    'tp-link-cpe710-v2',
 })
 
 if not device_class('tiny') and not tiny_like then
