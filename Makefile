@@ -154,6 +154,11 @@ build: gluon-prepare output-clean
 		mkdir -p $(OPKG_KEY_FOLDER); \
 		cp $(GLUON_BUILD_DIR)/openwrt/key-build* $(OPKG_KEY_FOLDER)/; \
 	fi
+	@if [ ! -f "$(OPKG_KEY_FOLDER)/private-key.pem" ] && [ -f "$(GLUON_BUILD_DIR)/openwrt/private-key.pem" ]; then \
+		echo 'Copying new apk keys to $(OPKG_KEY_FOLDER)'; \
+		mkdir -p $(OPKG_KEY_FOLDER); \
+		cp $(GLUON_BUILD_DIR)/openwrt/*.pem $(OPKG_KEY_FOLDER)/; \
+	fi
 ifndef GLUON_DEVICES
 	cat $(GLUON_BUILD_DIR)/openwrt/bin/targets/*/*/profiles.json | jq -s > output/devices.json
 	$(eval PACKAGES_BRANCH := $(subst OPENWRT_BRANCH=openwrt,packages,$(shell cat $(GLUON_BUILD_DIR)/modules | grep OPENWRT_BRANCH)))
@@ -191,6 +196,10 @@ ffac-patch: gluon-update
 	@if [ -f "$(OPKG_KEY_FOLDER)/key-build" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/key-build" ]; then \
 		echo 'Installing your opkg keys'; \
 		cp $(OPKG_KEY_FOLDER)/key-build* $(GLUON_BUILD_DIR)/openwrt/; \
+	fi
+	@if [ -f "$(OPKG_KEY_FOLDER)/private-key.pem" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/private-key.pem" ]; then \
+		echo 'Installing your apk keys'; \
+		cp $(OPKG_KEY_FOLDER)/*.pem $(GLUON_BUILD_DIR)/openwrt/; \
 	fi
 	@if [ -f "$(OWRT_VERSION_FOLDER)/version.date" ] && [ ! -f "$(GLUON_BUILD_DIR)/openwrt/version.date" ]; then \
 			echo 'Installing version date'; \
