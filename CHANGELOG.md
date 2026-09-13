@@ -1,14 +1,28 @@
 # Freifunk Aachen Firmware Changelog
 
-## v2025.1.x
+## v2025.1.3
+  - update gluon to v2025.1.3
+  - fix channel width regression (upstream)
+
+## v2025.1.2
+  - update gluon to v2025.1.2
+  - image-customization: fix tp-link device name (tp-link-cpe710-v1/v2)
+
+## v2025.1.1-1
+  - update aruba ap-325 patch
+  - fix ipv6 in cellular private wlan
+  - image-customization: reduce image sizes for various devices
   - fix ubiquiti-rocket-m-xm
-  - reduce size of openmesh devices
 
 ## v2025.1.1
   - update gluon to v2025.1.1
   - set autoupdater default branch to stable
   - add aruba ap325 support
   - add support for ipv6 cellular
+
+## v2025.1.0-1
+  - complete list of targets
+  - add reproducibility option to Makefile
 
 ## v2025.1.0
   - update gluon to v2025.1.0
