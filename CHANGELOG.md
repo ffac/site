@@ -1,5 +1,21 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2026.0.2
+  - update openwrt base to openwrt-25.12
+  - switch package management from opkg to apk
+  - Makefile: add signing material for new apk keys
+  - update community-packages to latest
+  - image-customization: switch to kmod-fs-ntfs3 (kmod-fs-ntfs removed upstream)
+  - re-add ffda-node-whisperer
+  - update aruba-ap325 patch
+  - remove upstreamed patches (6GHz patch)
+
+## v2026.0.1
+  - release: update gluon next
+
+## v2026.0.0
+  - readd ffda-node-whisperer
+
 ## v2025.1.3
   - update gluon to v2025.1.3
   - fix channel width regression (upstream)
