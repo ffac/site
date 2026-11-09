@@ -1,5 +1,9 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2026.0.5
+  - release: update to latest 25.12
+  - bump gluon to v2026.1-rc1
+
 ## v2026.0.2
   - update openwrt base to openwrt-25.12
   - switch package management from opkg to apk
