@@ -20,4 +20,4 @@ index 80c5e50a..55fbb86b 100644
 +	local nodeinfo = json.parse(util.exec('exec gluon-neighbour-info -d ::1 -p 1001 -t 3 -c 1 -r nodeinfo | sed \'s/"owner":{"contact":"[^"]*"},//\''))
  
  	local node_ip = parse_ip(http:getenv('SERVER_ADDR'))
- 	if node_ip and (
+ 	if node_ip then
