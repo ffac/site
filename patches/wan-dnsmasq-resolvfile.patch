@@ -1,0 +1,20 @@
+diff --git a/package/gluon-wan-dnsmasq/luasrc/lib/gluon/upgrade/910-wan-dnsmasq-resolvfile b/package/gluon-wan-dnsmasq/luasrc/lib/gluon/upgrade/910-wan-dnsmasq-resolvfile
+new file mode 100755
+index 00000000..580de460
+--- /dev/null
++++ b/package/gluon-wan-dnsmasq/luasrc/lib/gluon/upgrade/910-wan-dnsmasq-resolvfile
+@@ -0,0 +1,14 @@
++#!/usr/bin/lua
++
++-- The node's own resolver chain ends at the main dnsmasq, whose upstream
++-- file (/tmp/resolv.conf.d/resolv.conf.auto) is fed by netifd only from
++-- interfaces with peerdns enabled.  Parker nodes have none: WAN uses
++-- peerdns=0 as always, and the ffmuc upgrade script 901-parker-client-ipv6
++-- silences client6 peerdns on purpose.  The file stays empty and dnsmasq
++-- answers REFUSED.  Point the main dnsmasq at the file gluon-wan-dnsmasq
++-- keeps up to date from the uplink leases instead.
++
++local uci = require('simple-uci').cursor()
++
++uci:set('dhcp', uci:get_first('dhcp', 'dnsmasq'), 'resolvfile', '/var/gluon/wan-dnsmasq/resolv.conf')
++uci:save('dhcp')
