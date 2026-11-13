@@ -1,10 +1,6 @@
 features {
     'autoupdater',
-    'ebtables-filter-multicast',
-    'ebtables-filter-ra-dhcp',
-    'ebtables-limit-arp',
     'mesh-batman-adv-15',
-    'mesh-vpn-wireguard',
     'respondd',
     'status-page',
     'web-advanced',
@@ -16,7 +12,11 @@ features {
 
 packages {
     'iwinfo',
-    'ffac-wg-registration',
+    'ffbs-mesh-vpn-parker',
+    'ffbs-parker-nextnode',
+    'ffbs-wireguard-respondd',
+    'ffmuc-ebpf-clat',
+    'ffmuc-ipv6-ra-filter',
     'respondd-module-airtime',
     'tecff-general-workaround',
     'tecff-broken-wlan-workaround',
