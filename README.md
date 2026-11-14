@@ -2,7 +2,8 @@ This repository contains the site configuration and build automation for the Fre
 
 ## Build Requirements
 
-For build requirements, dependencies, and environment setup, please refer to the official [Gluon Documentation: Getting Started](https://gluon.readthedocs.io/en/latest/user/getting_started.html).
+Build requirements, dependencies and environment setup: see the official
+[Gluon Documentation: Getting Started](https://gluon.readthedocs.io/en/latest/user/getting_started.html).
 
 ## Building Firmware
 
@@ -10,7 +11,7 @@ This site repository contains a top-level `Makefile` wrapper that handles checki
 
 ### 1. Build all targets and manifests
 
-Simply clone this repository and run:
+Clone the repository and run:
 
 ```bash
 git clone https://github.com/ffac/site.git
@@ -18,7 +19,7 @@ cd site
 make manifest
 ```
 
-This will automatically:
+`make manifest` does the following:
 - Download the required Gluon release (configured in `release.mk`) into `gluon-build/`
 - Apply custom patches in `patches/`
 - Update Gluon package feeds/modules
@@ -40,7 +41,7 @@ To build only specific hardware device(s):
 ```bash
 make build GLUON_DEVICES="openwrt-one asus-rt-ax52"
 ```
-*(Device-specific builds output images into `devices/`)*
+Device-specific builds put their images into `devices/`.
 
 ### 3. Useful Make Options
 
@@ -55,9 +56,8 @@ make build GLUON_DEVICES="openwrt-one asus-rt-ax52"
 
 ## Architecture Details
 
-- WireGuard Mesh: Uses upstream `gluon-mesh-vpn-wireguard` [^gluon-meshvpn].
-- WireGuard Key Registration: Done via custom `wg-registration` package which registers keys via POST to our broker.
+- Mesh VPN: Parker. Each node builds a WireGuard tunnel to a concentrator and gets its config
+  from the broker's `/config` service; the node does no mesh routing. See
+  [docs/parker.md](./docs/parker.md).
 - Changelog: See [CHANGELOG.md](./CHANGELOG.md).
 - Aachen Wiki: [Freifunk Aachen Firmware Wiki](https://wiki.freifunk.net/Freifunk_Aachen/Firmware).
-
-[^gluon-meshvpn]: https://gluon.readthedocs.io/en/latest/features/vpn.html#wireguard
