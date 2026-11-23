@@ -1,5 +1,24 @@
 # Freifunk Aachen Firmware Changelog
 
+## v2026.1.x-parker (Branch)
+  - Parker-Firmware (Routing statt Mesh, WireGuard zu Konzentratoren)
+  - Gluon: ffac/gluon@v2026.1.x-parker (upstream v2026.1.x plus
+    upstreamfähige Änderungen, opt-in radv-filterd-Redirect, ebt-nat und
+    uradvd-Pin mit PREF64/adv-link-mtu als Patches)
+  - image-customization: mesh-vpn-wireguard und ffac-wg-registration durch
+    ffbs-mesh-vpn-parker + ffbs-wireguard-respondd ersetzt,
+    ffmuc-ebpf-clat (464XLAT) und ffmuc-ipv6-ra-filter ergänzt,
+    ebtables-Filter entfernt
+  - community-packages: ffac/community-packages@parker-gluon-compat-clat
+    (upstream main plus Parker-Fixes und ffmuc-ebpf-clat), Pin in `modules`
+  - site.conf: parker-Section (config_server, config_pubkey,
+    Fingerprint 3befd26f90d9530e), mesh_vpn.parker.mtu,
+    Autoupdater-Mirrors auf parker/<branch>; config-Endpunkt
+    03.wg-node.freifunk-aachen.de, wireguard-Broker/peers der klassischen
+    VXLAN-Topologie entfernt (add_key und ffac-wg-registration entfallen);
+    radvd-Lebensdauern und -Intervalle für Default-Router-Knoten;
+    next_node.name `nextnode`
+
 ## v2026.0.5
   - release: update to latest 25.12
   - bump gluon to v2026.1-rc1
