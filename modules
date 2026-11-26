@@ -1,7 +1,7 @@
 GLUON_SITE_FEEDS="community ffac"
 
 PACKAGES_COMMUNITY_REPO=https://github.com/ffac/community-packages.git
-PACKAGES_COMMUNITY_COMMIT=7d86c286658a8ea760b46792395a507463701e0b
+PACKAGES_COMMUNITY_COMMIT=2e62d1203be0c30e4bc81fac11fd76b20ec26467
 PACKAGES_COMMUNITY_BRANCH=parker-gluon-compat-clat
 
 PACKAGES_FFAC_REPO=https://github.com/ffac/gluon-packages.git

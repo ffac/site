@@ -5,8 +5,10 @@ Routing passiert dort und nicht im Mesh. Gebaut wird Gluon aus
 `ffac/gluon@v2026.1.x-parker` (Upstream `v2026.1.x` plus wenige
 Parker-Commits) mit dem Feed `ffac/community-packages@parker-gluon-compat-clat`
 (Upstream `main` plus Parker-Fixes und `ffmuc-ebpf-clat`); die Pins stehen in `release.mk` und `modules`. Die Parker-Logik steckt im Paket
-`ffbs-mesh-vpn-parker`, es schaltet über `/lib/gluon/features/` die
-Gluon-Teile ein, die nur Parker braucht (z. B. den radv-filterd-Redirect).
+`ffbs-mesh-vpn-parker`. Statt `mesh-batman-adv-15` ist das Feature
+`mesh-batman-adv-parker` gesetzt: das Mesh-Paket `ffbs-mesh-batman-adv-parker`
+baut auf `gluon-mesh-batman-adv-common` auf, liefert die uradvd-Argumente und
+schaltet den radv-filterd-Redirect ein.
 
 464XLAT: der Config-Server weist das NAT64-Prefix zu, `ffbs-mesh-vpn-parker`
 verkündet es per RA/DHCP, `ffmuc-ebpf-clat` betreibt den CLAT auf dem Knoten,

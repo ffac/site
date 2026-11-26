@@ -1,6 +1,6 @@
 features {
     'autoupdater',
-    'mesh-batman-adv-15',
+    'mesh-batman-adv-parker',
     'respondd',
     'status-page',
     'web-advanced',
